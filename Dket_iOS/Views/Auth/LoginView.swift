@@ -29,18 +29,21 @@ struct LoginView: View {
                     HStack {
                         Image(systemName: "message.fill")
                             .padding(.leading, 25)
+                        
                         Spacer()
+                        
                         Text("5초 만에 카카오로 시작하기")
                             .font(.system(size: 16, weight: .bold))
-                            .padding(.trailing, 60)
+                            .padding(.trailing, 70)
                     }
                     .frame(maxWidth: .infinity, minHeight: 48)
                     .background(Color(red: 251/255, green: 228/255, blue: 78/255))
                     .foregroundColor(.black)
                     .cornerRadius(5)
-                    .padding(.horizontal,30)
+                    .padding(.horizontal, 30)
                 }
-                .padding(.bottom, 80)
+                .padding(.bottom, 100)
+                
                 // 메타마스크 로그인 페이지로 연결
                 NavigationLink(destination: MetaMaskLoginView(), isActive: $goToMetaMaskLogin) {
                     EmptyView()

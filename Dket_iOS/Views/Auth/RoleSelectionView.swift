@@ -45,7 +45,7 @@ struct RoleSelectionView: View {
                 .padding(.horizontal,30)
                 .padding(.top, 10)
             }
-            .padding(.bottom, 30)
+            .padding(.bottom, 50)
         }
     }
 }
