@@ -8,48 +8,55 @@
 import SwiftUI
 
 struct RoleSelectionView: View {
+    @State private var goToHostHome = false
+    
     var body: some View {
-        VStack {
-            // DKet 로고 이미지
-            Image("Dket")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 112.65)
-                .padding(.top, 287)
-            
-            Spacer()
-            
+        NavigationStack {
             VStack {
-                Button {
-                    // 개최자 선택
-                } label: {
-                    Text("개최자")
-                        .font(.system(size: 16, weight: .bold))
+                Image("Dket")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 112.65)
+                    .padding(.top, 287)
+                
+                Spacer()
+                
+                VStack(spacing: 10) {
+                    // 개최자 버튼
+                    Button {
+                        goToHostHome = true
+                    } label: {
+                        Text("개최자")
+                            .font(.system(size: 16, weight: .bold))
+                            .frame(maxWidth: .infinity, minHeight: 48)
+                            .background(Color(red: 22/255, green: 29/255, blue: 111/255))
+                            .foregroundColor(.white)
+                            .cornerRadius(5)
+                    }
+                    
+                    // 구매자 버튼
+                    Button {
+                        
+                    } label: {
+                        Text("구매자")
+                            .font(.system(size: 16, weight: .bold))
+                            .frame(maxWidth: .infinity, minHeight: 48)
+                            .background(Color(red: 22/255, green: 29/255, blue: 111/255))
+                            .foregroundColor(.white)
+                            .cornerRadius(5)
+                    }
                 }
-                .frame(maxWidth: .infinity, minHeight: 48)
-                .background(Color(red: 22/255, green: 29/255, blue: 111/255))
-                .foregroundColor(.white)
-                .cornerRadius(5)
-                .padding(.horizontal,30)
-        
-                Button {
-                    // 구매자 선택
-                } label: {
-                    Text("구매자")
-                        .font(.system(size: 16, weight: .bold))
+                .padding(.horizontal, 30)
+                .padding(.bottom, 50)
+                
+                // HostHomeView로 이동.
+                NavigationLink(destination: HostHomeView(), isActive: $goToHostHome) {
+                    EmptyView()
                 }
-                .frame(maxWidth: .infinity, minHeight: 48)
-                .background(Color(red: 22/255, green: 29/255, blue: 111/255))
-                .foregroundColor(.white)
-                .cornerRadius(5)
-                .padding(.horizontal,30)
-                .padding(.top, 10)
             }
-            .padding(.bottom, 50)
         }
     }
 }
-
 
 struct RoleSelectionView_Previews: PreviewProvider {
     static var previews: some View {
