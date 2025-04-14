@@ -28,8 +28,9 @@ struct HostHomeView: View {
                             EventCardView()
                         }
                     }
-                    .padding(.top, 25)
+                    .padding(.top, 40)
                 }
+                .scrollIndicators(.hidden)
             }
             
             // 플로팅 버튼
@@ -51,7 +52,7 @@ struct HostHomeView: View {
                     }
                     Spacer()
                 }
-                .padding(.bottom, 15)
+                .padding(.bottom, 30)
             }
         }
     }
