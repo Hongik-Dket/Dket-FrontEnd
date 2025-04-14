@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RoleSelectionView: View {
     @State private var goToHostHome = false
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         NavigationStack {
@@ -24,7 +25,8 @@ struct RoleSelectionView: View {
                 VStack(spacing: 10) {
                     // 개최자 버튼
                     Button {
-                        goToHostHome = true
+                        appState.userRole = .host     // 역할을 개최자로 설정
+                        appState.isLoggedIn = true
                     } label: {
                         Text("개최자")
                             .font(.system(size: 16, weight: .bold))
@@ -60,6 +62,6 @@ struct RoleSelectionView: View {
 
 struct RoleSelectionView_Previews: PreviewProvider {
     static var previews: some View {
-        RoleSelectionView()
+        RoleSelectionView().environmentObject(AppState())
     }
 }

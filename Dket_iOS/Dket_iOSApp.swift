@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct Dket_iOSApp: App {
+    @StateObject private var appState = AppState()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environmentObject(appState)
         }
     }
 }
