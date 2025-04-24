@@ -15,10 +15,11 @@ struct ClosedEventListView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
                 ForEach(events) { event in
-                    NavigationLink(value: event) {
+                    NavigationLink(destination: EventDetailView(event: event)) {
                         VerticalEventCardView(event: event)
                             .padding(.bottom, 10)
                     }
+                    .buttonStyle(PlainButtonStyle()) // 기본 버튼 효과 제거 (카드 스타일 유지)
                 }
             }
             .padding(.top, 30)
