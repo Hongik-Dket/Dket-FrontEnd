@@ -10,27 +10,35 @@ import SwiftUI
 
 struct EventCardView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 5) {
             Rectangle()
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: 150, height: 180)
+                .frame(width: 140, height: 170)
                 .overlay(
                     Image(systemName: "photo")
                         .font(.system(size: 30))
                         .foregroundColor(.gray)
                 )
-                .cornerRadius(10)
+                .cornerRadius(5)
 
-            Text("공연 이름")
-                .font(.headline)
-            Text("공연 장소")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-            Text("2025.04.20 ~ 2025.04.21")
-                .font(.caption)
-                .foregroundColor(.gray)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("공연 이름")
+                    .font(.system(size: 12, weight: .bold))
+                    .lineLimit(1)
+
+                Text("공연 장소")
+                    .font(.system(size: 10))
+                    .lineLimit(1)
+                    .foregroundColor(.black)
+
+                Text("2025.04.20 ~ 2025.04.21")
+                    .font(.system(size: 10))
+                    .lineLimit(1)
+                    .foregroundColor(.gray)
+            }
+            .padding(.horizontal, 4)
         }
-        .frame(width: 150)
+        .frame(width: 140)
     }
 }
 
