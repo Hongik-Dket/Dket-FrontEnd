@@ -8,17 +8,21 @@
 import SwiftUI
 
 struct HostedEventListView: View {
+    let events: [Event]
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(0..<10) { _ in
-                    VerticalEventCardView()
-                        .padding(.bottom, 10)
+                ForEach(events) { event in
+                    NavigationLink(value: event) {
+                        VerticalEventCardView(event: event)
+                            .padding(.bottom, 10)
+                    }
                 }
             }
-            .padding()
+            .padding(.top, 30)
+            .padding(.horizontal)
         }
         .navigationTitle("개최한 공연")
         .navigationBarTitleDisplayMode(.inline)

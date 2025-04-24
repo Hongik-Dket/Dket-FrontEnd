@@ -9,8 +9,9 @@ import SwiftUI
 
 struct EventSectionView<Destination: View>: View {
     var title: String
+    let events: [Event]
     var destination: Destination
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
@@ -24,11 +25,11 @@ struct EventSectionView<Destination: View>: View {
                 }
             }
             .padding(.horizontal)
-
+            
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 10) {
-                    ForEach(0..<5) { _ in
-                        EventCardView()
+                    ForEach(events) { event in
+                        EventCardView(event: event)
                     }
                 }
                 .padding(.horizontal)

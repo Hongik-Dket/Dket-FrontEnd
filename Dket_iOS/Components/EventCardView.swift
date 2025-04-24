@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct EventCardView: View {
+    let event: Event
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Rectangle()
@@ -22,16 +23,16 @@ struct EventCardView: View {
                 .cornerRadius(5)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("공연 이름")
+                Text(event.name)
                     .font(.system(size: 12, weight: .bold))
                     .lineLimit(1)
 
-                Text("공연 장소")
+                Text(event.location)
                     .font(.system(size: 10))
                     .lineLimit(1)
                     .foregroundColor(.black)
 
-                Text("2025.04.20 ~ 2025.04.21")
+                Text(event.dateRange)
                     .font(.system(size: 10))
                     .lineLimit(1)
                     .foregroundColor(.gray)

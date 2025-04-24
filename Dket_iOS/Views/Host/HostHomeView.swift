@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct HostHomeView: View {
+    
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
@@ -24,14 +25,21 @@ struct HostHomeView: View {
                             }
                         )
                         
-                        // 오늘 공연
-                        EventSectionView(title: "오늘 공연", destination: TodayEventListView())
-                        
-                        // 최근 응모 마감 공연
-                        EventSectionView(title: "최근 응모 마감 공연", destination: ClosedEventListView())
-                        
-                        // 내가 개최한 공연
-                        EventSectionView(title: "개최한 공연", destination: HostedEventListView())
+                        EventSectionView(
+                            title: "오늘 공연",
+                            events: MockEventData.today,
+                            destination: TodayEventListView(events: MockEventData.today)
+                        )
+                        EventSectionView(
+                            title: "최근 응모 마감 공연",
+                            events: MockEventData.closed,
+                            destination: TodayEventListView(events: MockEventData.closed)
+                        )
+                        EventSectionView(
+                            title: "개최한 공연",
+                            events: MockEventData.hosted,
+                            destination: TodayEventListView(events: MockEventData.hosted)
+                        )
                     }
                     .padding(.bottom, 80)
                 }

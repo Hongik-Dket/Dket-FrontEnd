@@ -8,14 +8,17 @@
 import SwiftUI
 
 struct TodayEventListView: View {
+    let events: [Event]
     @Environment(\.dismiss) private var dismiss
-
+    
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(0..<10) { _ in
-                    VerticalEventCardView()
-                        .padding(.bottom, 10)
+                ForEach(events) { event in
+                    NavigationLink(value: event) {
+                        VerticalEventCardView(event: event)
+                            .padding(.bottom, 10)
+                    }
                 }
             }
             .padding(.top, 30)
@@ -26,14 +29,17 @@ struct TodayEventListView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    dismiss()
-                }) {
+                Button { dismiss() } label: {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(.black)
                         .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.black)
                 }
             }
+        }
+        
+        // NavigationDestination 등록
+        .navigationDestination(for: Event.self) { event in
+            EventDetailView(event: event)
         }
     }
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct VerticalEventCardView: View {
+    let event: Event
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Rectangle()
@@ -21,21 +22,34 @@ struct VerticalEventCardView: View {
                 )
             
             HStack {
-                Text("공연 이름")
+                Text(event.name)
                     .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.black)
                 Spacer()
-                Text("응모 마감")
+                Text(labelForState(event.state))
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(Color(red: 22/255, green: 29/255, blue: 111/255))
             }
             
-            Text("공연 장소")
-                .font(.system(size: 13))
+            Text(event.location)
+                .font(.system(size: 12))
+                .foregroundColor(.black)
             
-            Text("2025.03.20 ~ 2025.03.21")
+            Text(event.dateRange)
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
         }
         
+    }
+    
+    private func labelForState(_ state: EventState) -> String {
+        switch state {
+        case .preEnrollment:    return "응모 전"
+        case .enrolling:        return "응모 중"
+        case .enrollmentClosed: return "응모 마감"
+        case .ticketed:         return "예매 완료"
+        case .inProgress:       return "공연 중"
+        case .finished:         return "공연 종료"
+        }
     }
 }
