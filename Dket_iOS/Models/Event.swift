@@ -7,6 +7,9 @@ struct Event: Identifiable, Hashable {
     let dateRange: String
     let bannerImageName: String   // 배너 이미지 파일명
     let state: EventState
+    
+    let enrollmentStart: String    
+    let enrollmentEnd:   String
 }
 
 enum EventState {
