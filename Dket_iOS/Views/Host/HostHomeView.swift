@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct HostHomeView: View {
+    // 공연 개최하기 버튼 클릭 시
+    @State private var isCreating = false
     
     var body: some View {
         NavigationStack {
@@ -47,6 +49,7 @@ struct HostHomeView: View {
                 // 플로팅 버튼
                 Button(action: {
                     // 공연 개최하기 액션
+                    isCreating = true
                 }) {
                     Text("공연 개최하기")
                         .font(.system(size: 16, weight: .bold))
@@ -57,6 +60,14 @@ struct HostHomeView: View {
                         .shadow(radius: 4)
                 }
                 .padding(.bottom, 20)
+                // ③ 실제 네비게이션 처리
+                NavigationLink(
+                    destination: EventSetupView(),
+                    isActive: $isCreating
+                ) {
+                    EmptyView()
+                }
+                .hidden()
             }
         }
     }
