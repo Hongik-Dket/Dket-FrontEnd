@@ -7,25 +7,36 @@
 
 import SwiftUI
 
-struct TodayEventListView: View {
+/// “전체 보기” 를 담당하는 공통 리스트 뷰
+///
+/// - title  : 내비게이션 제목으로 사용
+/// - events : 이미 로드된 Domain 모델 배열
+struct EventListView: View {
+    
+    // MARK: – public inits
+    let title: String
     let events: [Event]
+    
+    // 뒤로가기 제어용
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 12) {
+            LazyVStack(spacing: 12, pinnedViews: []) {
                 ForEach(events) { event in
-                    NavigationLink(destination: EventDetailView(event: event)) {
+                    NavigationLink {
+                        EventDetailView(event: event)
+                    } label: {
                         VerticalEventCardView(event: event)
                             .padding(.bottom, 10)
                     }
-                    .buttonStyle(PlainButtonStyle()) // 기본 버튼 효과 제거 (카드 스타일 유지)
+                    .buttonStyle(.plain)      // 카드 눌림 효과 제거
                 }
             }
-            .padding(.top, 30)
             .padding(.horizontal)
+            .padding(.top, 30)
         }
-        .navigationTitle("오늘 공연")
+        .navigationTitle(title)              // ← 전달 받은 제목 사용
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {

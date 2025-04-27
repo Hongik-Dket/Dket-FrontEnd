@@ -7,17 +7,17 @@
 
 import SwiftUI
 
+/// 가로 스크롤 섹션 재사용 뷰
 struct EventSectionView<Destination: View>: View {
-    var title: String
-    let events: [Event]
-    var destination: Destination
+    let title: String
+    let events: [Event]          // ← Domain  모델
+    let destination: Destination // 전체 보기 페이지
     
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
                 Text(title)
-                    .font(.headline)
-                    .bold()
+                    .font(.headline).bold()
                 Spacer()
                 NavigationLink(destination: destination) {
                     Image(systemName: "chevron.right")
