@@ -9,14 +9,14 @@ import Foundation
 
 struct MockEventData {
     static let today: [Event] = [
-        Event(name: "프로미스나인 보고싶다",
+        Event(name: "프로미스나인",
               location: "서울 올림픽공원",
               dateRange: "2025.04.25",
               bannerImageName: "banner1",
               state: .preEnrollment,
               enrollmentStart: "2025.02.21 10:00",
               enrollmentEnd:   "2025.02.28 16:00"),
-        Event(name: "송하영",
+        Event(name: "홀리쉣",
               location: "서울 올림픽공원",
               dateRange: "2025.04.25",
               bannerImageName: "banner1",
@@ -24,7 +24,7 @@ struct MockEventData {
               enrollmentStart: "2025.02.21 10:00",
               enrollmentEnd:   "2025.02.28 16:00"),
         
-        Event(name: "쵝오",
+        Event(name: "머리아파",
               location: "서울 올림픽공원",
               dateRange: "2025.04.25",
               bannerImageName: "banner1",

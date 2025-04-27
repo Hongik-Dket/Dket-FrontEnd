@@ -27,9 +27,14 @@ struct EventSetupView: View {
     @State private var enrollStart      = Date()
     @State private var enrollEnd        = Date()
     
-    // STEP 3 (나중에 추가)
-    // @State private var bannerImage: UIImage? = nil
-    // …
+    // STEP 3
+    @State private var bannerImage: UIImage?
+    @State private var posterImage: UIImage?
+    @State private var photocardImage: UIImage?
+    
+    // MARK: – 최종 모달 플로우
+    @State private var showModal = false
+    @State private var modalStep = 1   // 1,2,3 단계를 PopupFlowView 에 전달
     
     enum Step { case one, two, three }
     
@@ -66,7 +71,12 @@ struct EventSetupView: View {
                         enrollStart:      $enrollStart,
                         enrollEnd:        $enrollEnd
                     )
-                case .three: ThirdStepView()
+                case .three:
+                    ThirdStepView(
+                        bannerImage: $bannerImage,
+                        posterImage: $posterImage,
+                        photocardImage: $photocardImage
+                    )
                 }
             }
             .padding()
@@ -78,7 +88,7 @@ struct EventSetupView: View {
             HStack(spacing: 12) {
                 if step != .one {
                     Button("이전으로") { back() }
-                        .buttonStyle(PrimaryButtonStyle(filled: false))
+                        .buttonStyle(PrimaryButtonStyle(filled: true))
                         .font(.system(size: 16, weight: .bold))
                 }
                 Button(step == .three ? "개최하기" : "다음으로") { next() }
@@ -90,13 +100,18 @@ struct EventSetupView: View {
         }
         .edgesIgnoringSafeArea(.bottom)
         .navigationBarHidden(true)
+        .sheet(isPresented: $showModal) {
+            PopupFlowView(step: $modalStep, isPresented: $showModal)
+                .presentationDetents([.fraction(0.8)])
+                .presentationDragIndicator(.visible)
+        }
     }
     
     private func next() {
         switch step {
         case .one:   step = .two
         case .two:   step = .three
-        case .three: print("➤ 서버 송신 로직 호출")
+        case .three: print("➤ 서버 송신 로직 호출"); modalStep = 1; showModal = true
         }
     }
     private func back() {
@@ -119,12 +134,10 @@ struct EventSetupView: View {
             && !price.isEmpty
             && !capacity.isEmpty
         case .three:
-            return true
+            return bannerImage != nil && posterImage != nil
         }
     }
 }
-
-
 
 
 
