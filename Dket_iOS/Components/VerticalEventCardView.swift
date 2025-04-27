@@ -9,47 +9,58 @@ import SwiftUI
 
 struct VerticalEventCardView: View {
     let event: Event
+    
+    private let thumbHeight: CGFloat = 216
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(height: 216)
-                .cornerRadius(5)
-                .overlay(
-                    Image(systemName: "photo")
-                        .font(.system(size: 30))
-                        .foregroundColor(.gray)
-                )
+        VStack(alignment: .leading, spacing: 6) {
             
+            // ① 배너 이미지 – iOS15+ AsyncImage
+            AsyncImage(url: event.bannerURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable()
+                        .scaledToFill()
+                default:
+                    // 로딩 / 실패 → 회색 플레이스홀더
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .overlay(
+                            Image(systemName: "photo")
+                                .font(.system(size: 32))
+                                .foregroundColor(.gray)
+                        )
+                }
+            }
+            .frame(height: thumbHeight)
+            .clipped()
+            .cornerRadius(6)
+            
+            // ② 타이틀 + 상태
             HStack {
-                Text(event.name)
+                Text(event.title)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.black)
                 Spacer()
-                Text(labelForState(event.state))
-                    .font(.system(size: 16, weight: .bold))
+                Text(event.status?.label ?? "")
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color(red: 22/255, green: 29/255, blue: 111/255))
             }
             
+            // ③ 장소 / 날짜
             Text(event.location)
                 .font(.system(size: 12))
-                .foregroundColor(.black)
-            
-            Text(event.dateRange)
+            Text(dateRangeString)
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
         }
-        
     }
     
-    private func labelForState(_ state: EventState) -> String {
-        switch state {
-        case .preEnrollment:    return "응모 전"
-        case .enrolling:        return "응모 중"
-        case .enrollmentClosed: return "응모 마감"
-        case .ticketed:         return "예매 완료"
-        case .inProgress:       return "공연 중"
-        case .finished:         return "공연 종료"
-        }
+    // MARK: – Helpers
+    private var dateRangeString: String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy.MM.dd"
+        return "\(fmt.string(from: event.period.lowerBound))"
+        + " ~ "
+        + "\(fmt.string(from: event.period.upperBound))"
     }
 }

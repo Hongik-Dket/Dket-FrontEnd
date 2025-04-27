@@ -11,6 +11,23 @@ struct Event: Identifiable, Equatable {
     let applyPeriod: ClosedRange<Date>?
 }
 
+// 변환 메서드 (DTO → Domain)
+extension Event {
+    init(dto: EventResponse, dateFmt: DateFormatter) {
+        self.id        = dto.eventId
+        self.title     = dto.title
+        self.location  = dto.location
+        self.period    = dateFmt.date(from: dto.startDate)! ... dateFmt.date(from: dto.endDate)!
+        self.bannerURL = URL(string: dto.bannerUrl)!
+        self.status    = EventStatus(rawValue: dto.eventStatus ?? "")
+        if let s = dto.applyStart, let e = dto.applyEnd {
+            self.applyPeriod = dateFmt.date(from: s)! ... dateFmt.date(from: e)!
+        } else {
+            self.applyPeriod = nil
+        }
+    }
+}
+
 //struct Event: Identifiable, Hashable {
 //    let id = UUID()
 //    let name: String
