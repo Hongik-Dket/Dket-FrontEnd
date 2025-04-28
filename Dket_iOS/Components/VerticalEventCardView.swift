@@ -16,7 +16,7 @@ struct VerticalEventCardView: View {
         VStack(alignment: .leading, spacing: 6) {
             
             // ① 배너 이미지 – iOS15+ AsyncImage
-            AsyncImage(url: event.bannerURL) { phase in
+            AsyncImage(url: event.imageUrl) { phase in
                 switch phase {
                 case .success(let image):
                     image.resizable()

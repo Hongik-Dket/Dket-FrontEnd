@@ -13,10 +13,12 @@ struct EventDTO: Decodable {
     let location: String
     let startDate: Date
     let endDate: Date
-    let bannerUrl: URL
+    let imageUrl: URL
     let eventStatus: EventStatus?      // home 에선 nil
-    let applyStart: Date?
-    let applyEnd: Date?
+    
+    enum CodingKeys: String, CodingKey {
+            case eventId, title, location, startDate, endDate, imageUrl, eventStatus
+        }
 }
 
 extension EventDTO {
@@ -25,12 +27,8 @@ extension EventDTO {
               title: title,
               location: location,
               period: startDate ... endDate,
-              bannerURL: bannerUrl,
-              status: eventStatus,
-              applyPeriod: {
-                  guard let s = applyStart, let e = applyEnd else { return nil }
-                  return s ... e
-              }())
+              imageUrl: imageUrl,
+              status: eventStatus)
     }
 }
 

@@ -18,7 +18,7 @@ struct EventCardView: View {
         VStack(alignment: .leading, spacing: 6) {
             
             // ① 썸네일 – 네트워크 이미지
-            AsyncImage(url: event.bannerURL) { phase in
+            AsyncImage(url: event.imageUrl) { phase in
                 switch phase {
                 case .success(let img):
                     img.resizable()
