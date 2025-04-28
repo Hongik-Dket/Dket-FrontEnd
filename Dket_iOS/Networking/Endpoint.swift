@@ -12,6 +12,8 @@ enum Endpoint {
     case organizerToday
     case organizerClosed
     case organizerAll
+    case organizerEventDetail(eventId: Int64)
+    case organizerSession(eventId: Int64, sessionId: Int64)
     
     var path: String {
         switch self {
@@ -19,6 +21,10 @@ enum Endpoint {
         case .organizerToday:  return "/api/organizer/home/today"
         case .organizerClosed: return "/api/organizer/home/closed"
         case .organizerAll:    return "/api/organizer/home/all"
+        case .organizerEventDetail(let id):
+            return "/api/organizer/events/\(id)"
+        case .organizerSession(let eid, let sid):
+            return "/api/organizer/events/\(eid)/\(sid)"
         }
     }
 }
