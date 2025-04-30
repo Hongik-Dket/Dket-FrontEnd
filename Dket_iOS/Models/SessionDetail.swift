@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 struct SessionDetail: Identifiable, Equatable {
     let eventId:   Int64
     let id:        Int64          // == sessionId
@@ -14,3 +15,4 @@ struct SessionDetail: Identifiable, Equatable {
     let paidCount:     Int?
     let attendeeCount: Int?
 }
+

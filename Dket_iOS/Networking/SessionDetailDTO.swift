@@ -8,12 +8,12 @@
 import Foundation
 
 struct SessionDetailDTO: Decodable {
-    let eventId: Int64
-    let sessionId: Int64
-    let date: Date
-    let applyCount: Int
-    let paidCount: Int?
-    let attendeeCount: Int?
+    let eventId:      Int64
+    let sessionId:    Int64
+    let date:         Date        // yyyy-MM-dd
+    let applyCount:   Int
+    let paidCount:    Int?
+    let attendeeCount:Int?
     
     enum CodingKeys: String, CodingKey {
         case eventId, sessionId, date,

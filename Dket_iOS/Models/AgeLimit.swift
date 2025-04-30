@@ -5,7 +5,9 @@
 //  Created by 이지우 on 4/28/25.
 //
 
-enum AgeLimit: String, Decodable {
+import Foundation
+
+enum AgeLimit: String, Codable {
     case all     = "ALL"
     case age12   = "AGE_12"
     case age15   = "AGE_15"

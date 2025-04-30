@@ -14,7 +14,7 @@ struct EventDetailDTO: Decodable {
     let location: String
     let startDate: Date
     let endDate:   Date
-    let startTime: String        // "18:00:00"
+    let startTime: String       
     let endTime:   String
     let ageLimit:  AgeLimit
     let price:     Int
@@ -32,23 +32,21 @@ struct EventDetailDTO: Decodable {
     }
 }
 
+
 extension EventDetailDTO {
     var domain: EventDetail {
-        EventDetail(
-            id: eventId,
-            title: title,
-            posterUrl: posterUrl,
-            location: location,
-            period: startDate ... endDate,
-            startTime: DateFormatter.hhmmss.date(from: startTime)!,
-            endTime:   DateFormatter.hhmmss.date(from: endTime)!,
-            ageLimit:  ageLimit,
-            price:     price,
-            applyStart: applyStart,
-            applyEnd:   applyEnd,
-            capacity:   capacity,
-            status:     eventStatus,
-            sessionIds: sessionIds
-        )
+        .init(id: eventId,
+              title: title,
+              poster: posterUrl,
+              location: location,
+              period: startDate ... endDate,
+              timeRange: (startTime, endTime),
+              ageLimit: ageLimit,
+              price: price,
+              applyPeriod: applyStart ... applyEnd,
+              capacity: capacity,
+              status: eventStatus,
+              sessionIds: sessionIds)
     }
 }
+

@@ -28,4 +28,25 @@ extension DateFormatter {
         f.dateFormat = "HH:mm:ss"
         return f
     }()
+    
+    static let yyyyMMddHHmmss: DateFormatter = {
+            let f = DateFormatter()
+            f.calendar = Calendar(identifier: .iso8601)
+            f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+            return f
+        }()
+    
+    static let HHmm: DateFormatter = {
+            let f = DateFormatter()
+            f.calendar = Calendar(identifier: .iso8601)
+            f.dateFormat = "HH:mm:ss"
+            return f
+        }()
+    
+    static let yyyyMMddTHHmmss: DateFormatter = {
+            let f = DateFormatter()
+            f.calendar = Calendar(identifier: .iso8601)
+            f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+            return f
+        }()
 }

@@ -25,7 +25,7 @@ struct EventListView: View {
             LazyVStack(spacing: 12, pinnedViews: []) {
                 ForEach(events) { event in
                     NavigationLink {
-                        //EventDetailView(event: event)
+                        EventDetailView(eventId: event.id)
                     } label: {
                         VerticalEventCardView(event: event)
                             .padding(.bottom, 10)
