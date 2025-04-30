@@ -37,19 +37,65 @@ struct EventDetailView: View {
     
     @ViewBuilder
     func content(_ d: EventDetail) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                PosterView(url: d.poster)
-                BasicInfoView(detail: d)
-                Divider()
-                SessionPickerView(detail: d)
-                SessionStatSection()
-                Spacer(minLength: 40)
+        ZStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    PosterView(url: d.poster)
+                    BasicInfoView(detail: d)
+                    Divider()
+                    
+                    // ① 응모 전엔 회차 선택 자체를 보여주지 않고 D-day 텍스트만
+                    if d.status == .applyNotOpened {
+                        Text("응모 D-\(Date().daysUntil(d.applyPeriod.lowerBound))일")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        SessionPickerView(detail: d)
+                        Divider()
+                        // ②/③/④/⑤/⑥ 상태별 통계 섹션
+                        SessionStatSection()
+                    }
+                    
+                    Spacer(minLength: 80) // 플로팅 버튼 공간 확보
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
+            
+            // ③ 공연 중인 당일에만 활성화되는 플로팅 버튼
+            if let d = vm.detail, d.status == .inProgress {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: { /* 입장 확인 액션 */ }) {
+                            Label("공연 입장 확인하기", systemImage: "ticket.fill")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: 360, maxHeight: 48)
+                        }
+                        // 배경색을 isTodaySession 으로 분기
+                        .background(
+                            isTodaySession
+                            ? Color(red: 22/255, green: 29/255, blue: 111/255)    // 활성화 시 진한 파랑
+                            : Color.gray.opacity(0.5)                             // 비활성 시 반투명 회색
+                        )
+                        .cornerRadius(24)
+                        .shadow(radius: 4)
+                    }
+                    .disabled(!isTodaySession)
+                    .padding()
+                }
+            }
         }
         .environmentObject(vm)
+    }
+    
+    private var isTodaySession: Bool {
+        guard let s = vm.selectedSession else { return false }
+        let today = Calendar.current.startOfDay(for: Date())
+        let sessionDay = Calendar.current.startOfDay(for: s.date)
+        return today == sessionDay
     }
 }
 
@@ -74,7 +120,7 @@ private struct SessionPickerView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("회차 선택").font(.headline)
+            Text("공연 날짜").font(.headline)
             Picker("Session", selection: $vm.selectedSessionId) {
                 ForEach(detail.sessionIds, id: \.self) { id in
                     SessionLabel(id: id)
@@ -97,25 +143,74 @@ private struct SessionPickerView: View {
 
 private struct BasicInfoView: View {
     let detail: EventDetail
+    
+    // 공연 기간 텍스트
     private var periodText: String {
-        let df = DateFormatter.yyyyMMdd     // ⬅︎ 기존 전역 포맷터 재활용
+        let df = DateFormatter.yyyyDMMDdd     // ⬅︎ 기존 전역 포맷터 재활용
         return "\(df.string(from: detail.period.lowerBound))"
-        + " - "
+        + " ~ "
         + "\(df.string(from: detail.period.upperBound))"
     }
+    
+    // 응모 기간 텍스트
+    private var applyPeriodText: String {
+        let df = DateFormatter.yyyyDMMDdd
+        return "\(df.string(from: detail.applyPeriod.lowerBound))"
+        + " ~ "
+        + "\(df.string(from: detail.applyPeriod.upperBound))"
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
+            // 공연명
             Text(detail.title).font(.title2).bold()
+            
+            // 장소
             Text(detail.location)
                 .font(.callout).foregroundStyle(.secondary)
+            
+            // 기간
             Text(periodText)
+                .font(.system(size: 16))
+            // 시간
             Text("\(detail.timeRange.start) – \(detail.timeRange.end)")
                 .font(.subheadline)
+            
+            Text(detail.ageLimit.label)
+                .font(.footnote)
+            
+            Divider().padding(.vertical, 4)
+            
+            // 응모 기간
             HStack {
-                Text(detail.ageLimit.label)
+                Text("응모 기간")
+                Spacer()
+                Text(applyPeriodText)
+            }
+            .font(.footnote)
+            
+            // 공연 상태
+            HStack {
+                Text("공연 상태")
+                Spacer()
+                Text(detail.status.label)
+            }
+            .font(.footnote)
+            
+            // 관람 인원
+            HStack {
+                Text("관람 인원")
+                Spacer()
+                Text("\(detail.capacity)명")
+            }
+            .font(.footnote)
+            
+            HStack {
+                Text("가격")
                 Spacer()
                 Text("\(detail.price.formatted()) 원")
-            }.font(.footnote)
+            }
+            .font(.footnote)
         }
     }
 }
@@ -124,44 +219,87 @@ private struct SessionStatSection: View {
     @EnvironmentObject private var vm: EventDetailViewModel
     
     var body: some View {
-        Group {
-            if let s = vm.selectedSession {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(s.date.formatted(.dateTime.year().month().day()))
-                        .font(.title3).bold()
+        // detail 과 selectedSession 이 준비되어 있으면
+        if let detail = vm.detail, let s = vm.selectedSession {
+            VStack(alignment: .leading, spacing: 15) {
+                // 회차 날짜
+                Text(s.date.formatted(.dateTime.year().month().day()))
+                    .font(.title3).bold()
+                
+                // 카운트 + 달성률
+                Group {
+                    let (title, count): (String, Int) = {
+                        switch detail.status {
+                        case .applyOpen:      return ("응모자 수",      s.applyCount)
+                        case .applyClosed,
+                                .ticketed:       return ("예매자 수",      s.paidCount ?? 0)
+                        case .inProgress:     return ("입장 완료 수",    s.attendeeCount ?? 0)
+                        case .ended:          return ("관람자 수",      s.attendeeCount ?? 0)
+                        default:              return ("",               0)
+                        }
+                    }()
+                    // 1) StatText: 카운트 뒤에 '명'
                     HStack {
-                        StatBlock(title: "응모", value: s.applyCount)
+                        Text(title)
+                            .font(.caption)
                         Spacer()
-                        StatBlock(title: "예매", value: s.paidCount)
-                        Spacer()
-                        StatBlock(title: "입장", value: s.attendeeCount)
+                        Text("\(count)명")
                     }
-                    .padding()
-                    .background(.gray.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
+                    // 2) 달성률 레이블 + %
+                    if detail.status != .applyNotOpened && detail.status != .ended {
+                        // 달성률 계산
+                        let percent = detail.capacity > 0
+                        ? Double(count) / Double(detail.capacity)
+                        : 0
+                        HStack {
+                            Text(detail.status == .applyOpen
+                                 ? "응모 달성률"
+                                 : "예매 달성률")
+                            .font(.caption)
+                            Spacer()
+                            Text("\(Int(percent * 100))%")
+                                .bold()
+                                .font(.caption)
+                        }
+                        // 3) ProgressView
+                        ProgressView(value: percent)
+                            .progressViewStyle(.linear)
+                    }
                 }
-            } else {
-                ProgressView().frame(maxWidth: .infinity)
+                
             }
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            
+        } else {
+            ProgressView()
+                .frame(maxWidth: .infinity)
         }
     }
     
-    private struct StatBlock: View {
+    private struct StatText: View {
         let title: String
-        let value: Int?
+        let value: Int
         var body: some View {
-            VStack {
+            HStack {
                 Text(title).font(.caption)
-                if let v = value {
-                    Text("\(v)").bold()
-                } else {
-                    Text("-").foregroundStyle(.secondary)
-                }
+                Spacer()
+                Text("\(value)").bold()
             }
         }
     }
 }
 
+extension Date {
+    /// self부터 to까지 남은 일수를 계산합니다.
+    func daysUntil(_ to: Date) -> Int {
+        Calendar.current
+            .dateComponents([.day], from: self, to: to)
+            .day ?? 0
+    }
+}
 
 //private extension EventDetailView {
 //
