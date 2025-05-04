@@ -10,6 +10,7 @@ import SwiftUI
 struct EventSetupView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var step: Step = .one
+    @StateObject private var viewModel = EventSetupViewModel()
     
     // STEP 1
     @State private var title = ""
@@ -35,6 +36,7 @@ struct EventSetupView: View {
     // MARK: – 최종 모달 플로우
     @State private var showModal = false
     @State private var modalStep = 1   // 1,2,3 단계를 PopupFlowView 에 전달
+    @State private var showNotice = false     // 개최 완료 공지
     
     enum Step { case one, two, three }
     
@@ -84,6 +86,16 @@ struct EventSetupView: View {
             
             Spacer()
             
+            if showNotice {
+                Text("🎉 공연이 성공적으로 등록되었습니다!")
+                    .font(.system(size: 16, weight: .medium))
+                    .padding()
+                    .background(Color.green.opacity(0.2))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+            
             // MARK: D) 하단 이전/다음 버튼
             HStack(spacing: 12) {
                 if step != .one {
@@ -101,17 +113,50 @@ struct EventSetupView: View {
         .edgesIgnoringSafeArea(.bottom)
         .navigationBarHidden(true)
         .sheet(isPresented: $showModal) {
-            PopupFlowView(step: $modalStep, isPresented: $showModal)
-                .presentationDetents([.fraction(0.8)])
-                .presentationDragIndicator(.visible)
+            PopupFlowView(step: $modalStep,
+                          isPresented: $showModal) {
+                // 시트 닫힌 뒤 실행
+                withAnimation { showNotice = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    dismiss()
+                }
+            }
         }
+        
+        // 뷰모델 상태 변화를 관찰해서 모달 띄우기
+        .onReceive(viewModel.$state) { state in
+            if case .loaded = state {
+                modalStep = 1
+                showModal = true
+            }
+        }
+        
+        // 뷰모델 에러 메시지 띄우기
+        
     }
     
     private func next() {
         switch step {
         case .one:   step = .two
         case .two:   step = .three
-        case .three: print("➤ 서버 송신 로직 호출"); modalStep = 1; showModal = true
+        case .three: // 로컬 @State → 뷰모델로 복사
+            viewModel.title          = title
+            viewModel.location       = location
+            viewModel.description    = description
+            viewModel.startDate      = performanceStart
+            viewModel.endDate        = performanceEnd
+            viewModel.startTimeText  = DateFormatter.HHmm.string(from: startTime)
+            viewModel.endTimeText    = DateFormatter.HHmm.string(from: endTime)
+            viewModel.price          = Int(price) ?? 0
+            viewModel.capacity       = Int(capacity) ?? 0
+            viewModel.applyStart     = enrollStart
+            viewModel.applyEnd       = enrollEnd
+            viewModel.bannerImageData    = bannerImage?.jpegData(compressionQuality: 0.8)
+            viewModel.posterImageData    = posterImage?.jpegData(compressionQuality: 0.8)
+            viewModel.photocardImageData = photocardImage?.jpegData(compressionQuality: 0.8)
+            // 서버 전송
+            viewModel.createEvent()
+            
         }
     }
     private func back() {

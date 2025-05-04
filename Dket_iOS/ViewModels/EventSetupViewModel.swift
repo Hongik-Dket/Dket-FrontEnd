@@ -36,7 +36,8 @@ final class EventSetupViewModel: ObservableObject {
     
     // 상태
     @Published var state: LoadingState = .idle
-    @Published var alertMessage: String?              // 실패 알림용
+    @Published var alertMessage: String?             // 실패 알림용
+    @Published var isShowingAlert = false
     
     private let api = APIClient.shared
     
@@ -69,6 +70,7 @@ final class EventSetupViewModel: ObservableObject {
     
     // MARK: - 업로드
     func createEvent() {
+        print("▶︎ startTimeText = [\(startTimeText)], endTimeText = [\(endTimeText)]")
         Task {
             do {
                 try validate()
@@ -103,10 +105,12 @@ final class EventSetupViewModel: ObservableObject {
             } catch let e as ValidationError {
                 state = .failed(e)
                 alertMessage = e.localizedDescription
-            } catch {
+                isShowingAlert = true
+              } catch {
                 state = .failed(error)
                 alertMessage = error.localizedDescription
-            }
+                isShowingAlert = true
+              }
         }
     }
 }

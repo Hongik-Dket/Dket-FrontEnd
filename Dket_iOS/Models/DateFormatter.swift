@@ -46,7 +46,7 @@ extension DateFormatter {
     static let HHmm: DateFormatter = {
             let f = DateFormatter()
             f.calendar = Calendar(identifier: .iso8601)
-            f.dateFormat = "HH:mm:ss"
+            f.dateFormat = "HH:mm"
             return f
         }()
     
@@ -56,4 +56,10 @@ extension DateFormatter {
             f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
             return f
         }()
+    
+    static let sessionDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "M/d"
+        return f
+      }()
 }

@@ -33,9 +33,7 @@ final class APIClient {
     /// 제네릭 GET
     func get<T: Decodable>(_ endpoint: Endpoint,
                            as type: T.Type = T.self) async throws -> T {
-        guard let url = URL(string: endpoint.path, relativeTo: baseURL) else {
-            throw NetworkError.invalidURL
-        }
+        let url = baseURL.appendingPathComponent(endpoint.path)
         var req = URLRequest(url: url)
         req.httpMethod = "GET"
         
@@ -63,12 +61,10 @@ extension APIClient {
     func post<Body: Encodable, Resp: Decodable>(
         _ endpoint: Endpoint,
         body: Body,
-        as type: Resp.Type = Resp.self
+        as: Resp.Type = Resp.self
     ) async throws -> Resp {
         
-        guard let url = URL(string: endpoint.path, relativeTo: baseURL) else {
-            throw NetworkError.invalidURL
-        }
+        let url = baseURL.appendingPathComponent(endpoint.path)
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -80,11 +76,11 @@ extension APIClient {
         
         let (data, resp) = try await session.data(for: req)
         
-        #if DEBUG
+#if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
             print("🔵 [POST \(endpoint.path)] Raw-Response ↓↓↓\n\(raw)\n")
         }
-        #endif
+#endif
         
         guard let http = resp as? HTTPURLResponse,
               200..<300 ~= http.statusCode
@@ -102,17 +98,23 @@ extension APIClient {
         json: EventCreateRequestDTO,
         banner: Data, poster: Data, photocard: Data?
     ) async throws -> U {
-        
-        let boundary = "Boundary-\(UUID().uuidString)"
-        guard let url = URL(string: endpoint.path, relativeTo: baseURL) else {
-            throw NetworkError.invalidURL
-        }
-        
+        let url = baseURL.appendingPathComponent(endpoint.path)
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
+        let boundary = "Boundary-\(UUID().uuidString)"
         req.setValue("multipart/form-data; boundary=\(boundary)",
                      forHTTPHeaderField: "Content-Type")
         
+        // —— 여기서 JSONEncoder 세팅 추가 ——
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        // 서버에서 지원하는 포맷으로 날짜를 문자열 직렬화
+        encoder.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddTHHmmss)       // startDate, endDate
+        // applyStart/applyEnd에는 초까지 필요하다면
+        // encoder.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddTHHmmss)
+        
+        let jsonData = try encoder.encode(json)
+        print("▶︎ JSON PART:\n\(String(data: jsonData, encoding: .utf8)!)")
         var body = Data()
         
         // ① JSON 파트
@@ -123,33 +125,44 @@ extension APIClient {
                              boundary: boundary)
         
         // ② 이미지 파트들
-        body.appendMultiPart(field: "bannerImage",
+        body.appendMultiPart(field: "banner",
                              filename: "banner.jpg",
                              mime: "image/jpeg",
                              value: banner,
                              boundary: boundary)
         
-        body.appendMultiPart(field: "posterImage",
+        body.appendMultiPart(field: "poster",
                              filename: "poster.jpg",
                              mime: "image/jpeg",
                              value: poster,
                              boundary: boundary)
         
-        if let pc = photocard {
-            body.appendMultiPart(field: "photocardImage",
-                                 filename: "photocard.jpg",
-                                 mime: "image/jpeg",
-                                 value: pc,
-                                 boundary: boundary)
-        }
+        // photocardList 파트: 이미지가 있으면 실제 파일, 없으면 빈 파트
+        let pcData = photocard ?? Data()  
+            body.appendMultiPart(
+                field:    "photocardList",
+                filename: "photocard.jpg",
+                mime:     "image/jpeg",
+                value:    pcData,
+                boundary: boundary
+            )
+        
         
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
-        req.httpBody = body
+        
+        print("-- REQUEST TO \(url.absoluteString) --")
+        if let txt = String(data: body, encoding: .utf8) {
+            print(txt)
+        }
         
         let (data, resp) = try await session.upload(for: req, from: body)
         guard let http = resp as? HTTPURLResponse,
-              200..<300 ~= http.statusCode else {
-            throw NetworkError.invalidURL
+              200..<300 ~= http.statusCode
+        else {
+            if let err = String(data: data, encoding: .utf8) {
+                print("🔴 SERVER ERROR BODY:\n\(err)")
+            }
+            throw NetworkError.status((resp as? HTTPURLResponse)?.statusCode ?? -1)
         }
         return try JSONDecoder().decode(U.self, from: data)
     }
@@ -164,13 +177,20 @@ private extension Data {
                                   boundary: String) {
         
         append("--\(boundary)\r\n".data(using: .utf8)!)
-        if let filename {
-            append("Content-Disposition: form-data; name=\"\(field)\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
-            append("Content-Type: \(mime)\r\n\r\n".data(using: .utf8)!)
-        } else {
-            append("Content-Disposition: form-data; name=\"\(field)\"\r\n\r\n".data(using: .utf8)!)
+        var disposition = "Content-Disposition: form-data; name=\"\(field)\""
+        if let fn = filename {
+            disposition += "; filename=\"\(fn)\""
         }
+        disposition += "\r\n"
+        append(disposition.data(using: .utf8)!)
+        
+        // 3) Content-Type (파일이든 JSON이든 반드시)
+        append("Content-Type: \(mime)\r\n\r\n".data(using: .utf8)!)
+        
+        // 4) 실제 데이터
         append(value)
+        
+        // 5) 파트 구분
         append("\r\n".data(using: .utf8)!)
     }
 }

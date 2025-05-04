@@ -87,6 +87,17 @@ struct EventDetailView: View {
                     .padding()
                 }
             }
+            
+            if d.status == .ended {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                
+                Image("EndedEvent")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                    .opacity(0.8)
+            }
         }
         .environmentObject(vm)
     }
@@ -133,8 +144,8 @@ private struct SessionPickerView: View {
     
     @ViewBuilder
     private func SessionLabel(id: Int64) -> some View {
-        if let s = vm.sessionCache[id] {
-            Text(s.date.formatted(.dateTime.year().month().day()))
+        if let session = vm.sessionCache[id] {
+            Text(DateFormatter.sessionDateFormatter.string(from: session.date))
         } else {
             Text("세션 \(id)")
         }
@@ -194,6 +205,8 @@ private struct BasicInfoView: View {
                 Text("공연 상태")
                 Spacer()
                 Text(detail.status.label)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color(red: 22/255, green: 29/255, blue: 111/255))
             }
             .font(.footnote)
             

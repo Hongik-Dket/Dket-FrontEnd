@@ -9,6 +9,7 @@ import SwiftUI
 struct PopupFlowView: View {
     @Binding var step: Int
     @Binding var isPresented: Bool
+    let onComplete: () -> Void
 
     var body: some View {
         VStack(spacing: 20) {
@@ -41,6 +42,7 @@ struct PopupFlowView: View {
                     step += 1
                 } else {
                     isPresented = false
+                    onComplete()
                 }
             }) {
                 Text(step == 1
