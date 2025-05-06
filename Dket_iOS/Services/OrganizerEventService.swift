@@ -12,6 +12,11 @@ protocol OrganizerEventServicing {
     func fetchSession(eventId: Int64, sessionId: Int64) async throws -> SessionDetail
     func createEvent(_ req: EventCreateRequestDTO) async throws -> Int64
     
+    func verifyTicket(
+        eventId: Int64,
+        ticketId: String
+    ) async throws -> TicketDetail
+    
 }
 
 struct OrganizerEventService: OrganizerEventServicing {
@@ -32,10 +37,21 @@ struct OrganizerEventService: OrganizerEventServicing {
     
     func createEvent(_ req: EventCreateRequestDTO) async throws -> Int64 {
         let wrapper = try await api.post(.organizerCreateEvent,
-                                             body: req,
-                                             as: CreateEventResponseDTO.self)
-            return wrapper.result.eventId
-        }
+                                         body: req,
+                                         as: CreateEventResponseDTO.self)
+        return wrapper.result.eventId
+    }
+    
+    func verifyTicket(
+        eventId: Int64,
+        ticketId: String
+    ) async throws -> TicketDetail {
+        let wrapper: APIResponse<TicketDetailDTO> = try await api.get(
+            .organizerTicket(eventId: eventId, ticketId: ticketId),
+            as: APIResponse<TicketDetailDTO>.self
+        )
+        return wrapper.result.domain
+    }
     
 }
 

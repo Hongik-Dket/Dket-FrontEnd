@@ -15,6 +15,7 @@ enum Endpoint {
     case organizerEventDetail(eventId: Int64)
     case organizerSession(eventId: Int64, sessionId: Int64)
     case organizerCreateEvent
+    case organizerTicket(eventId: Int64, ticketId: String)
     
     var path: String {
         switch self {
@@ -27,13 +28,18 @@ enum Endpoint {
         case .organizerSession(let eid, let sid):
             return "/api/organizer/events/\(eid)/\(sid)"
         case .organizerCreateEvent: return "/api/organizer/events"
+        case .organizerTicket(let eid, let tid):
+            return "/api/organizer/events/\(eid)/\(tid)"
         }
     }
+    
     
     var method: String {
         switch self {
         case .organizerCreateEvent: return "POST"
+        case .organizerTicket:  return "GET"
         default:          return "GET"
         }
     }
 }
+

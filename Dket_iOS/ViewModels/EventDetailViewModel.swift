@@ -18,13 +18,20 @@ final class EventDetailViewModel: ObservableObject {
     @Published var selectedSessionId: Int64? {
         didSet { Task { await loadSessionIfNeeded() } }
     }
-
+    @Published private(set) var verificationState: VerificationState = .idle
+    
+    // 티켓 검증 상태
+    enum VerificationState: Equatable {
+            case idle
+            case verifying
+            case success(message: String)
+            case failure(error: String)
+        }
     // MARK: - Dependency
     private let service: OrganizerEventServicing
     private let eventId: Int64
 
     
-
     // MARK: - Init
     init(eventId: Int64,
          service: OrganizerEventServicing = OrganizerEventService()) {
@@ -72,4 +79,29 @@ final class EventDetailViewModel: ObservableObject {
             print("❌ Session Detail Error:", error)
         }
     }
+    
+    // MARK: - Public: 티켓 검증 호출
+        func verifyTicket(with code: String) {
+            Task {
+                verificationState = .verifying
+                do {
+                    // 가장 먼저 선택된 세션 ID
+                    let sid = selectedSession?.id
+                           ?? selectedSessionId
+                           ?? (detail?.sessionIds.first ?? 0)
+                    // 서버 호출 (프로토콜에 verifyTicket 추가되어 있어야 합니다)
+                    let message = try await service.verifyTicket(
+                        eventId: eventId,
+                        ticketId: code
+                    )
+                    let msg = "좌석 번 입장 처리되었습니다."
+                                    verificationState = .success(message: msg)
+                                } catch {
+                                    verificationState = .failure(error: error.localizedDescription)
+                                }
+            }
+        }
 }
+
+
+

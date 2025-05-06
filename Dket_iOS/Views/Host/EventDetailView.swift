@@ -3,9 +3,17 @@ import SwiftUI
 struct EventDetailView: View {
     // MARK: – DI
     private let eventId: Int64
+    // ① 스캐너 & 수동 입력 시트 플래그
+    @State private var showScanner = false
+    @State private var showTicketNumberEntry = false
     
     // MARK: – VM
     @StateObject private var vm: EventDetailViewModel
+    
+    // 티켓 검증 알럿 바인딩
+    @State private var showVerifyAlert = false
+    @State private var verifyTitle = ""
+    @State private var verifyMessage = ""
     
     // 외부에서 eventId 만 넘기면 뷰-모델을 알아서 만들도록 편의 init 제공
     @MainActor
@@ -33,6 +41,39 @@ struct EventDetailView: View {
         }
         .navigationTitle("공연 상세")
         .navigationBarTitleDisplayMode(.inline)
+        // ② QR 스캐너 풀스크린 커버
+        .fullScreenCover(isPresented: $showScanner) {
+            QRScannerContainerView(
+                onScan: { code in
+                    showScanner = false
+                    vm.verifyTicket(with: code)
+                },
+                onManualTap: {
+                    showTicketNumberEntry = true
+                }
+            )
+        }
+       
+        // 검증 상태 변화 감지해서 Alert 띄우기
+        .onChange(of: vm.verificationState) { state in
+            switch state {
+            case .idle, .verifying:
+                break
+            case .success(let message):
+                verifyTitle = "입장 확인 완료"
+                verifyMessage = message
+                showVerifyAlert = true
+            case .failure(let error):
+                verifyTitle = "입장 확인 실패"
+                verifyMessage = error
+                showVerifyAlert = true
+            }
+        }
+        .alert(verifyTitle, isPresented: $showVerifyAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text(verifyMessage)
+        }
     }
     
     @ViewBuilder
@@ -68,7 +109,7 @@ struct EventDetailView: View {
                     Spacer()
                     HStack {
                         Spacer()
-                        Button(action: { /* 입장 확인 액션 */ }) {
+                        Button(action: { showScanner = true }) {
                             Label("공연 입장 확인하기", systemImage: "ticket.fill")
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.white)
