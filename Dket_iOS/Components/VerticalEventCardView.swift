@@ -32,7 +32,7 @@ struct VerticalEventCardView: View {
                         )
                 }
             }
-            .frame(height: thumbHeight)
+            .frame(maxWidth: .infinity, minHeight: thumbHeight)
             .clipped()
             .cornerRadius(6)
             

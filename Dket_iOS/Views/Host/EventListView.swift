@@ -7,36 +7,60 @@
 
 import SwiftUI
 
-/// “전체 보기” 를 담당하는 공통 리스트 뷰
-///
-/// - title  : 내비게이션 제목으로 사용
-/// - events : 이미 로드된 Domain 모델 배열
 struct EventListView: View {
-    
-    // MARK: – public inits
-    let title: String
-    let events: [Event]
-    
-    // 뒤로가기 제어용
+    // 어떤 리스트인지 구분
+    let type: ListingType
+
+    @StateObject private var vm: EventListViewModel
     @Environment(\.dismiss) private var dismiss
-    
+    @State private var didLoad = false        // load() 1회만 호출
+
+    // ViewModel 주입
+    init(type: ListingType) {
+        self.type = type
+        _vm = StateObject(wrappedValue: EventListViewModel(type: type))
+    }
+
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 12, pinnedViews: []) {
-                ForEach(events) { event in
-                    NavigationLink {
-                        EventDetailView(eventId: event.id)
-                    } label: {
-                        VerticalEventCardView(event: event)
-                            .padding(.bottom, 10)
+        Group {
+            switch vm.state {
+            case .idle, .loading:
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            case .failed(let error):
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.largeTitle)
+                        .foregroundColor(.orange)
+                    Text("불러오기 실패")
+                        .font(.headline)
+                    Text(error.localizedDescription)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            case .loaded:
+                // ⬇︎ 두 번째 예시와 동일한 레이아웃
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 12, pinnedViews: []) {
+                        ForEach(vm.events) { event in
+                            NavigationLink {
+                                EventDetailView(eventId: event.id)
+                            } label: {
+                                VerticalEventCardView(event: event)
+                                    .padding(.bottom, 10)   // 동일한 패딩
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
-                    .buttonStyle(.plain)      // 카드 눌림 효과 제거
+                    .padding(.horizontal)
+                    .padding(.top, 30)
                 }
             }
-            .padding(.horizontal)
-            .padding(.top, 30)
         }
-        .navigationTitle(title)              // ← 전달 받은 제목 사용
+        .navigationTitle(type.defaultTitle)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -46,6 +70,13 @@ struct EventListView: View {
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.black)
                 }
+            }
+        }
+        // ❗️ onAppear에서 한 번만 로드
+        .onAppear {
+            if !didLoad {
+                didLoad = true
+                vm.load()
             }
         }
     }

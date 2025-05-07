@@ -17,77 +17,79 @@ struct SecondStepView: View {
     @Binding var enrollStart: Date
     @Binding var enrollEnd: Date
 
-    // 레이블 고정 너비
-    private let labelWidth: CGFloat = 80
-
     var body: some View {
-        VStack(alignment: .leading ,spacing: 35) {
-            // 공연기간
-            HStack(alignment: .center) {
-                Text("공연기간")
-                    .frame(width: 80, alignment: .leading)
-                    .font(.system(size: 16, weight: .bold))
+        // 1) ScrollView로 감싸서 전체 화면을 터치 영역으로 확보
+        ScrollView {
+            VStack(alignment: .leading, spacing: 35) {
+                // 공연기간
+                HStack {
+                    Text("공연기간")
+                        .frame(width: 80, alignment: .leading)
+                        .font(.system(size: 16, weight: .bold))
 
-                DatePicker("", selection: $performanceStart, displayedComponents: .date)
-                    .datePickerStyle(.compact)
-                Text("~")
-                DatePicker("", selection: $performanceEnd, displayedComponents: .date)
-                    .datePickerStyle(.compact)
+                    DatePicker("", selection: $performanceStart, displayedComponents: .date)
+                        .datePickerStyle(.compact)
+                    Text("~")
+                    DatePicker("", selection: $performanceEnd, displayedComponents: .date)
+                        .datePickerStyle(.compact)
+                }
+
+                // 공연시간
+                HStack {
+                    Text("공연시간")
+                        .frame(width: 80, alignment: .leading)
+                        .font(.system(size: 16, weight: .bold))
+
+                    DatePicker("", selection: $startTime, displayedComponents: .hourAndMinute)
+                        .datePickerStyle(.compact)
+                    Text("~")
+                    DatePicker("", selection: $endTime, displayedComponents: .hourAndMinute)
+                        .datePickerStyle(.compact)
+                }
+
+                // 가격
+                HStack {
+                    Text("가격")
+                        .frame(width: 80, alignment: .leading)
+                        .font(.system(size: 16, weight: .bold))
+
+                    TextField("0", text: $price)
+                        .keyboardType(.numberPad)
+                        .textFieldStyle(UnderlineTextFieldStyle())
+                    Text("원")
+                        .font(.system(size: 16))
+                }
+
+                // 관람인원
+                HStack {
+                    Text("관람인원")
+                        .frame(width: 80, alignment: .leading)
+                        .font(.system(size: 16, weight: .bold))
+
+                    TextField("0", text: $capacity)
+                        .keyboardType(.numberPad)
+                        .textFieldStyle(UnderlineTextFieldStyle())
+                    Text("명")
+                        .font(.system(size: 16))
+                }
+
+                // 응모기간
+                HStack {
+                    Text("응모기간")
+                        .frame(width: 80, alignment: .leading)
+                        .font(.system(size: 16, weight: .bold))
+
+                    DatePicker("", selection: $enrollStart, displayedComponents: .date)
+                        .datePickerStyle(.compact)
+                    Text("~")
+                    DatePicker("", selection: $enrollEnd, displayedComponents: .date)
+                        .datePickerStyle(.compact)
+                }
             }
-
-            // 공연시간
-            HStack(alignment: .center) {
-                Text("공연시간")
-                    .frame(width: 80, alignment: .leading)
-                    .font(.system(size: 16, weight: .bold))
-
-                DatePicker("", selection: $startTime, displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.compact)
-                Text("~")
-                DatePicker("", selection: $endTime, displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.compact)
-            }
-
-            // 가격
-            HStack(alignment: .center) {
-                Text("가격")
-                    .frame(width: 80, alignment: .leading)
-                    .font(.system(size: 16, weight: .bold))
-
-                TextField("0", text: $price)
-                    .keyboardType(.numberPad)
-                    .textFieldStyle(UnderlineTextFieldStyle())
-                Text("원")
-                    .font(.system(size: 16))
-            }
-
-            // 관람인원
-            HStack(alignment: .center) {
-                Text("관람인원")
-                    .frame(width: 80, alignment: .leading)
-                    .font(.system(size: 16, weight: .bold))
-
-                TextField("0", text: $capacity)
-                    .keyboardType(.numberPad)
-                    .textFieldStyle(UnderlineTextFieldStyle())
-                Text("명")
-                    .font(.system(size: 16))
-            }
-
-            // 응모기간
-            HStack(alignment: .center) {
-                Text("응모기간")
-                    .frame(width: 80, alignment: .leading)
-                    .font(.system(size: 16, weight: .bold))
-
-                DatePicker("", selection: $enrollStart, displayedComponents: .date)
-                    .datePickerStyle(.compact)
-                Text("~")
-                DatePicker("", selection: $enrollEnd, displayedComponents: .date)
-                    .datePickerStyle(.compact)
-            }
+            .padding(.horizontal, 30)
+            .padding(.vertical, 20) 
+            .hideKeyboardOnTap()
         }
-        .padding(.horizontal, 30)
     }
 }
 

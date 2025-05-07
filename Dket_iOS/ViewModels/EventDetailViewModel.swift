@@ -46,20 +46,35 @@ final class EventDetailViewModel: ObservableObject {
 
     // MARK: - Private
     private func loadDetail() async {
-        state = .loading
-        do {
-            let d = try await service.fetchDetail(eventId: eventId)
-            detail = d
-            state  = .loaded
+            state = .loading
+            do {
+                // 1) 이벤트 상세 가져오기
+                let d = try await service.fetchDetail(eventId: eventId)
 
-            // 첫 번째 회차 자동 선택
-            if let first = d.sessionIds.first {
-                selectedSessionId = first            // ← didSet 트리거
+                // 2) 각 세션별로 병렬(또는 순차)로 상세 가져오기
+                var newCache: [Int64: SessionDetail] = [:]
+                for sid in d.sessionIds {
+                    let s = try await service.fetchSession(
+                        eventId: eventId,
+                        sessionId: sid
+                    )
+                    newCache[sid] = s
+                }
+
+                // 3) UI 업데이트
+                detail = d
+                sessionCache = newCache
+                state = .loaded
+
+                // 4) 첫 번째 회차 자동 선택 & selectedSession 세팅
+                if let first = d.sessionIds.first {
+                    selectedSessionId = first
+                    selectedSession   = newCache[first]
+                }
+            } catch {
+                state = .failed(error)
             }
-        } catch {
-            state = .failed(error)
         }
-    }
 
     private func loadSessionIfNeeded() async {
         guard let sid = selectedSessionId else { return }

@@ -49,6 +49,7 @@ struct QRScannerContainerView: View {
                 .background(Color(red: 22/255, green: 29/255, blue: 111/255))
                 .cornerRadius(24)
                 .shadow(radius: 4)
+                .padding(.bottom, 20)
             }
         }
     }

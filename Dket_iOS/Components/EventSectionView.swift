@@ -25,11 +25,16 @@ struct EventSectionView<Destination: View>: View {
                 }
             }
             .padding(.horizontal)
-            
+
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 10) {
                     ForEach(events) { event in
-                        EventCardView(event: event)
+                        NavigationLink {
+                            EventDetailView(eventId: event.id)
+                        } label: {
+                            EventCardView(event: event)
+                        }
+                        .buttonStyle(.plain) // 눌렀을 때 기본 호버/색 변하는 걸 제거
                     }
                 }
                 .padding(.horizontal)

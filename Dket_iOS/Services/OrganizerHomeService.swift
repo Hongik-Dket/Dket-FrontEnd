@@ -34,11 +34,23 @@ struct OrganizerHomeService: OrganizerHomeServicing {
     
     func fetchAll() async throws -> [Event] {
         let dto = try await api.get(.organizerAll, as: APIResponse<AllResultDTO>.self)
-        return dto.result.todayEvents.map { $0.domain }   // 서버 spec 에 맞춰 수정
+        return dto.result.allEvents.map { $0.domain }   // 서버 spec 에 맞춰 수정
     }
 }
 
-/* 오늘 / closed / all 결과용 DTO 래퍼 */
-private struct TodayResultDTO : Decodable { let todayEvents: [EventDTO] }
-private struct ClosedResultDTO: Decodable { let recentlyClosedApplyEvents: [EventDTO] }
-private struct AllResultDTO   : Decodable { let todayEvents: [EventDTO] } // 예시
+private struct TodayResultDTO : Decodable {
+    let eventCardList: [EventDTO]
+    // 편의를 위해 domain 변환용 프로퍼티 추가
+    var todayEvents: [EventDTO] { eventCardList }
+}
+private struct ClosedResultDTO: Decodable {
+    let eventCardList: [EventDTO]
+    // 편의를 위해 domain 변환용 프로퍼티 추가
+    var recentlyClosedApplyEvents: [EventDTO] { eventCardList }
+}
+private struct AllResultDTO   : Decodable {
+    let eventCardList: [EventDTO]
+        
+        // 편의를 위해 domain 변환용 프로퍼티 추가
+        var allEvents: [EventDTO] { eventCardList }
+}

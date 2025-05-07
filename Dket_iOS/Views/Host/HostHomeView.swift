@@ -39,25 +39,23 @@ struct HostHomeView: View {
                         case .loaded:
                             if let bundle = vm.home {
                                 EventSectionView(
-                                    title: "오늘 공연",
-                                    events: bundle.today,
-                                    destination: EventListView(
-                                        title: "오늘 공연",
-                                        events: bundle.today)
+                                  title: "오늘 공연",
+                                  events: bundle.today,
+                                  destination: EventListView(type: .today)
                                 )
+
+                                // 최근 응모 마감 공연
                                 EventSectionView(
-                                    title: "최근 응모 마감 공연",
-                                    events: bundle.recentlyClosed,
-                                    destination: EventListView(
-                                        title: "최근 응모 마감 공연",
-                                        events: bundle.recentlyClosed)
+                                  title: "최근 응모 마감 공연",
+                                  events: bundle.recentlyClosed,
+                                  destination: EventListView(type: .closed)
                                 )
+
+                                // 전체(개최한) 공연
                                 EventSectionView(
-                                    title: "개최한 공연",
-                                    events: bundle.all,
-                                    destination: EventListView(
-                                        title: "개최한 공연",
-                                        events: bundle.all)
+                                  title: "개최한 공연",
+                                  events: bundle.all,
+                                  destination: EventListView(type: .all)
                                 )
                             }
                         }

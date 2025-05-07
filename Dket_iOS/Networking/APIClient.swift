@@ -11,7 +11,8 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
     
-    private let baseURL = URL(string: "http://127.0.0.1:8080")!   //서버 이름
+    //192.168.0.16
+    private let baseURL = URL(string: "http://192.168.0.16:8080")!   //서버 이름
     private let session = URLSession.shared
     
     // 👉 한곳에서만 날짜 포맷을 판단하도록 공용 decoder 제공

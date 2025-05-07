@@ -3,6 +3,8 @@ import SwiftUI
 struct EventDetailView: View {
     // MARK: – DI
     private let eventId: Int64
+    @Environment(\.dismiss) private var dismiss
+    
     // ① 스캐너 & 수동 입력 시트 플래그
     @State private var showScanner = false
     @State private var showTicketNumberEntry = false
@@ -41,6 +43,16 @@ struct EventDetailView: View {
         }
         .navigationTitle("공연 상세")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+                .toolbar {                                  
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(.black)
+                        }
+                    }
+                }
         // ② QR 스캐너 풀스크린 커버
         .fullScreenCover(isPresented: $showScanner) {
             QRScannerContainerView(
