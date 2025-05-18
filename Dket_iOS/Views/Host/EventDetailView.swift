@@ -236,8 +236,12 @@ private struct BasicInfoView: View {
             // 기간
             Text(periodText)
                 .font(.system(size: 16))
+            
             // 시간
-            Text("\(detail.timeRange.start) – \(detail.timeRange.end)")
+            let startTime = DateFormatter.hhmmss.date(from: detail.timeRange.start) ?? Date()
+            let endTime = DateFormatter.hhmmss.date(from: detail.timeRange.end) ?? Date()
+
+            Text("\(DateFormatter.HHmm.string(from: startTime)) ~ \(DateFormatter.HHmm.string(from: endTime))")
                 .font(.subheadline)
             
             Text(detail.ageLimit.label)
