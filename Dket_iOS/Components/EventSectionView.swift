@@ -10,7 +10,7 @@ import SwiftUI
 /// 가로 스크롤 섹션 재사용 뷰
 struct EventSectionView<Destination: View>: View {
     let title: String
-    let events: [Event]          // ← Domain  모델
+    let events: [Event]
     let destination: Destination // 전체 보기 페이지
     
     var body: some View {
@@ -34,7 +34,7 @@ struct EventSectionView<Destination: View>: View {
                         } label: {
                             EventCardView(event: event)
                         }
-                        .buttonStyle(.plain) // 눌렀을 때 기본 호버/색 변하는 걸 제거
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal)

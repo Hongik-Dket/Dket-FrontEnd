@@ -149,7 +149,7 @@ struct EventDetailView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 200, height: 200)
-                    .opacity(0.8)
+                    .opacity(0.9)
             }
         }
         .environmentObject(vm)

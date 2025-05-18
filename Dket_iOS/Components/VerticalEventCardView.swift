@@ -15,14 +15,26 @@ struct VerticalEventCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             
-            // ① 배너 이미지 – iOS15+ AsyncImage
+            //배너 이미지 – iOS15+ AsyncImage
             AsyncImage(url: event.imageUrl) { phase in
                 switch phase {
                 case .success(let image):
                     image.resizable()
                         .scaledToFill()
+                        .overlay(
+                            Group {
+                                if event.status == .ended {
+                                    ZStack {
+                                        Color.gray.opacity(0.5)
+                                        Image("EndedEvent")  
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 200)
+                                    }
+                                }
+                            }
+                        )
                 default:
-                    // 로딩 / 실패 → 회색 플레이스홀더
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
                         .overlay(
@@ -36,7 +48,7 @@ struct VerticalEventCardView: View {
             .clipped()
             .cornerRadius(6)
             
-            // ② 타이틀 + 상태
+            // 타이틀 + 상태
             HStack {
                 Text(event.title)
                     .font(.system(size: 16, weight: .bold))
@@ -46,7 +58,7 @@ struct VerticalEventCardView: View {
                     .foregroundColor(Color(red: 22/255, green: 29/255, blue: 111/255))
             }
             
-            // ③ 장소 / 날짜
+            // 장소 / 날짜
             Text(event.location)
                 .font(.system(size: 12))
             Text(dateRangeString)

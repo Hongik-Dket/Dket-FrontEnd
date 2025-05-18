@@ -17,14 +17,25 @@ struct EventCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             
-            // ① 썸네일 – 네트워크 이미지
+            // 썸네일 – 네트워크 이미지
             AsyncImage(url: event.imageUrl) { phase in
                 switch phase {
                 case .success(let img):
                     img.resizable()
-                       .scaledToFill()
+                        .scaledToFill()
+                        .overlay(
+                            Group {
+                                if event.status == .ended {
+                                    ZStack {
+                                        Color.gray.opacity(0.5)
+                                        Image("EndedEvent")  
+                                            .resizable()
+                                            .scaledToFit()
+                                    }
+                                }
+                            }
+                        )
                 default:
-                    // 로딩·실패 공통 플레이스홀더
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
                         .overlay(
