@@ -74,16 +74,31 @@ struct SecondStepView: View {
                 }
 
                 // 응모기간
-                HStack {
-                    Text("응모기간")
-                        .frame(width: 80, alignment: .leading)
-                        .font(.system(size: 16, weight: .bold))
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 12) {
+                        Text("응모기간")
+                            .frame(width: 80, alignment: .leading)
+                            .font(.system(size: 16, weight: .bold))
 
-                    DatePicker("", selection: $enrollStart, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                    Text("~")
-                    DatePicker("", selection: $enrollEnd, displayedComponents: .date)
-                        .datePickerStyle(.compact)
+                        HStack(spacing: 6) {
+                            DatePicker("", selection: $enrollStart, displayedComponents: .date)
+                                .datePickerStyle(.compact)
+                            DatePicker("", selection: $enrollStart, displayedComponents: .hourAndMinute)
+                                .datePickerStyle(.compact)
+                        }
+                    }
+
+                    HStack(spacing: 12) {
+                        Text("") // 정렬용 빈칸
+                            .frame(width: 80)
+
+                        HStack(spacing: 6) {
+                            DatePicker("", selection: $enrollEnd, displayedComponents: .date)
+                                .datePickerStyle(.compact)
+                            DatePicker("", selection: $enrollEnd, displayedComponents: .hourAndMinute)
+                                .datePickerStyle(.compact)
+                        }
+                    }
                 }
             }
             .padding(.horizontal, 30)
