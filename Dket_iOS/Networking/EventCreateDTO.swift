@@ -1,0 +1,56 @@
+//
+//  EventCreateRequestDTO.swift
+//  Dket_iOS
+//
+//  Created by 이지우 on 4/30/25.
+//
+
+import Foundation
+
+struct EventCreateRequestDTO: Encodable {
+    let title:       String
+    let location:    String
+    let description: String
+    let startDate:   Date            // yyyy-MM-dd
+    let endDate:     Date
+    let startTime:   String          // HH:mm:ss
+    let endTime:     String
+    let price:       Int
+    let capacity:    Int
+    let applyStart:  Date            // yyyy-MM-dd'T'HH:mm:ss
+    let applyEnd:    Date
+    let ageLimit:    AgeLimit
+    
+    enum CodingKeys: String, CodingKey {
+        case title, location, description,
+             startDate, endDate, startTime, endTime,
+             price, capacity, applyStart, applyEnd, ageLimit
+    }
+    
+    // 날짜 둘을 서로 다른 포맷으로 보내야 하므로 직접 encode(to:)
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(title,        forKey: .title)
+        try c.encode(location,     forKey: .location)
+        try c.encode(description,  forKey: .description)
+        try c.encode(startTime,    forKey: .startTime)
+        try c.encode(endTime,      forKey: .endTime)
+        try c.encode(price,        forKey: .price)
+        try c.encode(capacity,     forKey: .capacity)
+        try c.encode(ageLimit,     forKey: .ageLimit)
+        
+        // 날짜 포맷
+        try c.encode(DateFormatter.yyyyMMdd.string(from: startDate), forKey: .startDate)
+        try c.encode(DateFormatter.yyyyMMdd.string(from: endDate),   forKey: .endDate)
+        try c.encode(DateFormatter.yyyyMMddHHmm.string(from: applyStart), forKey: .applyStart)
+        try c.encode(DateFormatter.yyyyMMddHHmm.string(from: applyEnd),   forKey: .applyEnd)
+    }
+}
+
+
+struct EventCreateResponseDTO: Decodable {
+    let eventId: Int64
+}
+
+typealias CreateEventResponseDTO = APIResponse<EventCreateResponseDTO>
+

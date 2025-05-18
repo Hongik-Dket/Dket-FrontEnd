@@ -10,36 +10,71 @@ import SwiftUI
 
 struct EventCardView: View {
     let event: Event
+    
+    // MARK: View-Constants
+    private let thumbSize = CGSize(width: 140, height: 170)
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 140, height: 170)
-                .overlay(
-                    Image(systemName: "photo")
-                        .font(.system(size: 30))
-                        .foregroundColor(.gray)
-                )
-                .cornerRadius(5)
-
+        VStack(alignment: .leading, spacing: 6) {
+            
+            // 썸네일 – 네트워크 이미지
+            AsyncImage(url: event.imageUrl) { phase in
+                switch phase {
+                case .success(let img):
+                    img.resizable()
+                        .scaledToFill()
+                        .overlay(
+                            Group {
+                                if event.status == .ended {
+                                    ZStack {
+                                        Color.gray.opacity(0.5)
+                                        Image("EndedEvent")  
+                                            .resizable()
+                                            .scaledToFit()
+                                    }
+                                }
+                            }
+                        )
+                default:
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .overlay(
+                            Image(systemName: "photo")
+                                .font(.system(size: 28))
+                                .foregroundColor(.gray)
+                        )
+                }
+            }
+            .frame(width: thumbSize.width, height: thumbSize.height)
+            .clipped()
+            .cornerRadius(6)
+            
+            // ② 텍스트 정보
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.name)
+                Text(event.title)                 // 공연명
                     .font(.system(size: 12, weight: .bold))
                     .lineLimit(1)
-
-                Text(event.location)
+                
+                Text(event.location)              // 장소
                     .font(.system(size: 10))
+                    .foregroundColor(.primary)
                     .lineLimit(1)
-                    .foregroundColor(.black)
-
-                Text(event.dateRange)
+                
+                Text(dateRangeString)             // 기간
                     .font(.system(size: 10))
-                    .lineLimit(1)
                     .foregroundColor(.gray)
             }
             .padding(.horizontal, 4)
         }
-        .frame(width: 140)
+        .frame(width: thumbSize.width)
+    }
+    
+    // MARK: Helper (날짜범위 → “yyyy.MM.dd ~ …”)
+    private var dateRangeString: String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy.MM.dd"
+        return "\(fmt.string(from: event.period.lowerBound))"
+             + " ~ "
+             + "\(fmt.string(from: event.period.upperBound))"
     }
 }
-
