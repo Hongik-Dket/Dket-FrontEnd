@@ -113,14 +113,17 @@ struct EventSetupView: View {
         .edgesIgnoringSafeArea(.bottom)
         .navigationBarHidden(true)
         .sheet(isPresented: $showModal) {
-            PopupFlowView(step: $modalStep,
-                          isPresented: $showModal) {
-                // 시트 닫힌 뒤 실행
-                withAnimation { showNotice = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    dismiss()
-                }
-            }
+            PopupFlowView(
+                step: $modalStep,
+                isPresented: $showModal,
+                onComplete: {
+                    withAnimation { showNotice = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        dismiss()
+                    }
+                },
+                viewModel: viewModel
+            )
         }
         
         // 뷰모델 상태 변화를 관찰해서 모달 띄우기
@@ -130,9 +133,6 @@ struct EventSetupView: View {
                 showModal = true
             }
         }
-        
-        // 뷰모델 에러 메시지 띄우기
-        
     }
     
     private func next() {
@@ -154,9 +154,9 @@ struct EventSetupView: View {
             viewModel.bannerImageData    = bannerImage?.jpegData(compressionQuality: 0.8)
             viewModel.posterImageData    = posterImage?.jpegData(compressionQuality: 0.8)
             viewModel.photocardImageData = photocardImage?.jpegData(compressionQuality: 0.8)
-            // 서버 전송
-            viewModel.createEvent()
             
+            modalStep = 1
+            showModal = true
         }
     }
     private func back() {

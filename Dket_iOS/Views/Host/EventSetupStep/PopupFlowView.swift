@@ -10,6 +10,7 @@ struct PopupFlowView: View {
     @Binding var step: Int
     @Binding var isPresented: Bool
     let onComplete: () -> Void
+    let viewModel: EventSetupViewModel
 
     var body: some View {
         VStack(spacing: 20) {
@@ -39,6 +40,11 @@ struct PopupFlowView: View {
             // 단계별 버튼
             Button(action: {
                 if step < 3 {
+                    // step 2 → 3 전환 직전에 서버 전송
+                    if step == 2 {
+                        // 서버에 데이터 전송
+                        viewModel.createEvent()
+                    }
                     step += 1
                 } else {
                     isPresented = false
@@ -50,7 +56,7 @@ struct PopupFlowView: View {
                      : step == 2
                        ? "확인했습니다"
                        : "공연 확인하기")
-                    .frame(maxWidth: .infinity, minHeight: 48)
+                .frame(maxWidth: .infinity, minHeight: 48)
             }
             .buttonStyle(PrimaryButtonStyle(filled: true))
             .padding(.horizontal, 30)
