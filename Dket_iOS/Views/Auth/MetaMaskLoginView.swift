@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import ReownWalletKit
+import ReownAppKit
 
 struct MetaMaskLoginView: View {
     @State private var goToRoleSelection = false
@@ -24,7 +26,10 @@ struct MetaMaskLoginView: View {
                 
                 // 메타마스크로 시작하기 버튼
                 Button {
-                    goToRoleSelection = true
+                    print("MetaMask 연결하기 버튼 클릭")
+                    Task {
+                        await connectToWallet()
+                    }
                 } label: {
                     HStack {
                         ZStack {
@@ -59,6 +64,34 @@ struct MetaMaskLoginView: View {
                     EmptyView()
                 }
             }
+        }
+    }
+    
+    func connectToWallet() async {
+        print("🟢 Task 시작")
+        do {
+            print("🔗 connect() 호출 시작")
+            let uri = try await AppKit.instance.connect(walletUniversalLink: nil)
+            print("📡 생성된 URI: \(String(describing: uri))")
+            
+            let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]@!$&'()*+,;=%")
+            
+            if let encoded = uri?.absoluteString.addingPercentEncoding(withAllowedCharacters: allowed),
+               let url = URL(string: "metamask://wc?uri=\(encoded)") {
+                print("📱 최종 연결 URL: \(url)")
+                
+                // ✅ 메타마스크 앱 조건 없이 열기
+                await UIApplication.shared.open(url)
+                
+                // ✅ 연결 성공 여부와 관계없이 다음 화면으로 강제 이동 (임시용)
+                DispatchQueue.main.async {
+                    goToRoleSelection = true
+                }
+            } else {
+                print("❗ URI 인코딩 실패")
+            }
+        } catch {
+            print("❌ 연결 실패: \(error.localizedDescription)")
         }
     }
 }

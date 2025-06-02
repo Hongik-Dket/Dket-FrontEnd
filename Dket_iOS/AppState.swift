@@ -11,6 +11,8 @@ import SwiftUI
 class AppState: ObservableObject {
     @Published var isLoggedIn: Bool = false
     @Published var userRole: UserRole? = nil  // 주최자, 구매자 구분
+    @Published var isConnected: Bool = false
+    @Published var connectedAddress: String? = nil
 
     enum UserRole {
         case host

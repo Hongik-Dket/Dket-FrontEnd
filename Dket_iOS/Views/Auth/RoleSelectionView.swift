@@ -25,7 +25,7 @@ struct RoleSelectionView: View {
                 VStack(spacing: 10) {
                     // 개최자 버튼
                     Button {
-                        appState.userRole = .host     // 역할을 개최자로 설정
+                        appState.userRole = .host
                         appState.isLoggedIn = true
                     } label: {
                         Text("개최자")
@@ -38,6 +38,8 @@ struct RoleSelectionView: View {
                     
                     // 구매자 버튼
                     Button {
+                        appState.userRole = .buyer
+                        appState.isLoggedIn = true
                         
                     } label: {
                         Text("구매자")

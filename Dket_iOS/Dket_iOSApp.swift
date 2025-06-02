@@ -6,11 +6,18 @@
 //
 
 import SwiftUI
+import ReownWalletKit
 
 @main
 struct Dket_iOSApp: App {
     @StateObject private var appState = AppState()
-
+    
+    // MARK: - 앱 실행 시 초기 설정
+    init() {
+        WalletConnectManager.shared.configure()
+        observeWalletEvents(appState: appState)
+    }
+    
     var body: some Scene {
         WindowGroup {
             RootView()
