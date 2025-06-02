@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		038426DE2DDEE868001849B2 /* ReownAppKit in Frameworks */ = {isa = PBXBuildFile; productRef = 038426DD2DDEE868001849B2 /* ReownAppKit */; };
+		038426E02DDEE868001849B2 /* ReownWalletKit in Frameworks */ = {isa = PBXBuildFile; productRef = 038426DF2DDEE868001849B2 /* ReownWalletKit */; };
+		038426E22DDEE868001849B2 /* WalletConnect in Frameworks */ = {isa = PBXBuildFile; productRef = 038426E12DDEE868001849B2 /* WalletConnect */; };
+		038426E82DDEFE6E001849B2 /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 038426E72DDEFE6E001849B2 /* CryptoSwift */; };
+		038426EA2DE30E6D001849B2 /* WalletConnectNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = 038426E92DE30E6D001849B2 /* WalletConnectNetworking */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		03FC7B202DA4218C002D15B3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +60,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				038426E02DDEE868001849B2 /* ReownWalletKit in Frameworks */,
+				038426E82DDEFE6E001849B2 /* CryptoSwift in Frameworks */,
+				038426DE2DDEE868001849B2 /* ReownAppKit in Frameworks */,
+				038426E22DDEE868001849B2 /* WalletConnect in Frameworks */,
+				038426EA2DE30E6D001849B2 /* WalletConnectNetworking in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,15 +85,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		03D88FED2DDE4176004AA8B1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		03FC7B052DA4218A002D15B3 = {
 			isa = PBXGroup;
 			children = (
 				03FC7B102DA4218A002D15B3 /* Dket_iOS */,
 				03FC7B222DA4218C002D15B3 /* Dket_iOSTests */,
 				03FC7B2C2DA4218C002D15B3 /* Dket_iOSUITests */,
+				03D88FED2DDE4176004AA8B1 /* Frameworks */,
 				03FC7B0F2DA4218A002D15B3 /* Products */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		03FC7B0F2DA4218A002D15B3 /* Products */ = {
 			isa = PBXGroup;
@@ -112,6 +134,11 @@
 			);
 			name = Dket_iOS;
 			packageProductDependencies = (
+				038426DD2DDEE868001849B2 /* ReownAppKit */,
+				038426DF2DDEE868001849B2 /* ReownWalletKit */,
+				038426E12DDEE868001849B2 /* WalletConnect */,
+				038426E72DDEFE6E001849B2 /* CryptoSwift */,
+				038426E92DE30E6D001849B2 /* WalletConnectNetworking */,
 			);
 			productName = Dket_iOS;
 			productReference = 03FC7B0E2DA4218A002D15B3 /* Dket_iOS.app */;
@@ -195,6 +222,10 @@
 			);
 			mainGroup = 03FC7B052DA4218A002D15B3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */,
+				038426E62DDEFE6E001849B2 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 03FC7B0F2DA4218A002D15B3 /* Products */;
 			projectDirPath = "";
@@ -597,6 +628,53 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/reown-com/reown-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.6.2;
+			};
+		};
+		038426E62DDEFE6E001849B2 /* XCRemoteSwiftPackageReference "CryptoSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/CryptoSwift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		038426DD2DDEE868001849B2 /* ReownAppKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */;
+			productName = ReownAppKit;
+		};
+		038426DF2DDEE868001849B2 /* ReownWalletKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */;
+			productName = ReownWalletKit;
+		};
+		038426E12DDEE868001849B2 /* WalletConnect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */;
+			productName = WalletConnect;
+		};
+		038426E72DDEFE6E001849B2 /* CryptoSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038426E62DDEFE6E001849B2 /* XCRemoteSwiftPackageReference "CryptoSwift" */;
+			productName = CryptoSwift;
+		};
+		038426E92DE30E6D001849B2 /* WalletConnectNetworking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */;
+			productName = WalletConnectNetworking;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 03FC7B062DA4218A002D15B3 /* Project object */;
 }
