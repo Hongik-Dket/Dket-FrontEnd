@@ -9,54 +9,79 @@ import Foundation
 
 /// 어떤 리스트를 불러올지 구분하는 타입
 enum ListingType {
-  case today      // 오늘 공연
-  case closed     // 최근 응모 마감 공연
-  case all        // 전체(개최한) 공연
-
-  /// 화면 타이틀 기본값
-  var defaultTitle: String {
-    switch self {
-    case .today:  return "오늘 공연"
-    case .closed: return "최근 응모 마감 공연"
-    case .all:    return "전체 공연"
+    
+    // 개최자용
+    case today      // 오늘 공연
+    case closed     // 최근 응모 마감 공연
+    case all        // 전체(개최한) 공연
+    
+    // 구매자용
+    case popular
+    case applied
+    case purchased
+    case entire
+    
+    /// 화면 타이틀 기본값
+    var defaultTitle: String {
+        switch self {
+        case .today:     return "오늘 공연"
+        case .closed:    return "최근 응모 마감 공연"
+        case .all:       return "전체 공연"
+        case .popular:   return "인기 공연"
+        case .applied:   return "응모한 공연"
+        case .purchased: return "구매한 공연"
+        case .entire:    return "전체 공연"
+        }
     }
-  }
 }
 
 @MainActor
 final class EventListViewModel: ObservableObject {
     @Published var events: [Event] = []
     @Published var state: LoadingState = .idle
-
-    private let service: OrganizerHomeServicing
+    
     private let type: ListingType
     
-    /// 모드를 주입받도록 init 변경
-        init(type: ListingType,
-             service: OrganizerHomeServicing = OrganizerHomeService()) {
-            self.type    = type
-            self.service = service
-        }
-
-    /// 타입에 따라 알맞은 API 호출
-        func load() {
-            Task {
-                state = .loading
-                do {
-                    let list: [Event]
-                    switch type {
-                    case .today:
-                        list = try await service.fetchToday()
-                    case .closed:
-                        list = try await service.fetchClosed()
-                    case .all:
-                        list = try await service.fetchAll()
-                    }
-                    self.events = list
-                    state = .loaded
-                } catch {
-                    state = .failed(error)
+    // 의존성 분기
+    private let organizerService: OrganizerHomeServicing?
+    private let buyerService: BuyerHomeServicing?
+    
+    init(type: ListingType,
+         organizerService: OrganizerHomeServicing? = nil,
+         buyerService: BuyerHomeServicing? = nil) {
+        self.type = type
+        self.organizerService = organizerService
+        self.buyerService = buyerService
+    }
+    
+    func load() {
+        Task {
+            state = .loading
+            do {
+                let list: [Event]
+                switch type {
+                case .today:
+                    list = try await organizerService?.fetchToday() ?? []
+                case .closed:
+                    list = try await organizerService?.fetchClosed() ?? []
+                case .all:
+                    list = try await organizerService?.fetchAll() ?? []
+                    
+                case .popular:
+                    list = try await buyerService?.fetchPopular() ?? []
+                case .applied:
+                    list = try await buyerService?.fetchApplied() ?? []
+                case .purchased:
+                    list = try await buyerService?.fetchPurchased() ?? []
+                case .entire:
+                    list = try await buyerService?.fetchEntire() ?? []
                 }
+                
+                self.events = list
+                state = .loaded
+            } catch {
+                state = .failed(error)
             }
         }
+    }
 }
