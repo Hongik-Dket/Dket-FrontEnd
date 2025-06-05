@@ -24,23 +24,23 @@ struct BuyerHomeService: BuyerHomeServicing {
     }
     
     func fetchPopular() async throws -> [Event] {
-        let dto = try await api.get(.buyerHomePopular, as: EventListResponse.self)
-        return dto.events.map { $0.domain }
+        let wrapper = try await api.get(.buyerHomePopular, as: APIResponse<EventListResponse>.self)
+        return wrapper.result.events.map { $0.domain }
     }
 
     func fetchApplied() async throws -> [Event] {
-        let dto = try await api.get(.buyerHomeApplied, as: EventListResponse.self)
-        return dto.events.map { $0.domain }
+        let wrapper = try await api.get(.buyerHomeApplied, as: APIResponse<EventListResponse>.self)
+        return wrapper.result.events.map { $0.domain }
     }
 
     func fetchPurchased() async throws -> [Event] {
-        let dto = try await api.get(.buyerHomePurchased, as: EventListResponse.self)
-        return dto.events.map { $0.domain }
+        let wrapper = try await api.get(.buyerHomePurchased, as: APIResponse<EventListResponse>.self)
+        return wrapper.result.events.map { $0.domain }
     }
 
     func fetchEntire() async throws -> [Event] {
-        let dto = try await api.get(.buyerHomeEntire, as: EventListResponse.self)
-        return dto.events.map { $0.domain }
+        let wrapper = try await api.get(.buyerHomeEntire, as: APIResponse<EventListResponse>.self)
+        return wrapper.result.events.map { $0.domain }
     }
 }
 

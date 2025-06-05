@@ -60,7 +60,7 @@ enum Endpoint {
         case .buyerHomePopular: return "/api/buyer/home/popular"
         case .buyerHomeApplied: return "/api/buyer/home/applied"
         case .buyerHomePurchased: return "/api/buyer/home/purchased"
-        case .buyerHomeEntire: return "/api/buyer/home/all"
+        case .buyerHomeEntire: return "/api/buyer/home/entire"
 
         case .buyerApply(let eid, let sid):
             return "/api/buyer/events/\(eid)/sessions/\(sid)/apply"

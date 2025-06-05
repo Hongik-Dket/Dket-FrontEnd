@@ -10,6 +10,7 @@ import SwiftUI
 /// 가로 스크롤 섹션 재사용 뷰
 struct EventSectionView<Destination: View>: View {
     let title: String
+    let emptyMessage: String
     let events: [Event]
     let destination: Destination // 전체 보기 페이지
     
@@ -25,21 +26,32 @@ struct EventSectionView<Destination: View>: View {
                 }
             }
             .padding(.horizontal)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 10) {
-                    ForEach(events) { event in
-                        NavigationLink {
-                            EventDetailView(eventId: event.id)
-                        } label: {
-                            EventCardView(event: event)
-                        }
-                        .buttonStyle(.plain)
-                    }
+            
+            if events.isEmpty {
+                VStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 24))
+                        .foregroundColor(.gray)
+                    Text(emptyMessage)
+                        .font(.footnote)
+                        .foregroundColor(.gray)
                 }
-                .padding(.horizontal)
+                .frame(maxWidth: .infinity, minHeight: 200)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 10) {
+                        ForEach(events) { event in
+                            NavigationLink {
+                                EventDetailView(eventId: event.id)
+                            } label: {
+                                EventCardView(event: event)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
             }
         }
     }
 }
-

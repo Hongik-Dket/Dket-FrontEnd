@@ -37,24 +37,28 @@ struct BuyerHomeView: View {
                         if let bundle = vm.home {
                             EventSectionView(
                                 title: "💖 인기 공연",
+                                emptyMessage: "응모된 공연이 없습니다",
                                 events: bundle.popular,
                                 destination: EventListView(type: .popular)
                             )
 
                             EventSectionView(
                                 title: "⏳ 응모한 공연",
+                                emptyMessage: "응모한 공연이 없습니다",
                                 events: bundle.applied,
                                 destination: EventListView(type: .applied)
                             )
 
                             EventSectionView(
                                 title: "🎟️ 구매한 공연",
+                                emptyMessage: "구매한 공연이 없습니다",
                                 events: bundle.purchased,
                                 destination: EventListView(type: .purchased)
                             )
 
                             EventSectionView(
                                 title: "전체 공연",
+                                emptyMessage: "개최한 공연이 없습니다",
                                 events: bundle.entire,
                                 destination: EventListView(type: .entire)
                             )

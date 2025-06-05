@@ -64,6 +64,7 @@ final class EventListViewModel: ObservableObject {
             do {
                 let list: [Event]
                 switch type {
+                // 개최자 홈화면
                 case .today:
                     list = try await organizerService?.fetchToday() ?? []
                 case .closed:
@@ -71,6 +72,7 @@ final class EventListViewModel: ObservableObject {
                 case .all:
                     list = try await organizerService?.fetchAll() ?? []
                     
+                // 구매자 홈화면
                 case .popular:
                     list = try await buyerService?.fetchPopular() ?? []
                 case .applied:
