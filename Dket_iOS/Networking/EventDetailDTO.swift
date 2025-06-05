@@ -17,7 +17,7 @@ struct EventDetailDTO: Decodable {
     let startTime: String       
     let endTime:   String
     let ageLimit:  AgeLimit
-    let price:     Int
+    let priceKrw:     Int
     let applyStart: Date
     let applyEnd:   Date
     let capacity:   Int
@@ -27,7 +27,7 @@ struct EventDetailDTO: Decodable {
     enum CodingKeys: String, CodingKey {
         case eventId, title, posterUrl, location,
              startDate, endDate, startTime, endTime,
-             ageLimit, price, applyStart, applyEnd,
+             ageLimit, priceKrw, applyStart, applyEnd,
              capacity, eventStatus, sessionIds
     }
 }
@@ -42,7 +42,7 @@ extension EventDetailDTO {
               period: startDate ... endDate,
               timeRange: (startTime, endTime),
               ageLimit: ageLimit,
-              price: price,
+              priceKrw: priceKrw,
               applyPeriod: applyStart ... applyEnd,
               capacity: capacity,
               status: eventStatus,

@@ -278,7 +278,7 @@ private struct BasicInfoView: View {
             HStack {
                 Text("가격")
                 Spacer()
-                Text("\(detail.price.formatted()) 원")
+                Text("\(detail.priceKrw.formatted()) 원")
             }
             .font(.footnote)
         }

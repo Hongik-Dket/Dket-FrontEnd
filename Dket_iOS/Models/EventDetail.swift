@@ -15,7 +15,7 @@ struct EventDetail: Identifiable {
     let period: ClosedRange<Date>
     let timeRange: (start: String, end: String)
     let ageLimit: AgeLimit
-    let price: Int
+    let priceKrw: Int
     let applyPeriod: ClosedRange<Date>
     let capacity: Int
     let status: EventStatus
