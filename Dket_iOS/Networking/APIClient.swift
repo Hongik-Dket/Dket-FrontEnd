@@ -11,7 +11,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
 
-    private let baseURL = URL(string: "http://192.168.199.43:8080")! // 수정된 유효한 주소
+    private let baseURL = URL(string: "http://192.168.198.228:8080")! // 수정된 유효한 주소
     private let session = URLSession.shared
 
     // 공통 디코더

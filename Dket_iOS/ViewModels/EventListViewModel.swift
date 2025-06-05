@@ -46,12 +46,16 @@ final class EventListViewModel: ObservableObject {
     private let organizerService: OrganizerHomeServicing?
     private let buyerService: BuyerHomeServicing?
     
-    init(type: ListingType,
-         organizerService: OrganizerHomeServicing? = nil,
-         buyerService: BuyerHomeServicing? = nil) {
+    init(type: ListingType) {
         self.type = type
-        self.organizerService = organizerService
-        self.buyerService = buyerService
+        switch type {
+        case .today, .closed, .all:
+            self.organizerService = OrganizerHomeService()
+            self.buyerService = nil
+        case .popular, .applied, .purchased, .entire:
+            self.organizerService = nil
+            self.buyerService = BuyerHomeService()
+        }
     }
     
     func load() {
