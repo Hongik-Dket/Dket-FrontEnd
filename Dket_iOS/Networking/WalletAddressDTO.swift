@@ -9,7 +9,7 @@ struct WalletAddressRequest: Encodable {
     let walletAddress: String
     
     enum CodingKeys: String, CodingKey {
-        case walletAddress // ✅ camelCase로 그대로 유지
+        case walletAddress 
     }
 }
 
