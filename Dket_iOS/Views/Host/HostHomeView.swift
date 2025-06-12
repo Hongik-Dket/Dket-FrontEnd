@@ -40,6 +40,7 @@ struct HostHomeView: View {
                             if let bundle = vm.home {
                                 EventSectionView(
                                   title: "오늘 공연",
+                                  emptyMessage: "오늘 공연이 없습니다",
                                   events: bundle.today,
                                   destination: EventListView(type: .today)
                                 )
@@ -47,6 +48,7 @@ struct HostHomeView: View {
                                 // 최근 응모 마감 공연
                                 EventSectionView(
                                   title: "최근 응모 마감 공연",
+                                  emptyMessage: "최근 응모 마감 공연이 없습니다",
                                   events: bundle.recentlyClosed,
                                   destination: EventListView(type: .closed)
                                 )
@@ -54,6 +56,7 @@ struct HostHomeView: View {
                                 // 전체(개최한) 공연
                                 EventSectionView(
                                   title: "개최한 공연",
+                                  emptyMessage: "개최한 공연이 없습니다",
                                   events: bundle.all,
                                   destination: EventListView(type: .all)
                                 )

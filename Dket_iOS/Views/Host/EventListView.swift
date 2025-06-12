@@ -13,7 +13,7 @@ struct EventListView: View {
 
     @StateObject private var vm: EventListViewModel
     @Environment(\.dismiss) private var dismiss
-    @State private var didLoad = false        // load() 1회만 호출
+    @State private var didLoad = false
 
     // ViewModel 주입
     init(type: ListingType) {

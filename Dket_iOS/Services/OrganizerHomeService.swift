@@ -54,3 +54,4 @@ private struct AllResultDTO   : Decodable {
         // 편의를 위해 domain 변환용 프로퍼티 추가
         var allEvents: [EventDTO] { eventCardList }
 }
+
