@@ -12,6 +12,7 @@ enum NetworkError: Error {
     case status(Int)
     case decoding(Error)
     case unknown
+    case emptyResult
 }
 
 extension NetworkError: LocalizedError {
@@ -25,6 +26,9 @@ extension NetworkError: LocalizedError {
             return "데이터 해석 실패: \(err.localizedDescription)"
         case .unknown:
             return "알 수 없는 네트워크 오류가 발생했습니다."
+        case .emptyResult:
+            return "응답 데이터가 비어 있습니다."  
         }
     }
 }
+

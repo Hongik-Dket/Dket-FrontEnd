@@ -11,10 +11,10 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
 
-    private let baseURL = URL(string: "http://192.168.198.228:8080")! // 수정된 유효한 주소
+    private static let baseURL = URL(string: "http://192.168.0.16:8080")! // 실제 서버 주소
     private let session = URLSession.shared
 
-    // 공통 디코더
+    // MARK: - JSON Decoder 설정
     private static let decoder: JSONDecoder = {
         let d = JSONDecoder()
         d.keyDecodingStrategy = .convertFromSnakeCase
@@ -31,10 +31,9 @@ final class APIClient {
 }
 
 // MARK: - GET 요청
-
 extension APIClient {
     func get<T: Decodable>(_ endpoint: Endpoint, as type: T.Type = T.self) async throws -> T {
-        let url = baseURL.appendingPathComponent(endpoint.path)
+        let url = Self.baseURL.appendingPathComponent(endpoint.path)
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
 
@@ -53,17 +52,18 @@ extension APIClient {
             throw NetworkError.status(http.statusCode)
         }
 
-        do {
-            return try APIClient.decoder.decode(T.self, from: data)
-        } catch {
-            throw NetworkError.decoding(error)
-        }
+        return try Self.decoder.decode(T.self, from: data)
     }
 
-    /// APIResponse<T>용 해석기 (T만 꺼냄)
+    /// APIResponse<T> 기반: result만 꺼냄
     func getDecoded<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         let wrapper = try await get(endpoint, as: APIResponse<T>.self)
         return wrapper.result
+    }
+
+    /// 외부에서 호출하는 공통 request
+    static func request<T: Decodable>(endpoint: Endpoint) async throws -> T {
+        try await shared.getDecoded(endpoint)
     }
 }
 
@@ -75,15 +75,21 @@ extension APIClient {
         body: Body,
         as type: Resp.Type = Resp.self
     ) async throws -> Resp {
-        let url = baseURL.appendingPathComponent(endpoint.path)
+        let url = Self.baseURL.appendingPathComponent(endpoint.path)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
+        //encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddHHmm)
-        request.httpBody = try encoder.encode(body)
+        let jsonData = try encoder.encode(body)
+
+        if let jsonString = String(data: jsonData, encoding: .utf8) {
+            print("📦 실제 전송 JSON:\n\(jsonString)")   // ⭐️ 이 줄 반드시 추가
+        }
+
+        request.httpBody = jsonData
 
         let (data, response) = try await session.data(for: request)
 
@@ -100,11 +106,7 @@ extension APIClient {
             throw NetworkError.status(http.statusCode)
         }
 
-        do {
-            return try APIClient.decoder.decode(Resp.self, from: data)
-        } catch {
-            throw NetworkError.decoding(error)
-        }
+        return try Self.decoder.decode(Resp.self, from: data)
     }
 }
 
@@ -118,38 +120,32 @@ extension APIClient {
         poster: Data,
         photocard: Data?
     ) async throws -> U {
-        let url = baseURL.appendingPathComponent(endpoint.path)
+        let url = Self.baseURL.appendingPathComponent(endpoint.path)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        
+
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)",
                          forHTTPHeaderField: "Content-Type")
 
-        // ① JSON 파트
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddTHHmmss)
         let jsonData = try encoder.encode(json)
+        
 
         var body = Data()
         body.appendMultiPart(field: "request", filename: nil, mime: "application/json", value: jsonData, boundary: boundary)
-
-        // ② 이미지 파트들
         body.appendMultiPart(field: "banner", filename: "banner.jpg", mime: "image/jpeg", value: banner, boundary: boundary)
         body.appendMultiPart(field: "poster", filename: "poster.jpg", mime: "image/jpeg", value: poster, boundary: boundary)
-
-        // ③ 포토카드 (있으면 첨부, 없으면 빈 파트라도 생성)
         body.appendMultiPart(field: "photocardList", filename: "photocard.jpg", mime: "image/jpeg", value: photocard ?? Data(), boundary: boundary)
-
-        // ④ 마지막 바운더리 닫기
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
-    #if DEBUG
+#if DEBUG
         if let txt = String(data: body, encoding: .utf8) {
             print("▶︎ Multipart Body ↓↓↓\n\(txt)")
         }
-    #endif
+#endif
 
         let (data, response) = try await session.upload(for: request, from: body)
 
@@ -163,21 +159,17 @@ extension APIClient {
             throw NetworkError.status(http.statusCode)
         }
 
-        do {
-            return try APIClient.decoder.decode(U.self, from: data)
-        } catch {
-            throw NetworkError.decoding(error)
-        }
+        return try Self.decoder.decode(U.self, from: data)
     }
 }
-/// multipart helper
+
+// MARK: - multipart helper
 private extension Data {
     mutating func appendMultiPart(field: String,
                                   filename: String?,
                                   mime: String,
                                   value: Data,
                                   boundary: String) {
-        
         append("--\(boundary)\r\n".data(using: .utf8)!)
         var disposition = "Content-Disposition: form-data; name=\"\(field)\""
         if let fn = filename {
@@ -185,14 +177,8 @@ private extension Data {
         }
         disposition += "\r\n"
         append(disposition.data(using: .utf8)!)
-        
-        // 3) Content-Type (파일이든 JSON이든 반드시)
         append("Content-Type: \(mime)\r\n\r\n".data(using: .utf8)!)
-        
-        // 4) 실제 데이터
         append(value)
-        
-        // 5) 파트 구분
         append("\r\n".data(using: .utf8)!)
     }
 }

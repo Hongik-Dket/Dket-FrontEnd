@@ -36,7 +36,7 @@ enum Endpoint {
     case buyerPhotocard(ticketId: String)
 
     // MARK: - Auth / Wallet
-    case connectWallet    // 추후 POST /api/auth/wallet 등으로 확장 가능
+    case connectWallet
 
     // MARK: - Computed Path
     var path: String {
@@ -79,7 +79,7 @@ enum Endpoint {
             return "/api/buyer/tickets/\(tid)/photocard"
 
         case .connectWallet:
-            return "/api/auth/wallet"
+            return "/api/login/metamask/complete"
         }
     }
 

@@ -15,13 +15,16 @@ struct Dket_iOSApp: App {
     // MARK: - 앱 실행 시 초기 설정
     init() {
         WalletConnectManager.shared.configure()
-        observeWalletEvents(appState: appState)
     }
     
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
+                .onOpenURL { WalletConnectManager.shared.handleDeepLink($0) }
+                .onAppear {
+                    observeWalletEvents(appState: appState)
+                }
         }
     }
 }

@@ -59,39 +59,27 @@ struct MetaMaskLoginView: View {
                 }
                 .padding(.bottom, 100)
                 
-                // RoleSelectionView 연결
-                NavigationLink(destination: RoleSelectionView(), isActive: $goToRoleSelection) {
-                    EmptyView()
-                }
             }
         }
     }
     
     func connectToWallet() async {
-        print("🟢 Task 시작")
         do {
-            print("🔗 connect() 호출 시작")
             let uri = try await AppKit.instance.connect(walletUniversalLink: nil)
-            print("📡 생성된 URI: \(String(describing: uri))")
-            
-            let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~:/?#[]@!$&'()*+,;=%")
-            
-            if let encoded = uri?.absoluteString.addingPercentEncoding(withAllowedCharacters: allowed),
-               let url = URL(string: "metamask://wc?uri=\(encoded)") {
-                print("📱 최종 연결 URL: \(url)")
-                
-                // ✅ 메타마스크 앱 조건 없이 열기
-                await UIApplication.shared.open(url)
-                
-                // ✅ 연결 성공 여부와 관계없이 다음 화면으로 강제 이동 (임시용)
-                DispatchQueue.main.async {
-                    goToRoleSelection = true
-                }
-            } else {
+
+            let base = "https://metamask.app.link/wc?uri="
+            guard let encoded = uri?.absoluteString.addingPercentEncoding(
+                    withAllowedCharacters: .alphanumerics),
+                  let url = URL(string: base + encoded) else {
                 print("❗ URI 인코딩 실패")
+                return
             }
+
+            await UIApplication.shared.open(url)  // ← 한 번만
+                              
+
         } catch {
-            print("❌ 연결 실패: \(error.localizedDescription)")
+            print("❌ 연결 실패:", error)
         }
     }
 }

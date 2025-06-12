@@ -8,17 +8,20 @@
 import SwiftUI
 
 struct RootView: View {
-    @EnvironmentObject var appState: AppState
-
+    @EnvironmentObject private var appState: AppState
     var body: some View {
-        if appState.isLoggedIn {
-            if appState.userRole == .host {
+        Group {
+            if !appState.isLoggedIn {
+                MetaMaskLoginView()
+            } else if appState.userRole == nil {
+                RoleSelectionView()
+            } else if appState.userRole == .host {
                 HostHomeView()
-            } else if appState.userRole == .buyer {
+            } else {
                 BuyerHomeView()
             }
-        } else {
-            LoginView()
         }
+        .animation(.easeInOut, value: appState.isLoggedIn)
+        .animation(.easeInOut, value: appState.userRole)
     }
 }
