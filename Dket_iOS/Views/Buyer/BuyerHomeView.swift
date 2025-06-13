@@ -9,21 +9,20 @@ import SwiftUI
 
 /// "구매자 홈" – 서버 데이터와 연결된 최종 화면
 struct BuyerHomeView: View {
-
-    // ① ViewModel 주입
     @StateObject private var vm = BuyerHomeViewModel()
+
+    @State private var selectedEventId: Int64?
+    @State private var selectedListType: ListingType?
 
     var body: some View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 30) {
-
-                    // ─── 상단 검색/메뉴 헤더 ───
                     SearchHeaderView(
                         onSearch: { /* TODO */ },
-                        onMenu:   { /* TODO */ })
+                        onMenu:   { /* TODO */ }
+                    )
 
-                    // ─── 본문 섹션 ───
                     switch vm.state {
                     case .idle, .loading:
                         ProgressView().padding(.top, 60)
@@ -39,28 +38,32 @@ struct BuyerHomeView: View {
                                 title: "💖 인기 공연",
                                 emptyMessage: "응모된 공연이 없습니다",
                                 events: bundle.popular,
-                                destination: EventListView(type: .popular)
+                                onEventTap: { event in selectedEventId = event.id },
+                                onSeeAllTap: { selectedListType = .popular }
                             )
 
                             EventSectionView(
                                 title: "⏳ 응모한 공연",
                                 emptyMessage: "응모한 공연이 없습니다",
                                 events: bundle.applied,
-                                destination: EventListView(type: .applied)
+                                onEventTap: { event in selectedEventId = event.id },
+                                onSeeAllTap: { selectedListType = .applied }
                             )
 
                             EventSectionView(
                                 title: "🎟️ 구매한 공연",
                                 emptyMessage: "구매한 공연이 없습니다",
                                 events: bundle.purchased,
-                                destination: EventListView(type: .purchased)
+                                onEventTap: { event in selectedEventId = event.id },
+                                onSeeAllTap: { selectedListType = .purchased }
                             )
 
                             EventSectionView(
                                 title: "전체 공연",
-                                emptyMessage: "개최한 공연이 없습니다",
+                                emptyMessage: "공연이 없습니다",
                                 events: bundle.entire,
-                                destination: EventListView(type: .entire)
+                                onEventTap: { event in selectedEventId = event.id },
+                                onSeeAllTap: { selectedListType = .entire }
                             )
                         }
                     }
@@ -68,6 +71,14 @@ struct BuyerHomeView: View {
                 .padding(.bottom, 40)
             }
             .task { await vm.onAppear() }
+
+            .navigationDestination(item: $selectedEventId) { eventId in
+                BuyerEventDetailView(eventId: eventId)
+            }
+
+            .navigationDestination(item: $selectedListType) { type in
+                EventListView(type: type)
+            }
         }
     }
 }

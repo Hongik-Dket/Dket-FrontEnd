@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct BuyerEventDetailView: View {
-    private let eventId: Int64
+    let eventId: Int64
     @Environment(\.dismiss) private var dismiss
+    
     @StateObject private var vm: BuyerEventViewModel
 
     init(eventId: Int64) {
@@ -19,22 +20,26 @@ struct BuyerEventDetailView: View {
 
     var body: some View {
         Group {
-            if vm.isLoading {
-                ProgressView()
-                    .task { await vm.fetchEventDetail() }
-            } else if let detail = vm.eventDetail {
-                content(detail)
-            } else if let error = vm.errorMessage {
-                VStack {
-                    Text(error)
-                    Button("다시 시도") {
-                        Task { await vm.fetchEventDetail() }
-                    }
+            switch vm.state {
+            case .idle, .loading:
+                ProgressView().task { await vm.fetch() }
+            case .failed(let error):
+                VStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.orange)
+                    Text(error.localizedDescription)
+                    Button("다시 시도") { Task { await vm.fetch() } }
+                }
+            case .loaded:
+                if let detail = vm.detail {
+                    content(detail)
                 }
             }
         }
         .navigationTitle("공연 상세")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { dismiss() }) {
@@ -44,9 +49,6 @@ struct BuyerEventDetailView: View {
                 }
             }
         }
-        .task {
-                    await vm.fetchEventDetail()
-                }
     }
 
     @ViewBuilder
@@ -58,22 +60,16 @@ struct BuyerEventDetailView: View {
                     BasicInfoView(detail: detail)
                     Divider()
 
-                    BuyerSessionPickerView(
-                        selectedId: $vm.selectedSessionId,
-                        sessions: vm.sessionList
-                    )
-                    Divider()
-
-                    // 응모상태 및 잔여티켓
-                    if let selected = vm.selectedSession {
-                        let ui = vm.computeSessionUIState(session: selected,
-                                                          eventStatus: detail.status,
-                                                          capacity: detail.capacity)
-                        if let status = ui.statusText {
-                            Text("응모 상태: \(status)")
-                                .font(.subheadline)
-                                .padding(.horizontal)
-                        }
+                    if detail.status == .applyNotOpened {
+                        Text("응모 D-\(Date().daysUntil(detail.applyPeriod.lowerBound))일")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        BuyerSessionPickerView(detail: detail)
+                            .environmentObject(vm)
+                        Divider()
+                        BuyerSessionStatSection()
+                            .environmentObject(vm)
                     }
 
                     Spacer(minLength: 80)
@@ -82,47 +78,62 @@ struct BuyerEventDetailView: View {
                 .padding(.vertical, 12)
             }
 
-            // 하단 플로팅 버튼
-            if let selected = vm.selectedSession {
-                let ui = vm.computeSessionUIState(session: selected,
-                                                  eventStatus: detail.status,
-                                                  capacity: detail.capacity)
-                VStack {
-                    Spacer()
-                    if let buttonTitle = ui.buttonTitle {
-                        PrimaryButton(
-                            title: buttonTitle,
-                            action: {
-                                // 응모/결제/입장 로직 구현 예정
-                                print("버튼 동작 실행")
-                            },
-                            isDisabled: !ui.buttonEnabled
-                        )
-                        .padding()
+            VStack {
+                Spacer()
+                if vm.floatingButtonTitle != "" {
+                    Button(action: {
+                        // TODO: 버튼 액션 처리 (예: 응모, 결제 등)
+                    }) {
+                        Text(vm.floatingButtonTitle)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, maxHeight: 48)
+                            .background(vm.isFloatingButtonEnabled ? Color.blue : Color.gray)
+                            .cornerRadius(24)
+                            .shadow(radius: 4)
+                            .padding(.horizontal)
                     }
+                    .disabled(!vm.isFloatingButtonEnabled)
+                    .padding(.bottom)
                 }
             }
         }
     }
 }
 
-
-struct BuyerSessionPickerView: View {
-    @Binding var selectedId: Int64?
-    let sessions: [BuyerSessionDetail]
+private struct BuyerSessionStatSection: View {
+    @EnvironmentObject private var vm: BuyerEventViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("공연 날짜")
-                .font(.headline)
+        if let event = vm.detail, let session = vm.selectedSession {
+            VStack(alignment: .leading, spacing: 15) {
+                Text(session.date.formatted(.dateTime.year().month().day()))
+                    .font(.title3).bold()
 
-            Picker("Session", selection: $selectedId) {
-                ForEach(sessions) { session in
-                    Text(DateFormatter.sessionDateFormatter.string(from: session.date))
-                        .tag(session.id as Int64?)
+                HStack {
+                    Text("잔여 티켓")
+                        .font(.caption)
+                    Spacer()
+                    Text("\(event.capacity - session.paidCount)장")
+                }
+                .font(.subheadline)
+
+                let label = vm.sessionApplyStatusLabel(session)
+                if !label.isEmpty {
+                    HStack {
+                        Text("상태")
+                            .font(.caption)
+                        Spacer()
+                        Text(label)
+                    }
                 }
             }
-            .pickerStyle(.segmented)
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        } else {
+            ProgressView()
+                .frame(maxWidth: .infinity)
         }
     }
 }

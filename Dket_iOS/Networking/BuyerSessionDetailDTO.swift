@@ -8,29 +8,30 @@
 import Foundation
 
 struct BuyerSessionDetailDTO: Decodable {
-    let eventId: Int64
     let sessionId: Int64
     let date: Date  // "yyyy-MM-dd"
     
     let applyStatus: ApplyStatus?
     let ticketId: Int64?
     let paidCount: Int
+    let buyable: Bool
 
     enum CodingKeys: String, CodingKey {
-        case eventId, sessionId, date
-        case applyStatus, ticketId, paidCount
+        case sessionId, date
+        case applyStatus, ticketId, paidCount, buyable
     }
 }
 
 extension BuyerSessionDetailDTO {
     var domain: BuyerSessionDetail {
         BuyerSessionDetail(
-            eventId: eventId,
             id: sessionId,
             date: date,
             applyStatus: applyStatus?.domain,
             ticketId: ticketId,
-            paidCount: paidCount
+            paidCount: paidCount,
+            buyable: buyable,
+            remainingTickets: 0
         )
     }
 }
