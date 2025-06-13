@@ -11,7 +11,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
 
-    private static let baseURL = URL(string: "http://192.168.0.16:8080")! // 실제 서버 주소
+    private static let baseURL = URL(string: "http://192.168.198.179:8080")! // 실제 서버 주소
     private let session = URLSession.shared
 
     // MARK: - JSON Decoder 설정
@@ -86,7 +86,7 @@ extension APIClient {
         let jsonData = try encoder.encode(body)
 
         if let jsonString = String(data: jsonData, encoding: .utf8) {
-            print("📦 실제 전송 JSON:\n\(jsonString)")   // ⭐️ 이 줄 반드시 추가
+            print("📦 실제 전송 JSON:\n\(jsonString)")
         }
 
         request.httpBody = jsonData

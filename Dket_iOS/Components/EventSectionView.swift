@@ -8,25 +8,32 @@
 import SwiftUI
 
 /// 가로 스크롤 섹션 재사용 뷰
-struct EventSectionView<Destination: View>: View {
+struct EventSectionView: View {
     let title: String
     let emptyMessage: String
     let events: [Event]
-    let destination: Destination // 전체 보기 페이지
-    
+
+    // 공연 카드 클릭 시: 선택적으로 사용
+    var onEventTap: ((Event) -> Void)? = nil
+
+    // 전체 보기 클릭 시: 선택적으로 사용
+    var onSeeAllTap: (() -> Void)? = nil
+
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
                 Text(title)
                     .font(.headline).bold()
                 Spacer()
-                NavigationLink(destination: destination) {
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.gray)
+                if let onSeeAllTap {
+                    Button(action: onSeeAllTap) {
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                    }
                 }
             }
             .padding(.horizontal)
-            
+
             if events.isEmpty {
                 VStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle")
@@ -41,12 +48,21 @@ struct EventSectionView<Destination: View>: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
                         ForEach(events) { event in
-                            NavigationLink {
-                                EventDetailView(eventId: event.id)
-                            } label: {
-                                EventCardView(event: event)
+                            if let onEventTap {
+                                Button {
+                                    onEventTap(event)
+                                } label: {
+                                    EventCardView(event: event)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                NavigationLink {
+                                    EventDetailView(eventId: event.id) // 기본 동작
+                                } label: {
+                                    EventCardView(event: event)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal)

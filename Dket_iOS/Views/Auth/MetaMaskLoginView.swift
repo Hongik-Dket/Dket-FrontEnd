@@ -23,12 +23,20 @@ struct MetaMaskLoginView: View {
                     .padding(.top, 287)
                 
                 Spacer()
+                // NavigationLink - 다음 화면으로 이동
+                                NavigationLink(
+                                    destination: RoleSelectionView(), // 여기에 이동할 뷰 넣기
+                                    isActive: $goToRoleSelection
+                                ) {
+                                    EmptyView()
+                                }
                 
                 // 메타마스크로 시작하기 버튼
                 Button {
                     print("MetaMask 연결하기 버튼 클릭")
                     Task {
                         await connectToWallet()
+                        goToRoleSelection = true
                     }
                 } label: {
                     HStack {
