@@ -22,6 +22,10 @@ func observeWalletEvents(appState: AppState) {
             if let wallet = session.accounts.first {
                 print("지갑 주소: \(wallet.address)")
                 
+                DispatchQueue.main.async {
+                        appState.connectedAddress = wallet.address  
+                    }
+                
                 Task {
                     do {
                         // 2. 서버에 지갑 주소 전송

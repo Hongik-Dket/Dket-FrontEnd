@@ -33,6 +33,7 @@ enum Endpoint {
     case buyerTicketDetail(ticketId: String)
     case buyerTicketList
     case buyerEnter(ticketId: String)
+    case buyerPhotocardList
     case buyerPhotocard(ticketId: String)
 
     // MARK: - Auth / Wallet
@@ -75,6 +76,8 @@ enum Endpoint {
             return "/api/buyer/tickets"
         case .buyerEnter(let tid):
             return "/api/buyer/tickets/\(tid)/enter"
+        case .buyerPhotocardList:
+            return "/api/buyer/photocards"
         case .buyerPhotocard(let tid):
             return "/api/buyer/tickets/\(tid)/photocard"
 

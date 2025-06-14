@@ -8,4 +8,8 @@
 struct PhotoCardItemDTO: Decodable {
     let photoCardId: Int64
     let imageUrl: String
+
+    func toDomain() -> PhotoCardItem {
+        .init(photoCardId: photoCardId, imageUrl: imageUrl)
+    }
 }
