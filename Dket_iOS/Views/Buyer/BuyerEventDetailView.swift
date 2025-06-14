@@ -12,12 +12,12 @@ struct BuyerEventDetailView: View {
     @Environment(\.dismiss) private var dismiss
     
     @StateObject private var vm: BuyerEventViewModel
-
+    
     init(eventId: Int64) {
         self.eventId = eventId
         _vm = StateObject(wrappedValue: BuyerEventViewModel(eventId: eventId))
     }
-
+    
     var body: some View {
         Group {
             switch vm.state {
@@ -50,7 +50,7 @@ struct BuyerEventDetailView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     func content(_ detail: EventDetail) -> some View {
         ZStack {
@@ -59,7 +59,7 @@ struct BuyerEventDetailView: View {
                     PosterView(url: detail.poster)
                     BasicInfoView(detail: detail)
                     Divider()
-
+                    
                     if detail.status == .applyNotOpened {
                         Text("응모 D-\(Date().daysUntil(detail.applyPeriod.lowerBound))일")
                             .font(.headline)
@@ -71,18 +71,21 @@ struct BuyerEventDetailView: View {
                         BuyerSessionStatSection()
                             .environmentObject(vm)
                     }
-
+                    
                     Spacer(minLength: 80)
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
             }
-
+            
             VStack {
                 Spacer()
                 if vm.floatingButtonTitle != "" {
                     Button(action: {
                         // TODO: 버튼 액션 처리 (예: 응모, 결제 등)
+                        Task {
+                            await vm.applyToSelectedSession()
+                        }
                     }) {
                         Text(vm.floatingButtonTitle)
                             .font(.system(size: 16, weight: .bold))
@@ -103,13 +106,13 @@ struct BuyerEventDetailView: View {
 
 private struct BuyerSessionStatSection: View {
     @EnvironmentObject private var vm: BuyerEventViewModel
-
+    
     var body: some View {
         if let event = vm.detail, let session = vm.selectedSession {
             VStack(alignment: .leading, spacing: 15) {
                 Text(session.date.formatted(.dateTime.year().month().day()))
                     .font(.title3).bold()
-
+                
                 HStack {
                     Text("잔여 티켓")
                         .font(.caption)
@@ -117,7 +120,7 @@ private struct BuyerSessionStatSection: View {
                     Text("\(event.capacity - session.paidCount)장")
                 }
                 .font(.subheadline)
-
+                
                 let label = vm.sessionApplyStatusLabel(session)
                 if !label.isEmpty {
                     HStack {

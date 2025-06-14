@@ -8,72 +8,122 @@
 import Foundation
 import Combine
 
+struct EmptyBody: Encodable {}
+
 @MainActor
 final class BuyerEventViewModel: ObservableObject {
     // MARK: - Input
     let eventId: Int64
-
+    
     // MARK: - Output (Published)
     @Published var state: LoadingState = .idle
     @Published var detail: EventDetail?
     @Published var sessionList: [BuyerSessionDetail] = []
     @Published var selectedSessionId: Int64?
     @Published var selectedSession: BuyerSessionDetail?
-
+    
     // MARK: - Floating Button
     @Published var floatingButtonTitle: String = ""
     @Published var isFloatingButtonEnabled: Bool = false
-
+    
     private let service: BuyerEventServicing
-
+    private let applyService: BuyerApplyServicing
+    
+    private var fetchTask: Task<Void, Never>?
+    
     // MARK: - Init
-    init(eventId: Int64, service: BuyerEventServicing = BuyerEventService()) {
+    init(
+        eventId: Int64,
+        service: BuyerEventServicing = BuyerEventService(),
+        applyService: BuyerApplyServicing = BuyerApplyService()
+    ) {
         self.eventId = eventId
         self.service = service
+        self.applyService = applyService
     }
-
+    
     // MARK: - Lifecycle
     func onAppear() async {
         await fetch()
     }
-
-    func fetch() async {
-        state = .loading
-        do {
-            let (event, sessions) = try await service.fetchDetail(eventId: eventId)
-            self.detail = event
-
-            let updatedSessions = sessions.map { session -> BuyerSessionDetail in
-                var s = session
-                s.remainingTickets = max(event.capacity - session.paidCount, 0)
-                return s
+    
+    func fetch() {
+        // 이전 fetch 작업이 있다면 취소
+        fetchTask?.cancel()
+        
+        // 새로운 fetch 작업 시작
+        fetchTask = Task {
+            await MainActor.run { self.state = .loading }
+            
+            do {
+                let (event, sessions) = try await service.fetchDetail(eventId: eventId)
+                await MainActor.run {
+                    self.detail = event
+                    
+                    let updatedSessions = sessions.map { session -> BuyerSessionDetail in
+                        var s = session
+                        s.remainingTickets = max(event.capacity - session.paidCount, 0)
+                        return s
+                    }
+                    
+                    self.sessionList = updatedSessions
+                    self.state = .loaded
+                    
+                    if let first = updatedSessions.first {
+                        selectedSessionId = first.id
+                        selectedSession = first
+                        updateFloatingButton(for: first)
+                    }
+                }
+            } catch {
+                if let urlError = error as? URLError, urlError.code == .cancelled {
+                    // 취소된 요청은 무시
+                    return
+                }
+                
+                await MainActor.run {
+                    print("[Error] Fetch BuyerEventDetail failed: \(error)")
+                    self.state = .failed(error)
+                }
             }
-
-            self.sessionList = updatedSessions
-            self.state = .loaded
-
-            if let first = updatedSessions.first {
-                selectedSessionId = first.id
-                selectedSession = first
-                updateFloatingButton(for: first)
-            }
-        } catch {
-            print("[Error] Fetch BuyerEventDetail failed: \(error)")
-            self.state = .failed(error)
         }
     }
-
+    
+    func applyToSelectedSession() async {
+        guard let eventId = detail?.id,
+              let sessionId = selectedSession?.id else {
+            print("[Error] applyToSelectedSession - No session or event selected")
+            return
+        }
+        
+        do {
+            let responseWrapper = try await APIClient.shared.post(
+                .buyerApply(eventId: eventId, sessionId: sessionId),
+                body: EmptyBody(),
+                as: APIResponse<ApplyResponseDTO>.self
+            )
+            
+            let response = responseWrapper.result
+            print("✅ 응모 완료: \(response)")
+            
+            // 상태 갱신
+            await fetch()
+        } catch {
+            print("[Error] 응모 실패: \(error)")
+        }
+    }
+    
     func selectSession(_ id: Int64) {
         guard let s = sessionList.first(where: { $0.id == id }) else { return }
         selectedSessionId = id
         selectedSession = s
         updateFloatingButton(for: s)
     }
-
+    
     func isSessionSelectable(_ session: BuyerSessionDetail) -> Bool {
         return detail?.status != .ended
     }
-
+    
     func sessionApplyStatusLabel(_ session: BuyerSessionDetail) -> String {
         switch detail?.status {
         case .applyNotOpened:
@@ -96,7 +146,7 @@ final class BuyerEventViewModel: ObservableObject {
             return ""
         }
     }
-
+    
     func updateFloatingButton(for session: BuyerSessionDetail?) {
         guard let event = detail else { return }
         guard let session = session else {
@@ -104,12 +154,12 @@ final class BuyerEventViewModel: ObservableObject {
             isFloatingButtonEnabled = false
             return
         }
-
+        
         switch event.status {
         case .applyNotOpened:
             floatingButtonTitle = "티켓 응모하기"
             isFloatingButtonEnabled = false
-
+            
         case .applyOpen:
             if session.applyStatus == nil {
                 floatingButtonTitle = "티켓 응모하기"
@@ -118,7 +168,7 @@ final class BuyerEventViewModel: ObservableObject {
                 floatingButtonTitle = "티켓 응모하기"
                 isFloatingButtonEnabled = false
             }
-
+            
         case .applyClosed:
             switch session.applyStatus {
             case .selected:
@@ -134,7 +184,7 @@ final class BuyerEventViewModel: ObservableObject {
                 floatingButtonTitle = ""
                 isFloatingButtonEnabled = false
             }
-
+            
         case .ticketed:
             if session.applyStatus == .paid {
                 floatingButtonTitle = "티켓 조회하기"
@@ -152,7 +202,7 @@ final class BuyerEventViewModel: ObservableObject {
                 floatingButtonTitle = ""
                 isFloatingButtonEnabled = false
             }
-
+            
         case .inProgress:
             if session.ticketId != nil {
                 floatingButtonTitle = "공연 입장하기"
@@ -164,7 +214,7 @@ final class BuyerEventViewModel: ObservableObject {
                 floatingButtonTitle = "티켓 구매하기"
                 isFloatingButtonEnabled = false
             }
-
+            
         case .ended:
             if session.ticketId != nil {
                 floatingButtonTitle = "티켓 조회하기"
@@ -176,3 +226,4 @@ final class BuyerEventViewModel: ObservableObject {
         }
     }
 }
+

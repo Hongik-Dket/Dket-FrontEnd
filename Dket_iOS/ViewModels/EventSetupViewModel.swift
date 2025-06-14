@@ -49,22 +49,41 @@ final class EventSetupViewModel: ObservableObject {
               !description.isEmpty else {
             throw ValidationError("모든 텍스트 항목을 입력해주세요.")
         }
+        
         // ② 날짜 순서
         guard startDate <= endDate,
               applyStart <= applyEnd else {
             throw ValidationError("날짜/시간 순서를 다시 확인해주세요.")
         }
-        // ③ 시각 포맷(HH:mm) – 간단 정규식 검사
+        
+        // ③ 시각 포맷(HH:mm)
         let timeRegex = #"^\d{2}:\d{2}$"#
         guard startTimeText.range(of: timeRegex, options: .regularExpression) != nil,
-              endTimeText.range(of: timeRegex,   options: .regularExpression) != nil
-        else {
+              endTimeText.range(of: timeRegex,   options: .regularExpression) != nil else {
             throw ValidationError("시작/종료 시각은 HH:mm 형식으로 입력하세요.")
         }
+        
         // ④ 필수 이미지
         guard let _ = bannerImageData,
               let _ = posterImageData else {
             throw ValidationError("배너·포스터 이미지를 모두 선택해주세요.")
+        }
+        
+        // ⑤ 서버 기준 날짜 논리 검증
+        let now = Date()
+        if applyStart < now {
+            throw ValidationError("응모 시작 시간은 현재 시각보다 이후여야 합니다.")
+        }
+        if applyEnd <= applyStart {
+            throw ValidationError("응모 종료일은 응모 시작일보다 이후여야 합니다.")
+        }
+        let paymentDeadlineEnd = Calendar.current.date(byAdding: .day, value: 2, to: applyEnd) ?? applyEnd
+        let eventStartAtMidnight = Calendar.current.startOfDay(for: startDate)
+        if paymentDeadlineEnd > eventStartAtMidnight {
+            throw ValidationError("응모 종료 후 2일 이내에 공연이 시작되어야 합니다.")
+        }
+        if endDate < startDate {
+            throw ValidationError("공연 종료일은 공연 시작일보다 이후여야 합니다.")
         }
     }
     
@@ -93,24 +112,26 @@ final class EventSetupViewModel: ObservableObject {
                 )
                 
                 // 실제 업로드
-                let _: APIResponse<EmptyResultDTO> = try await api.upload(
-                    .organizerCreateEvent,           // Endpoint 에 새 케이스 추가 필요
+                let response: APIResponse<EventCreateResponseDTO> = try await api.upload(
+                    .organizerCreateEvent,
                     json: dto,
                     banner: bannerImageData!,
                     poster: posterImageData!,
                     photocard: photocardImageData
                 )
                 
+                NotificationCenter.default.post(name: .eventCreated, object: nil)
+                
                 state = .loaded        // 성공
             } catch let e as ValidationError {
                 state = .failed(e)
                 alertMessage = e.localizedDescription
                 isShowingAlert = true
-              } catch {
+            } catch {
                 state = .failed(error)
                 alertMessage = error.localizedDescription
                 isShowingAlert = true
-              }
+            }
         }
     }
 }
@@ -124,3 +145,5 @@ private struct ValidationError: LocalizedError {
 
 // 서버가 body 를 반환하지 않을 때 쓸 빈 DTO
 struct EmptyResultDTO: Decodable {}
+
+

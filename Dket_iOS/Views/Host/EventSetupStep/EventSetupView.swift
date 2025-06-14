@@ -25,8 +25,10 @@ struct EventSetupView: View {
     @State private var endTime          = Date()
     @State private var price            = ""
     @State private var capacity         = ""
-    @State private var enrollStart      = Date()
-    @State private var enrollEnd        = Date()
+    @State private var enrollStartDate = Date()
+    @State private var enrollStartTime = Date()
+    @State private var enrollEndDate   = Date()
+    @State private var enrollEndTime   = Date()
     
     // STEP 3
     @State private var bannerImage: UIImage?
@@ -37,6 +39,9 @@ struct EventSetupView: View {
     @State private var showModal = false
     @State private var modalStep = 1   // 1,2,3 단계를 PopupFlowView 에 전달
     @State private var showNotice = false     // 개최 완료 공지
+    
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
     
     enum Step { case one, two, three }
     
@@ -70,8 +75,10 @@ struct EventSetupView: View {
                         endTime:          $endTime,
                         price:            $price,
                         capacity:         $capacity,
-                        enrollStart:      $enrollStart,
-                        enrollEnd:        $enrollEnd
+                        enrollStartDate:  $enrollStartDate,
+                        enrollStartTime:  $enrollStartTime,
+                        enrollEndDate:    $enrollEndDate,
+                        enrollEndTime:    $enrollEndTime
                     )
                 case .three:
                     ThirdStepView(
@@ -133,13 +140,84 @@ struct EventSetupView: View {
                 showModal = true
             }
         }
+        .alert(isPresented: $showingAlert) {
+            Alert(title: Text("입력 오류"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
+        }
     }
     
     private func next() {
         switch step {
         case .one:   step = .two
-        case .two:   step = .three
+        case .two:
+            let calendar = Calendar(identifier: .gregorian)
+
+            guard
+                let finalApplyStart = calendar.date(
+                    bySettingHour: calendar.component(.hour, from: enrollStartTime),
+                    minute: calendar.component(.minute, from: enrollStartTime),
+                    second: 0,
+                    of: enrollStartDate
+                ),
+                let finalApplyEnd = calendar.date(
+                    bySettingHour: calendar.component(.hour, from: enrollEndTime),
+                    minute: calendar.component(.minute, from: enrollEndTime),
+                    second: 0,
+                    of: enrollEndDate
+                )
+            else {
+                alertMessage = "응모 시작/종료 시간이 올바르지 않습니다."
+                showingAlert = true
+                return
+            }
+
+            // 현재 시각보다 이후여야 함
+            if finalApplyStart < Date() {
+                alertMessage = "응모 시작 시간은 현재 시각보다 이후여야 합니다."
+                showingAlert = true
+                return
+            }
+
+            if finalApplyEnd <= finalApplyStart {
+                alertMessage = "응모 마감일은 시작일보다 이후여야 합니다."
+                showingAlert = true
+                return
+            }
+
+            if calendar.date(byAdding: .day, value: 2, to: finalApplyEnd)! > calendar.startOfDay(for: performanceStart) {
+                alertMessage = "응모 마감 후 최소 2일 후에 공연이 시작되어야 합니다."
+                showingAlert = true
+                return
+            }
+
+            if performanceEnd < performanceStart {
+                alertMessage = "공연 종료일은 시작일보다 이후여야 합니다."
+                showingAlert = true
+                return
+            }
+            step = .three
+            
         case .three: // 로컬 @State → 뷰모델로 복사
+            // 응모 시작/종료 시간 조합
+            let calendar = Calendar(identifier: .gregorian)
+            let startDateTime = calendar.date(
+                bySettingHour: calendar.component(.hour, from: enrollStartTime),
+                minute: calendar.component(.minute, from: enrollStartTime),
+                second: 0,
+                of: enrollStartDate
+            )
+            let endDateTime = calendar.date(
+                bySettingHour: calendar.component(.hour, from: enrollEndTime),
+                minute: calendar.component(.minute, from: enrollEndTime),
+                second: 0,
+                of: enrollEndDate
+            )
+            
+            guard let finalApplyStart = startDateTime, let finalApplyEnd = endDateTime else {
+                print("⛔️ 응모 시작/종료 시간 결합 실패")
+                return
+            }
+            
+            // viewModel에 복사
             viewModel.title          = title
             viewModel.location       = location
             viewModel.description    = description
@@ -149,8 +227,8 @@ struct EventSetupView: View {
             viewModel.endTimeText    = DateFormatter.HHmm.string(from: endTime)
             viewModel.price          = Int(price) ?? 0
             viewModel.capacity       = Int(capacity) ?? 0
-            viewModel.applyStart     = enrollStart
-            viewModel.applyEnd       = enrollEnd
+            viewModel.applyStart     = finalApplyStart
+            viewModel.applyEnd       = finalApplyEnd
             viewModel.bannerImageData    = bannerImage?.jpegData(compressionQuality: 0.8)
             viewModel.posterImageData    = posterImage?.jpegData(compressionQuality: 0.8)
             viewModel.photocardImageData = photocardImage?.jpegData(compressionQuality: 0.8)
@@ -182,9 +260,9 @@ struct EventSetupView: View {
             return bannerImage != nil && posterImage != nil
         }
     }
+        
+    
 }
-
-
 
 struct EventSetupStep1View_Previews: PreviewProvider {
     static var previews: some View {
