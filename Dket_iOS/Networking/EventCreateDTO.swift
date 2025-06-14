@@ -42,8 +42,8 @@ struct EventCreateRequestDTO: Encodable {
         // 날짜 포맷
         try c.encode(DateFormatter.yyyyMMdd.string(from: startDate), forKey: .startDate)
         try c.encode(DateFormatter.yyyyMMdd.string(from: endDate),   forKey: .endDate)
-        try c.encode(DateFormatter.yyyyMMddHHmm.string(from: applyStart), forKey: .applyStart)
-        try c.encode(DateFormatter.yyyyMMddHHmm.string(from: applyEnd),   forKey: .applyEnd)
+        try c.encode(DateFormatter.yyyyMMddTHHmmss.string(from: applyStart), forKey: .applyStart)
+        try c.encode(DateFormatter.yyyyMMddTHHmmss.string(from: applyEnd), forKey: .applyEnd)
     }
 }
 

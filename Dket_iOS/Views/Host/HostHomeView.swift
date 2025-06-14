@@ -71,7 +71,13 @@ struct HostHomeView: View {
                 NavigationLink("", destination: EventSetupView(), isActive: $isCreating)
                     .opacity(0)
             }
-            .task { await vm.onAppear() }
+            .onAppear {
+                Task { await vm.onAppear() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .eventCreated)) { _ in
+                print("🔄 [HostHomeView] eventCreated 감지 → 새로고침")
+                Task { await vm.onAppear() }
+            }
         }
     }
 }
