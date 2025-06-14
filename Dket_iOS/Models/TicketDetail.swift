@@ -7,11 +7,13 @@
 
 import Foundation
 
-struct TicketDetail {
-    let title: String
-    let userName: String
-    let userBirth: String
+struct TicketDetail: Identifiable {
+    let id = UUID()  
+    let title:        String
+    let userName:     String
+    let userBirth:    String
     let ticketNumber: String
-    let seat: Int
+    let seat:         String
+    let qrCodeUrl:    String?
 }
 

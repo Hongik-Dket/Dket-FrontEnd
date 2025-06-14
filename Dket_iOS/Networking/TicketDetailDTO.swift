@@ -6,20 +6,21 @@
 //
 
 struct TicketDetailDTO: Decodable {
-    let title:       String
-    let userName:    String
-    let userBirth:   String
-    let ticketNumber:String
-    let seat:        Int
-    
-    // domain 으로 변환
+    let title:        String
+    let userName:     String
+    let userBirth:    String
+    let ticketNumber: String
+    let seat:         String
+    let qrCodeUrl:    String?
+
     var domain: TicketDetail {
         .init(
-            title:        title,
-            userName:     userName,
-            userBirth:    userBirth,
+            title: title,
+            userName: userName,
+            userBirth: userBirth,
             ticketNumber: ticketNumber,
-            seat:         seat
+            seat: seat,
+            qrCodeUrl: qrCodeUrl
         )
     }
 }
