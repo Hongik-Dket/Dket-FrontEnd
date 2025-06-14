@@ -8,8 +8,9 @@
 import Foundation
 
 struct TicketDetail: Identifiable {
-    let id = UUID()  
+    let id: Int64
     let title:        String
+    let dateFormatted: String
     let userName:     String
     let userBirth:    String
     let ticketNumber: String
