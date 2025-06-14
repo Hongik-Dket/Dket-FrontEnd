@@ -96,7 +96,7 @@ struct BuyerEventDetailView: View {
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity, maxHeight: 48)
-                            .background(vm.isFloatingButtonEnabled ? Color.blue : Color.gray)
+                            .background(vm.isFloatingButtonEnabled ? Color.dketBlue : Color.gray)
                             .cornerRadius(24)
                             .shadow(radius: 4)
                             .padding(.horizontal)
