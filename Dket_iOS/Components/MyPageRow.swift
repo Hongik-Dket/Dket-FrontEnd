@@ -13,7 +13,7 @@ struct MypageRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 10) {
+            HStack(spacing: 12) {
                 Circle()
                     .fill(Color.dketBlue)
                     .frame(width: 8, height: 8)
