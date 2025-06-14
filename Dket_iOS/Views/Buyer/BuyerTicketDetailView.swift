@@ -37,7 +37,7 @@ struct BuyerTicketDetailView: View {
                     .padding(.top, 60) // 노치와 겹치지 않게
 
                 // 정보 영역
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 10) {
                     TicketInfoRow(label: "공연 일시", value: ticket.dateFormatted)
                     TicketInfoRow(label: "예매자 명", value: ticket.userName)
                     TicketInfoRow(label: "생년월일", value: ticket.userBirth)
