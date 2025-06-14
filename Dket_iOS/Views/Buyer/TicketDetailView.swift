@@ -73,7 +73,7 @@ struct TicketDetailView: View {
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: 360, maxHeight: 48)
-                            .background(Color(red: 22/255, green: 29/255, blue: 111/255))
+                            .background(Color.dketBlue)
                             .cornerRadius(24)
                             .shadow(radius: 4)
                     }
@@ -85,12 +85,12 @@ struct TicketDetailView: View {
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: 360, maxHeight: 48)
-                            .background(Color(red: 22/255, green: 29/255, blue: 111/255))
+                            .background(Color.dketBlue)
                             .cornerRadius(24)
                             .shadow(radius: 4)
                     }
                 }
-                .padding(.bottom, 50) // 아래 간격 충분히 확보
+                .padding(.bottom, 50)
             }
         }
     }
@@ -119,7 +119,7 @@ struct TicketDetailView_Previews: PreviewProvider {
         TicketDetailView(ticket: TicketDetail(
             id: 1,
             title: "공연 이름",
-            dateFormatted: "2025.06.30", // 백엔드에서 LocalDateTime을 받을 경우 형식화한 값
+            dateFormatted: "2025.06.30 18:00", 
             userName: "여희주",
             userBirth: "2003.02.25",
             ticketNumber: "T152670849345203",

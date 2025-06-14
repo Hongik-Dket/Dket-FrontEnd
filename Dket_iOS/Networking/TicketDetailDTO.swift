@@ -21,7 +21,7 @@ struct TicketDetailDTO: Decodable {
         TicketDetail(
             id: ticketId,
             title: eventTitle,
-            dateFormatted: DateFormatter.yyyyDMMDdd.string(from: eventDateTime),
+            dateFormatted: DateFormatter.yyyyDMMDddHHmm.string(from: eventDateTime),
             userName: buyerName,
             userBirth: DateFormatter.yyyyDMMDdd.string(from: birth),
             ticketNumber: ticketNumber,
