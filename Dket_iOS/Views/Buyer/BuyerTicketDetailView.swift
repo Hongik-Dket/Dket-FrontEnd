@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TicketDetailView: View {
+struct BuyerTicketDetailView: View {
     let ticket: TicketDetail
     @Environment(\.dismiss) private var dismiss
 
@@ -114,12 +114,12 @@ struct TicketInfoRow: View {
     }
 }
 
-struct TicketDetailView_Previews: PreviewProvider {
+struct BuyerTicketDetailView_Preview: PreviewProvider {
     static var previews: some View {
-        TicketDetailView(ticket: TicketDetail(
+        BuyerTicketDetailView(ticket: TicketDetail(
             id: 1,
             title: "공연 이름",
-            dateFormatted: "2025.06.30 18:00", 
+            dateFormatted: "2025.06.30 18:00",
             userName: "여희주",
             userBirth: "2003.02.25",
             ticketNumber: "T152670849345203",
