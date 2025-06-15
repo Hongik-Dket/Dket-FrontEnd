@@ -16,7 +16,7 @@ import ReownAppKit
 
 protocol BuyTicketServicing {
     func getPriceWei(for sessionId: Int64) async throws -> BigUInt
-    func sendBuyTicketTransaction(sessionId: Int64, walletAddress: String, priceWei: BigUInt) async throws
+    func sendBuyTicketTransaction(sessionId: Int64, from: String, value: BigUInt) async throws
 }
 
 // MARK: - Service 구현
@@ -25,8 +25,7 @@ final class BuyTicketService: BuyTicketServicing {
     func getPriceWei(for sessionId: Int64) async throws -> BigUInt {
         let endpoint = Endpoint.buyerTicketPrice(sessionId: sessionId)
         let result: PriceWeiResult = try await APIClient.shared.getDecoded(endpoint)
-        
-        return result.priceWei  // 이제 바로 사용 가능
+            return BigUInt(result.priceWei)
     }
     
     private func encodeBuyTicketCall(sessionId: Int64) async throws -> Data {
@@ -38,7 +37,7 @@ final class BuyTicketService: BuyTicketServicing {
             throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "잘못된 컨트랙트 주소"])
         }
         
-        let rpcURL = URL(string: "https://rpc.sepolia.org")!
+        let rpcURL = URL(string: "https://eth-sepolia.g.alchemy.com/v2/CiydLLNTXgdxp4WB5-3J33i_8pxyLPwU")!
         let provider = try await Web3HttpProvider(url: rpcURL, network: .Custom(networkID: 11155111))
         let web3 = Web3(provider: provider)
         guard let contract = web3.contract(abi, at: contractAddress, abiVersion: 2),
@@ -65,32 +64,36 @@ final class BuyTicketService: BuyTicketServicing {
         ]
     }
     
-    func sendBuyTicketTransaction(sessionId: Int64, walletAddress: String, priceWei: BigUInt) async throws {
-        let encoded = try await encodeBuyTicketCall(sessionId: sessionId)
-        let tx = try buildTransactionDict(
-            from: walletAddress,
-            to: "0x3fc31f1a5EF9F401Cc0c584F452dba0384596495",
-            value: BigUInt(priceWei),
-            data: encoded
-        )
-        
+    func sendBuyTicketTransaction(sessionId: Int64, from: String, value: BigUInt) async throws {
+        print("🟠 Step 1: ABI 인코딩 시작")
+            let encoded = try await encodeBuyTicketCall(sessionId: sessionId)
+            print("🔧 ABI 인코딩 완료: 0x" + encoded.toHexString())
+
+        print("🟠 Step 2: 트랜잭션 딕셔너리 구성")
+            let tx = try buildTransactionDict(
+                from: from,
+                to: "0x701a820fa0f04f797f640a89ea6ad92d54f5458a",
+                value: value,
+                data: encoded
+            )
+            print("📦 트랜잭션 내용:\n\(tx)")
+
         guard let session = AppKit.instance.getSessions().first else {
-            throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wallet session not found"])
+               throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wallet session not found"])
+           }
+        guard let sepoliaChainId = Blockchain("eip155:11155111") else {
+            throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "Sepolia Chain ID 생성 실패"])
         }
-        
-        let topic = session.topic
-        guard let chain = session.accounts.first?.blockchain else {
-            throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "Blockchain info not found in session"])
-        }
-        
+        print("🟠 Step 3: WalletConnect 세션 topic=\(session.topic), chain=\(sepoliaChainId)")
         let request = try Request(
-            topic: topic,
+            topic: session.topic,
             method: "eth_sendTransaction",
             params: AnyCodable([tx]),
-            chainId: chain
+            chainId: sepoliaChainId
         )
-        
-        try await Sign.instance.request(params: request)
+        print("🟡 트랜잭션 요청 준비 완료. 사용자 서명 대기 중...")
+        let result = try await Sign.instance.request(params: request)
+        print("🟢 사용자 서명 및 트랜잭션 요청 전송 성공: \(result)")
     }
 }
 

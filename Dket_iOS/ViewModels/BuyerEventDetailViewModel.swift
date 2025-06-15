@@ -246,16 +246,20 @@ final class BuyerEventViewModel: ObservableObject {
         
         do {
             let priceWei = try await buyTicketService.getPriceWei(for: sessionId)
+
+            // sendBuyTicketTransaction에 walletAddress는 from으로만 사용됨, priceWei는 msg.value로
             try await buyTicketService.sendBuyTicketTransaction(
                 sessionId: sessionId,
-                walletAddress: walletAddress,
-                priceWei: priceWei
+                from: walletAddress,
+                value: priceWei
             )
+
             print("✅ 트랜잭션 전송 완료")
             await fetch()
             return true
         } catch {
-            print("❌ 결제 실패: \(error.localizedDescription)")
+            print("❌ 결제 실패: \(error)")
+            debugPrint("결제실패에러:", error)
             return false
         }
     }

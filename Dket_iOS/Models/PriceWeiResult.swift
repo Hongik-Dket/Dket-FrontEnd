@@ -9,5 +9,5 @@ import BigInt
 
 struct PriceWeiResult: Decodable {
     let sessionId: Int64
-    let priceWei: BigUInt
+    let priceWei: UInt64
 }
