@@ -42,3 +42,11 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# 🔒 사용자 개별 Xcode 설정 파일 무시
+*.xcschememanagement.plist
+*.xcscheme
+*.xcuserdatad/
+
+# 🧾 Swift Package Manager 설정 파일 무시
+Package.resolved

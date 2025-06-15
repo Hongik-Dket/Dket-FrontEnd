@@ -27,10 +27,7 @@ struct MetaMaskLoginView: View {
                 // 메타마스크로 시작하기 버튼
                 Button {
                     print("MetaMask 연결하기 버튼 클릭")
-                    Task {
-                        await connectToWallet()
-                        goToRoleSelection = true
-                    }
+                    connectToWallet()
                 } label: {
                     HStack {
                         ZStack {
@@ -64,24 +61,40 @@ struct MetaMaskLoginView: View {
         }
     }
     
-    func connectToWallet() async {
-        do {
-            let uri = try await AppKit.instance.connect(walletUniversalLink: nil)
+    func connectToWallet() {
+        Task {
+            do {
+                await resetSession()  // optional
 
-            let base = "https://metamask.app.link/wc?uri="
-            guard let encoded = uri?.absoluteString.addingPercentEncoding(
-                    withAllowedCharacters: .alphanumerics),
-                  let url = URL(string: base + encoded) else {
-                print("❗ URI 인코딩 실패")
-                return
+                let uri = try await AppKit.instance.connect(walletUniversalLink: nil)
+
+                print("📡 WalletConnect URI 생성됨")
+
+                let base = "https://metamask.app.link/wc?uri="
+                guard let encoded = uri?.absoluteString.addingPercentEncoding(
+                        withAllowedCharacters: .alphanumerics),
+                      let url = URL(string: base + encoded) else {
+                    print("❗ URI 인코딩 실패")
+                    return
+                }
+
+                // ✅ 반드시 Main Thread에서 실행
+                DispatchQueue.main.async {
+                    UIApplication.shared.open(url)
+                }
+
+            } catch {
+                print("❌ 연결 실패:", error)
             }
-
-            await UIApplication.shared.open(url)  // ← 한 번만
-                              
-
-        } catch {
-            print("❌ 연결 실패:", error)
         }
+    }
+    
+    func resetSession() async {
+        let sessions = AppKit.instance.getSessions()
+        for session in sessions {
+            try? await AppKit.instance.disconnect(topic: session.topic)
+        }
+        print("🧹 기존 세션 정리 완료")
     }
 }
 
