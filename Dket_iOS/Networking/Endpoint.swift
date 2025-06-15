@@ -27,7 +27,7 @@ enum Endpoint {
     case buyerHomeEntire
 
     case buyerApply(eventId: Int64, sessionId: Int64)
-    case buyerPurchase(eventId: Int64, sessionId: Int64)
+    case buyerTicketPrice(sessionId: Int64)
     case buyerEventDetail(eventId: Int64)
 
     case buyerTicketDetail(ticketId: String)
@@ -65,8 +65,8 @@ enum Endpoint {
 
         case .buyerApply(let eid, let sid):
             return "/api/buyer/events/\(eid)/sessions/\(sid)/apply"
-        case .buyerPurchase(let eid, let sid):
-            return "/api/buyer/events/\(eid)/sessions/\(sid)/purchase"
+        case .buyerTicketPrice(let sid):
+            return "/api/tickets/buyer/\(sid)"
         case .buyerEventDetail(let eid):
             return "/api/buyer/events/\(eid)"
 
@@ -82,7 +82,7 @@ enum Endpoint {
             return "/api/buyer/tickets/\(tid)/photocard"
 
         case .connectWallet:
-            return "/api/login/metamask/complete"
+            return "/api/user/login/metamask/complete"
         }
     }
 
@@ -92,7 +92,7 @@ enum Endpoint {
         case .organizerCreateEvent,
              .connectWallet,
              .buyerApply,
-             .buyerPurchase:
+             .buyerTicketPrice:
             return "POST"
         case .buyerEnter:
             return "PATCH"

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import web3swift
 import Combine
 
 struct EmptyBody: Encodable {}
@@ -30,19 +31,22 @@ final class BuyerEventViewModel: ObservableObject {
     
     private let service: BuyerEventServicing
     private let applyService: BuyerApplyServicing
-    @Published var applyResult: ApplyResult = .none
+    private let buyTicketService: BuyTicketServicing
     
+    @Published var applyResult: ApplyResult = .none
     private var fetchTask: Task<Void, Never>?
     
     // MARK: - Init
     init(
         eventId: Int64,
         service: BuyerEventServicing = BuyerEventService(),
-        applyService: BuyerApplyServicing = BuyerApplyService()
+        applyService: BuyerApplyServicing = BuyerApplyService(),
+        buyTicketService: BuyTicketServicing = BuyTicketService()
     ) {
         self.eventId = eventId
         self.service = service
         self.applyService = applyService
+        self.buyTicketService = buyTicketService
     }
     
     // MARK: - Lifecycle
@@ -230,6 +234,29 @@ final class BuyerEventViewModel: ObservableObject {
                 floatingButtonTitle = ""
                 isFloatingButtonEnabled = false
             }
+        }
+    }
+    
+    func purchaseTicket() async -> Bool {
+        guard let sessionId = selectedSession?.id,
+              let walletAddress = UserWalletStore.shared.address else {
+            print("❌ 지갑 주소 혹은 세션이 없습니다.")
+            return false
+        }
+        
+        do {
+            let priceWei = try await buyTicketService.getPriceWei(for: sessionId)
+            try await buyTicketService.sendBuyTicketTransaction(
+                sessionId: sessionId,
+                walletAddress: walletAddress,
+                priceWei: priceWei
+            )
+            print("✅ 트랜잭션 전송 완료")
+            await fetch()
+            return true
+        } catch {
+            print("❌ 결제 실패: \(error.localizedDescription)")
+            return false
         }
     }
 }

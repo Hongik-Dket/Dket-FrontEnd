@@ -11,7 +11,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
     
-    private static let baseURL = URL(string: "http://192.168.0.16:8080")! // 실제 서버 주소
+    private static let baseURL = URL(string: "http://192.168.198.38:8080")! // 실제 서버 주소
     private let session = URLSession.shared
     
     // MARK: - JSON Decoder 설정
@@ -135,7 +135,7 @@ extension APIClient {
         
         
         var body = Data()
-        body.appendMultiPart(field: "request", filename: nil, mime: "application/json", value: jsonData, boundary: boundary)
+        body.appendMultiPart(field: "request", filename: "event.json", mime: "application/json", value: jsonData, boundary: boundary)
         body.appendMultiPart(field: "banner", filename: "banner.jpg", mime: "image/jpeg", value: banner, boundary: boundary)
         body.appendMultiPart(field: "poster", filename: "poster.jpg", mime: "image/jpeg", value: poster, boundary: boundary)
         body.appendMultiPart(field: "photocardList", filename: "photocard.jpg", mime: "image/jpeg", value: photocard ?? Data(), boundary: boundary)

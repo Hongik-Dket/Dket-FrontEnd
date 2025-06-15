@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		038288C92DFEC8C8005F3DB7 /* web3swift in Frameworks */ = {isa = PBXBuildFile; productRef = 038288C82DFEC8C8005F3DB7 /* web3swift */; };
+		038288CC2DFEEB33005F3DB7 /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = 038288CB2DFEEB33005F3DB7 /* AnyCodable */; };
 		038426DE2DDEE868001849B2 /* ReownAppKit in Frameworks */ = {isa = PBXBuildFile; productRef = 038426DD2DDEE868001849B2 /* ReownAppKit */; };
 		038426E02DDEE868001849B2 /* ReownWalletKit in Frameworks */ = {isa = PBXBuildFile; productRef = 038426DF2DDEE868001849B2 /* ReownWalletKit */; };
 		038426E22DDEE868001849B2 /* WalletConnect in Frameworks */ = {isa = PBXBuildFile; productRef = 038426E12DDEE868001849B2 /* WalletConnect */; };
@@ -65,6 +67,8 @@
 				038426DE2DDEE868001849B2 /* ReownAppKit in Frameworks */,
 				038426E22DDEE868001849B2 /* WalletConnect in Frameworks */,
 				038426EA2DE30E6D001849B2 /* WalletConnectNetworking in Frameworks */,
+				038288C92DFEC8C8005F3DB7 /* web3swift in Frameworks */,
+				038288CC2DFEEB33005F3DB7 /* AnyCodable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +143,8 @@
 				038426E12DDEE868001849B2 /* WalletConnect */,
 				038426E72DDEFE6E001849B2 /* CryptoSwift */,
 				038426E92DE30E6D001849B2 /* WalletConnectNetworking */,
+				038288C82DFEC8C8005F3DB7 /* web3swift */,
+				038288CB2DFEEB33005F3DB7 /* AnyCodable */,
 			);
 			productName = Dket_iOS;
 			productReference = 03FC7B0E2DA4218A002D15B3 /* Dket_iOS.app */;
@@ -225,6 +231,8 @@
 			packageReferences = (
 				038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */,
 				038426E62DDEFE6E001849B2 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
+				038288C72DFEC8C8005F3DB7 /* XCRemoteSwiftPackageReference "web3swift" */,
+				038288CA2DFEEB33005F3DB7 /* XCRemoteSwiftPackageReference "AnyCodable" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 03FC7B0F2DA4218A002D15B3 /* Products */;
@@ -630,6 +638,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		038288C72DFEC8C8005F3DB7 /* XCRemoteSwiftPackageReference "web3swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/skywinder/web3swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.3.0;
+			};
+		};
+		038288CA2DFEEB33005F3DB7 /* XCRemoteSwiftPackageReference "AnyCodable" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Flight-School/AnyCodable.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.6.7;
+			};
+		};
 		038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/reown-com/reown-swift";
@@ -649,6 +673,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		038288C82DFEC8C8005F3DB7 /* web3swift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038288C72DFEC8C8005F3DB7 /* XCRemoteSwiftPackageReference "web3swift" */;
+			productName = web3swift;
+		};
+		038288CB2DFEEB33005F3DB7 /* AnyCodable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038288CA2DFEEB33005F3DB7 /* XCRemoteSwiftPackageReference "AnyCodable" */;
+			productName = AnyCodable;
+		};
 		038426DD2DDEE868001849B2 /* ReownAppKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */;

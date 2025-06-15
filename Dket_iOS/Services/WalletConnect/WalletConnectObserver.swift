@@ -22,6 +22,8 @@ func observeWalletEvents(appState: AppState) {
             if let wallet = session.accounts.first {
                 print("지갑 주소: \(wallet.address)")
                 
+                UserWalletStore.shared.saveAddress(wallet.address)
+                
                 DispatchQueue.main.async {
                         appState.connectedAddress = wallet.address  
                     }
