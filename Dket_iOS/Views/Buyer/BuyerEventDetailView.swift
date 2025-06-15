@@ -13,6 +13,8 @@ struct BuyerEventDetailView: View {
     
     @StateObject private var vm: BuyerEventViewModel
     
+    @State private var showApplySuccessAlert = false
+    
     init(eventId: Int64) {
         self.eventId = eventId
         _vm = StateObject(wrappedValue: BuyerEventViewModel(eventId: eventId))
@@ -84,20 +86,30 @@ struct BuyerEventDetailView: View {
                     Button(action: {
                         // TODO: 버튼 액션 처리 (예: 응모, 결제 등)
                         Task {
-                            await vm.applyToSelectedSession()
+                            let success = await vm.applyToSelectedSession()
+                            if success {
+                                showApplySuccessAlert = true
+                            }
                         }
                     }) {
                         Text(vm.floatingButtonTitle)
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity, maxHeight: 48)
-                            .background(vm.isFloatingButtonEnabled ? Color.blue : Color.gray)
+                            .background(vm.isFloatingButtonEnabled ? Color.dketBlue : Color.gray)
                             .cornerRadius(24)
                             .shadow(radius: 4)
                             .padding(.horizontal)
                     }
                     .disabled(!vm.isFloatingButtonEnabled)
                     .padding(.bottom)
+                }
+            }
+        }
+        .overlay {
+            if showApplySuccessAlert {
+                ApplySuccessModalView {
+                    showApplySuccessAlert = false
                 }
             }
         }

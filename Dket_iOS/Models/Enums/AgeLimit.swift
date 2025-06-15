@@ -22,3 +22,9 @@ enum AgeLimit: String, Codable {
         }
     }
 }
+
+enum ApplyResult {
+    case none
+    case success
+    case ageRestricted
+}

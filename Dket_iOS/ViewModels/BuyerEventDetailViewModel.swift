@@ -26,8 +26,11 @@ final class BuyerEventViewModel: ObservableObject {
     @Published var floatingButtonTitle: String = ""
     @Published var isFloatingButtonEnabled: Bool = false
     
+    @Published var showApplySuccessAlert: Bool = false
+    
     private let service: BuyerEventServicing
     private let applyService: BuyerApplyServicing
+    @Published var applyResult: ApplyResult = .none
     
     private var fetchTask: Task<Void, Never>?
     
@@ -89,11 +92,11 @@ final class BuyerEventViewModel: ObservableObject {
         }
     }
     
-    func applyToSelectedSession() async {
+    func applyToSelectedSession() async -> Bool {
         guard let eventId = detail?.id,
               let sessionId = selectedSession?.id else {
             print("[Error] applyToSelectedSession - No session or event selected")
-            return
+            return false
         }
         
         do {
@@ -105,11 +108,15 @@ final class BuyerEventViewModel: ObservableObject {
             
             let response = responseWrapper.result
             print("✅ 응모 완료: \(response)")
+            await MainActor.run {
+                self.showApplySuccessAlert = true
+            }
             
-            // 상태 갱신
             await fetch()
+            return true
         } catch {
             print("[Error] 응모 실패: \(error)")
+            return false
         }
     }
     

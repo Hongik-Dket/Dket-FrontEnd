@@ -62,4 +62,11 @@ extension DateFormatter {
         f.dateFormat = "M/d"
         return f
       }()
+    
+    static let yyyyDMMDddHHmm: DateFormatter = {
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .iso8601)
+        f.dateFormat = "yyyy.MM.dd HH:mm" 
+        return f
+    }()
 }
