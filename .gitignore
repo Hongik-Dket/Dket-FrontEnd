@@ -26,7 +26,7 @@ playground.xcworkspace
 .build/
 # Packages/
 # Package.pins
-# Package.resolved
+Package.resolved
 # *.xcodeproj
 # .swiftpm
 
