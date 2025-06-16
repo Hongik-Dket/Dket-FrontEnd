@@ -8,25 +8,31 @@
 import Foundation
 
 struct TicketDetailDTO: Decodable {
-    let ticketId:     Int64
-    let eventTitle:   String
+    let ticketId: Int64
+    let eventTitle: String
     let eventDateTime: Date
-    let buyerName:    String
-    let birth:        Date
+    let buyerName: String
+    let birth: Date
     let ticketNumber: String
-    let seatNumber:   String
-    let qrCodeUrl:    String?
-
+    let seatNumber: String
+    let qrCodeUrl: String
+    let photoCardId: Int64
+    let nftUrl: String
+    let isEntered: Bool
+    
     var domain: TicketDetail {
         TicketDetail(
-            id: ticketId,
-            title: eventTitle,
-            dateFormatted: DateFormatter.yyyyDMMDddHHmm.string(from: eventDateTime),
-            userName: buyerName,
-            userBirth: DateFormatter.yyyyDMMDdd.string(from: birth),
+            ticketId: ticketId,
+            eventTitle: eventTitle,
+            eventDateTime: eventDateTime,
+            buyerName: buyerName,
+            birth: birth,
             ticketNumber: ticketNumber,
-            seat: seatNumber,
-            qrCodeUrl: qrCodeUrl
+            seatNumber: seatNumber,
+            qrCodeUrl: qrCodeUrl,
+            photoCardId: photoCardId,
+            nftUrl: nftUrl,
+            isEntered: isEntered
         )
     }
 }
