@@ -11,6 +11,15 @@ import Combine
 
 struct EmptyBody: Encodable {}
 
+enum FloatingActionType: String {
+    case apply = "티켓 응모하기"
+    case purchase = "티켓 결제하기"
+    case buy = "티켓 구매하기"
+    case enter = "공연 입장하기"
+    case view = "티켓 조회하기"
+    case none = ""
+}
+
 @MainActor
 final class BuyerEventViewModel: ObservableObject {
     // MARK: - Input
@@ -26,6 +35,7 @@ final class BuyerEventViewModel: ObservableObject {
     // MARK: - Floating Button
     @Published var floatingButtonTitle: String = ""
     @Published var isFloatingButtonEnabled: Bool = false
+    @Published var floatingAction: FloatingActionType = .none
     
     @Published var showApplySuccessAlert: Bool = false
     
@@ -113,10 +123,13 @@ final class BuyerEventViewModel: ObservableObject {
             let response = responseWrapper.result
             print("✅ 응모 완료: \(response)")
             await MainActor.run {
-                self.showApplySuccessAlert = true
-            }
-            
-            await fetch()
+                        self.showApplySuccessAlert = true
+                        
+                        // fetch 후 다시 상태 반영
+                        if let selected = self.selectedSession {
+                            self.updateFloatingButton(for: selected)
+                        }
+                    }
             return true
         } catch {
             print("[Error] 응모 실패: \(error)")
@@ -175,9 +188,11 @@ final class BuyerEventViewModel: ObservableObject {
             if session.applyStatus == nil {
                 floatingButtonTitle = "티켓 응모하기"
                 isFloatingButtonEnabled = true
+                floatingAction = .apply
             } else {
                 floatingButtonTitle = "티켓 응모하기"
                 isFloatingButtonEnabled = false
+                floatingAction = .none
             }
             
         case .applyClosed:
@@ -185,15 +200,19 @@ final class BuyerEventViewModel: ObservableObject {
             case .selected:
                 floatingButtonTitle = "티켓 결제하기"
                 isFloatingButtonEnabled = true
+                floatingAction = .purchase
             case .paid:
                 floatingButtonTitle = "티켓 조회하기"
                 isFloatingButtonEnabled = true
+                floatingAction = .view
             case .notSelected:
                 floatingButtonTitle = "티켓 결제하기"
                 isFloatingButtonEnabled = false
+                floatingAction = .none
             default:
                 floatingButtonTitle = ""
                 isFloatingButtonEnabled = false
+                floatingAction = .none
             }
             
         case .ticketed:
@@ -235,6 +254,7 @@ final class BuyerEventViewModel: ObservableObject {
                 isFloatingButtonEnabled = false
             }
         }
+        print("[DEBUG] 버튼 타이틀: \(floatingButtonTitle), 액션: \(floatingAction.rawValue), enabled: \(isFloatingButtonEnabled)")
     }
     
     func purchaseTicket() async -> Bool {

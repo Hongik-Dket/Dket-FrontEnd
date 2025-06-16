@@ -15,7 +15,7 @@ struct EventCreateRequestDTO: Encodable {
     let endDate:     Date
     let startTime:   String          // HH:mm:ss
     let endTime:     String
-    let price:       Int
+    let priceKrw:       Int
     let capacity:    Int
     let applyStart:  Date            // yyyy-MM-dd'T'HH:mm:ss
     let applyEnd:    Date
@@ -24,7 +24,7 @@ struct EventCreateRequestDTO: Encodable {
     enum CodingKeys: String, CodingKey {
         case title, location, description,
              startDate, endDate, startTime, endTime,
-             price, capacity, applyStart, applyEnd, ageLimit
+             priceKrw, capacity, applyStart, applyEnd, ageLimit
     }
     
     // 날짜 둘을 서로 다른 포맷으로 보내야 하므로 직접 encode(to:)
@@ -35,7 +35,7 @@ struct EventCreateRequestDTO: Encodable {
         try c.encode(description,  forKey: .description)
         try c.encode(startTime,    forKey: .startTime)
         try c.encode(endTime,      forKey: .endTime)
-        try c.encode(price,        forKey: .price)
+        try c.encode(priceKrw,        forKey: .priceKrw)
         try c.encode(capacity,     forKey: .capacity)
         try c.encode(ageLimit,     forKey: .ageLimit)
         

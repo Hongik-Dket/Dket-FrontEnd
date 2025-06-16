@@ -23,7 +23,7 @@ struct EventSetupView: View {
     @State private var performanceEnd   = Date()
     @State private var startTime        = Date()
     @State private var endTime          = Date()
-    @State private var price            = ""
+    @State private var priceKrw            = ""
     @State private var capacity         = ""
     @State private var enrollStartDate = Date()
     @State private var enrollStartTime = Date()
@@ -73,7 +73,7 @@ struct EventSetupView: View {
                         performanceEnd:   $performanceEnd,
                         startTime:        $startTime,
                         endTime:          $endTime,
-                        price:            $price,
+                        priceKrw:         $priceKrw,
                         capacity:         $capacity,
                         enrollStartDate:  $enrollStartDate,
                         enrollStartTime:  $enrollStartTime,
@@ -225,7 +225,7 @@ struct EventSetupView: View {
             viewModel.endDate        = performanceEnd
             viewModel.startTimeText  = DateFormatter.HHmm.string(from: startTime)
             viewModel.endTimeText    = DateFormatter.HHmm.string(from: endTime)
-            viewModel.price          = Int(price) ?? 0
+            viewModel.priceKrw       = Int(priceKrw) ?? 0
             viewModel.capacity       = Int(capacity) ?? 0
             viewModel.applyStart     = finalApplyStart
             viewModel.applyEnd       = finalApplyEnd
@@ -254,7 +254,7 @@ struct EventSetupView: View {
         case .two:
             return performanceStart <= performanceEnd
             && startTime       <= endTime
-            && !price.isEmpty
+            && !priceKrw.isEmpty
             && !capacity.isEmpty
         case .three:
             return bannerImage != nil && posterImage != nil

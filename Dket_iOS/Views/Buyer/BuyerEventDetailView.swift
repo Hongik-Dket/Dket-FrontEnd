@@ -7,20 +7,14 @@
 
 import SwiftUI
 
-enum FloatingActionType: String {
-    case apply = "티켓 응모하기"
-    case purchase = "티켓 결제하기"
-    case buy = "티켓 구매하기"
-    case enter = "공연 입장하기"
-    case view = "티켓 조회하기"
-    case none = ""
-}
 
 struct BuyerEventDetailView: View {
     let eventId: Int64
     @Environment(\.dismiss) private var dismiss
     
     @StateObject private var vm: BuyerEventViewModel
+    
+    @State private var showApplySuccessAlert = false
     
     init(eventId: Int64) {
         self.eventId = eventId
@@ -31,18 +25,14 @@ struct BuyerEventDetailView: View {
         Group {
             switch vm.state {
             case .idle, .loading:
-                ProgressView().task {
-                    await vm.onAppear()
-                }
+                ProgressView().task { await vm.fetch() }
             case .failed(let error):
                 VStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 32))
                         .foregroundStyle(.orange)
                     Text(error.localizedDescription)
-                    Button("다시 시도") {
-                        Task { await vm.fetch() }
-                    }
+                    Button("다시 시도") { Task { await vm.fetch() } }
                 }
             case .loaded:
                 if let detail = vm.detail {
@@ -59,13 +49,6 @@ struct BuyerEventDetailView: View {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.black)
-                }
-            }
-        }
-        .overlay {
-            if vm.showApplySuccessAlert {
-                ApplySuccessModalView {
-                    vm.showApplySuccessAlert = false
                 }
             }
         }
@@ -103,17 +86,23 @@ struct BuyerEventDetailView: View {
                 if vm.floatingButtonTitle != "" {
                     Button(action: {
                         Task {
-                            switch vm.floatingButtonTitle {
-                            case "티켓 응모하기":
+                            print("[DEBUG] floatingAction = \(vm.floatingAction.rawValue)")
+                            switch vm.floatingAction {
+                            case .purchase, .buy:
+                                await vm.purchaseTicket()
+                                await vm.fetch()
+                                
+                            case .apply:
                                 let success = await vm.applyToSelectedSession()
                                 if success {
-                                    vm.showApplySuccessAlert = true
-                                    await vm.fetch() // 중복 응모 방지용 상태 업데이트
+                                    await MainActor.run {
+                                        showApplySuccessAlert = true
+                                    }
+                                    await vm.fetch()
                                 }
-                            case "티켓 결제하기", "티켓 구매하기":
-                                _ = await vm.purchaseTicket()
-                                await vm.fetch()
+
                             default:
+                                print("[DEBUG] default case triggered")
                                 break
                             }
                         }
@@ -129,6 +118,13 @@ struct BuyerEventDetailView: View {
                     }
                     .disabled(!vm.isFloatingButtonEnabled)
                     .padding(.bottom)
+                }
+            }
+        }
+        .overlay {
+            if showApplySuccessAlert {
+                ApplySuccessModalView {
+                    showApplySuccessAlert = false
                 }
             }
         }

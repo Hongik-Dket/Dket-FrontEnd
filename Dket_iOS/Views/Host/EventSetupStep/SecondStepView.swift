@@ -12,7 +12,7 @@ struct SecondStepView: View {
     @Binding var performanceEnd: Date
     @Binding var startTime: Date
     @Binding var endTime: Date
-    @Binding var price: String
+    @Binding var priceKrw: String
     @Binding var capacity: String
     @Binding var enrollStartDate: Date
     @Binding var enrollStartTime: Date
@@ -57,7 +57,7 @@ struct SecondStepView: View {
                         .frame(width: 80, alignment: .leading)
                         .font(.system(size: 16, weight: .bold))
                     
-                    TextField("0", text: $price)
+                    TextField("0", text: $priceKrw)
                         .keyboardType(.numberPad)
                         .textFieldStyle(UnderlineTextFieldStyle())
                     Text("원")

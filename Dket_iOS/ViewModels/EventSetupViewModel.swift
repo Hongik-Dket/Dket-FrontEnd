@@ -25,7 +25,7 @@ final class EventSetupViewModel: ObservableObject {
     @Published var applyStart     = Date()            // DatePicker (yyyy-MM-dd HH:mm)
     @Published var applyEnd       = Date()
     
-    @Published var price:      Int = 0
+    @Published var priceKrw:   Int = 0
     @Published var capacity:   Int = 0
     @Published var ageLimit:   AgeLimit = .all        // 기본값
     
@@ -104,7 +104,7 @@ final class EventSetupViewModel: ObservableObject {
                     endDate:     endDate,
                     startTime:   "\(startTimeText):00",   // “HH:mm:ss”
                     endTime:     "\(endTimeText):00",
-                    price:       price,
+                    priceKrw:    priceKrw,
                     capacity:    capacity,
                     applyStart:  applyStart,
                     applyEnd:    applyEnd,
