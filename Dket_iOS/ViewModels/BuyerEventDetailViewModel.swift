@@ -8,6 +8,7 @@
 import Foundation
 import web3swift
 import Combine
+import UIKit
 
 struct EmptyBody: Encodable {}
 
@@ -273,6 +274,10 @@ final class BuyerEventViewModel: ObservableObject {
                 from: walletAddress,
                 value: priceWei
             )
+            
+            if let url = URL(string: "metamask://"), UIApplication.shared.canOpenURL(url) {
+                await UIApplication.shared.open(url)
+            }
 
             print("✅ 트랜잭션 전송 완료")
             await fetch()

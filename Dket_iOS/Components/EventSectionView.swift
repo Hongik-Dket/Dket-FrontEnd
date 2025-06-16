@@ -18,6 +18,8 @@ struct EventSectionView: View {
 
     // 전체 보기 클릭 시: 선택적으로 사용
     var onSeeAllTap: (() -> Void)? = nil
+    
+    var type: ListingType? = nil
 
     var body: some View {
         VStack(alignment: .leading) {

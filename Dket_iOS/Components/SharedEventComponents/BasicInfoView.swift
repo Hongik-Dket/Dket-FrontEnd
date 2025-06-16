@@ -16,7 +16,7 @@ struct BasicInfoView: View {
     }
     
     private var applyPeriodText: String {
-        let df = DateFormatter.yyyyDMMDdd
+        let df = DateFormatter.yyyyDMMDddHHmm
         return "\(df.string(from: detail.applyPeriod.lowerBound)) ~ \(df.string(from: detail.applyPeriod.upperBound))"
     }
     
