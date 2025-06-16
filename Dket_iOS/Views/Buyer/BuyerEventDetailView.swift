@@ -16,6 +16,9 @@ struct BuyerEventDetailView: View {
     
     @State private var showApplySuccessAlert = false
     
+    @State private var showTicketDetail = false
+    @State private var selectedTicketId: Int64?
+    
     init(eventId: Int64) {
         self.eventId = eventId
         _vm = StateObject(wrappedValue: BuyerEventViewModel(eventId: eventId))
@@ -101,6 +104,16 @@ struct BuyerEventDetailView: View {
                                     }
                                     await vm.fetch()
                                 }
+                            case .view:
+                                if let ticketId = vm.selectedSession?.ticketId {
+                                    print("🎯 ticketId 설정됨: \(ticketId)")
+                                    DispatchQueue.main.async {
+                                        self.selectedTicketId = ticketId
+                                        self.showTicketDetail = true
+                                    }
+                                } else {
+                                    print("❌ 선택된 세션에 ticketId가 없음")
+                                }
                                 
                             default:
                                 print("[DEBUG] default case triggered")
@@ -120,6 +133,9 @@ struct BuyerEventDetailView: View {
                     .disabled(!vm.isFloatingButtonEnabled)
                     .padding(.bottom)
                 }
+            }
+            .fullScreenCover(item: $selectedTicketId) { ticketId in
+                BuyerTicketDetailView(ticketId: ticketId)
             }
         }
         .overlay {
@@ -167,4 +183,8 @@ private struct BuyerSessionStatSection: View {
                 .frame(maxWidth: .infinity)
         }
     }
+}
+
+extension Int64: Identifiable {
+    public var id: Int64 { self }
 }

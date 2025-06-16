@@ -86,7 +86,7 @@ final class BuyerEventViewModel: ObservableObject {
                     
                     self.sessionList = updatedSessions
                     self.state = .loaded
-                    
+
                     if let first = updatedSessions.first {
                         selectedSessionId = first.id
                         selectedSession = first

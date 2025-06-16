@@ -15,9 +15,17 @@ struct TicketDetail {
     let birth: Date
     let ticketNumber: String
     let seatNumber: String
-    let qrCodeUrl: String
+    let qrCodeUrl: String?
     let photoCardId: Int64
     let nftUrl: String
-    let isEntered: Bool
+    let entered: Bool
+    
+    var birthDateFormatted: String {
+        DateFormatter.yyyyDMMDddHHmm.string(from: birth)
+    }
+    
+    var startDateFormatted: String {
+        DateFormatter.yyyyDMMDddHHmm.string(from: eventDateTime)
+    }
 }
 

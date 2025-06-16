@@ -11,7 +11,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
     
-    private static let baseURL = URL(string: "http://192.168.199.0:8080")! // 실제 서버 주소
+    private static let baseURL = URL(string: "http://192.168.0.16:8080")! // 실제 서버 주소
     private let session = URLSession.shared
     
     // MARK: - JSON Decoder 설정
@@ -33,7 +33,16 @@ final class APIClient {
 // MARK: - GET 요청
 extension APIClient {
     func get<T: Decodable>(_ endpoint: Endpoint, as type: T.Type = T.self) async throws -> T {
-        let url = Self.baseURL.appendingPathComponent(endpoint.path)
+        var components = URLComponents()
+            components.scheme = Self.baseURL.scheme
+            components.host = Self.baseURL.host
+            components.port = Self.baseURL.port
+            components.path = endpoint.path
+            components.queryItems = endpoint.queryItems
+
+            guard let url = components.url else {
+                throw URLError(.badURL)
+            }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
