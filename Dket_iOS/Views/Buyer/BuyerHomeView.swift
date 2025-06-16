@@ -59,7 +59,7 @@ struct BuyerHomeView: View {
                             )
 
                             EventSectionView(
-                                title: "전체 공연",
+                                title: "🗒️ 전체 공연",
                                 emptyMessage: "공연이 없습니다",
                                 events: bundle.entire,
                                 onEventTap: { event in selectedEventId = event.id },
@@ -70,6 +70,8 @@ struct BuyerHomeView: View {
                 }
                 .padding(.bottom, 40)
             }
+            .refreshable { await vm.refresh() }
+            
             .task { await vm.onAppear() }
 
             .navigationDestination(item: $selectedEventId) { eventId in

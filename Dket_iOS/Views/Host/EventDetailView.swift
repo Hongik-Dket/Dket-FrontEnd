@@ -114,6 +114,7 @@ struct EventDetailView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
             }
+            .refreshable { await vm.refresh() }
             
             // ③ 공연 중인 당일에만 활성화되는 플로팅 버튼
             if let d = vm.detail, d.status == .inProgress {

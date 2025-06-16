@@ -116,6 +116,12 @@ final class EventDetailViewModel: ObservableObject {
                                 }
             }
         }
+    
+    
+    func refresh() async {
+        print("🔄 개최자 공연상세보기 refresh() 실행")
+        await onAppear()
+    }
 }
 
 

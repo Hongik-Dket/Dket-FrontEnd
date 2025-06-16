@@ -31,6 +31,11 @@ final class OrganizerHomeViewModel: ObservableObject {
             state = .failed(error)
         }
     }
+    
+    func refresh() async {
+        print("🔄 개최자 홈 ViewModel 새로고침")
+        await onAppear()
+    }
 }
 
 enum LoadingState {

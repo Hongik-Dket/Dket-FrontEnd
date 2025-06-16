@@ -32,4 +32,9 @@ final class BuyerHomeViewModel: ObservableObject {
             state = .failed(error)
         }
     }
+    
+    func refresh() async {
+        print("🔄 구매자 홈 ViewModel 새로고침")
+        await onAppear()
+    }
 }

@@ -80,6 +80,7 @@ struct BuyerEventDetailView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
             }
+            .refreshable { await vm.refresh() }
             
             VStack {
                 Spacer()
@@ -100,7 +101,7 @@ struct BuyerEventDetailView: View {
                                     }
                                     await vm.fetch()
                                 }
-
+                                
                             default:
                                 print("[DEBUG] default case triggered")
                                 break

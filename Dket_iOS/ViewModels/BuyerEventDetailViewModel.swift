@@ -283,5 +283,10 @@ final class BuyerEventViewModel: ObservableObject {
             return false
         }
     }
+    
+    func refresh() async {
+        print("🔄 구매자 공연상세보기 refresh() 실행")
+        await fetch()
+    }
 }
 
