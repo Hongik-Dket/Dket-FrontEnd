@@ -11,6 +11,8 @@ struct HostHomeView: View {
     @StateObject private var vm = OrganizerHomeViewModel()
     @State private var isCreating = false
     @State private var selectedListType: ListingType?
+    @EnvironmentObject private var appState: AppState
+    @State private var showMypage = false
     
     var body: some View {
         NavigationStack {
@@ -19,7 +21,7 @@ struct HostHomeView: View {
                     VStack(spacing: 30) {
                         SearchHeaderView(
                             onSearch: { /* TODO */ },
-                            onMenu:   { /* TODO */ }
+                            onMenu:   { showMypage = true }
                         )
                         
                         switch vm.state {
@@ -86,6 +88,10 @@ struct HostHomeView: View {
             .navigationDestination(item: $selectedListType) { type in  // 🔹 추가
                 EventListView(type: type)
             }
+        }
+        .fullScreenCover(isPresented: $showMypage) {
+            MypageView()
+                .environmentObject(appState)
         }
     }
 }

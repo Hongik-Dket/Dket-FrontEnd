@@ -11,18 +11,20 @@ struct PhotoCardDetailView: View {
     @StateObject private var vm: PhotoCardDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showTicket = false
-
+    @State private var showMypage = false
+    @EnvironmentObject private var appState: AppState
+    
     init(ticketId: Int64) {
         _vm = StateObject(wrappedValue: PhotoCardDetailViewModel(ticketId: ticketId))
     }
-
+    
     var body: some View {
         VStack(spacing: 16) {
             BackHeaderView(
                 onBack: { dismiss() },
-                onMenu: { print("메뉴 클릭") }
+                onMenu: { showMypage = true }
             )
-
+            
             if let photoCard = vm.photoCard {
                 if let url = URL(string: photoCard.imageUrl) {
                     AsyncImage(url: url) { image in
@@ -37,9 +39,9 @@ struct PhotoCardDetailView: View {
                             .frame(width: 280, height: 370)
                     }
                 }
-
+                
                 Spacer()
-
+                
                 VStack(spacing: 16) {
                     CircleButton(title: "티켓 보기") {
                         showTicket = true
@@ -64,6 +66,10 @@ struct PhotoCardDetailView: View {
         .navigationBarHidden(true)
         .fullScreenCover(isPresented: $showTicket) {
             BuyerTicketDetailView(ticketId: vm.photoCard?.ticketId ?? 0)
+        }
+        .fullScreenCover(isPresented: $showMypage) {  // ✅ 마이페이지 연결
+            MypageView()
+                .environmentObject(appState)
         }
     }
 }

@@ -43,6 +43,9 @@ struct EventSetupView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     
+    @EnvironmentObject private var appState: AppState
+    @State private var showMypage = false
+    
     enum Step { case one, two, three }
     
     var body: some View {
@@ -50,7 +53,7 @@ struct EventSetupView: View {
             // MARK: A) 커스텀 백헤더
             BackHeaderView(
                 onBack: { dismiss() },
-                onMenu: { /* 메뉴 토글 */ }
+                onMenu: { showMypage = true }
             )
             
             // MARK: B) STEP 인디케이터
@@ -143,6 +146,10 @@ struct EventSetupView: View {
         .alert(isPresented: $showingAlert) {
             Alert(title: Text("입력 오류"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
         }
+        .fullScreenCover(isPresented: $showMypage) {
+            MypageView()
+                .environmentObject(appState)
+        }
     }
     
     private func next() {
@@ -150,7 +157,7 @@ struct EventSetupView: View {
         case .one:   step = .two
         case .two:
             let calendar = Calendar(identifier: .gregorian)
-
+            
             guard
                 let finalApplyStart = calendar.date(
                     bySettingHour: calendar.component(.hour, from: enrollStartTime),
@@ -169,26 +176,26 @@ struct EventSetupView: View {
                 showingAlert = true
                 return
             }
-
+            
             // 현재 시각보다 이후여야 함
             if finalApplyStart < Date() {
                 alertMessage = "응모 시작 시간은 현재 시각보다 이후여야 합니다."
                 showingAlert = true
                 return
             }
-
+            
             if finalApplyEnd <= finalApplyStart {
                 alertMessage = "응모 마감일은 시작일보다 이후여야 합니다."
                 showingAlert = true
                 return
             }
-
+            
             if calendar.date(byAdding: .day, value: 2, to: finalApplyEnd)! > calendar.startOfDay(for: performanceStart) {
                 alertMessage = "응모 마감 후 최소 2일 후에 공연이 시작되어야 합니다."
                 showingAlert = true
                 return
             }
-
+            
             if performanceEnd < performanceStart {
                 alertMessage = "공연 종료일은 시작일보다 이후여야 합니다."
                 showingAlert = true
@@ -260,7 +267,7 @@ struct EventSetupView: View {
             return bannerImage != nil && posterImage != nil
         }
     }
-        
+    
     
 }
 
