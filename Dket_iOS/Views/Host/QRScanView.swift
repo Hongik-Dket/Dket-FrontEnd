@@ -67,6 +67,8 @@ class AVCaptureViewController: UIViewController {
         preview.frame = view.layer.bounds
         view.layer.addSublayer(preview)
         
+        session.startRunning()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -76,7 +78,7 @@ class AVCaptureViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        session.startRunning()
+        
     }
 }
 

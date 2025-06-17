@@ -28,6 +28,7 @@ final class APIClient {
         }
         return d
     }()
+    
 }
 
 // MARK: - GET 요청
@@ -45,6 +46,7 @@ extension APIClient {
             }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        authorizedRequest(&request)
         
         let (data, response) = try await session.data(for: request)
         
@@ -88,6 +90,7 @@ extension APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        authorizedRequest(&request)
         
         let encoder = JSONEncoder()
         //encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -129,6 +132,7 @@ extension APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "PATCH"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        authorizedRequest(&request)
 
         // PATCH에서는 대부분 body가 필요 없으므로 빈 바디 허용
         request.httpBody = nil
@@ -169,6 +173,7 @@ extension APIClient {
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)",
                          forHTTPHeaderField: "Content-Type")
+        authorizedRequest(&request)
         
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .useDefaultKeys
@@ -230,6 +235,17 @@ private extension Data {
         append("Content-Type: \(mime)\r\n\r\n".data(using: .utf8)!)
         append(value)
         append("\r\n".data(using: .utf8)!)
+    }
+}
+
+extension APIClient {
+    private func authorizedRequest(_ request: inout URLRequest) {
+        if let token = TokenManager.loadToken() {
+            #if DEBUG
+            print("🔐 Authorization 헤더 삽입: Bearer \(token)")
+            #endif
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
     }
 }
 
