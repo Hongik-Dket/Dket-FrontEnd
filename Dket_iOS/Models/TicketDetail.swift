@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TicketDetail {
+struct TicketDetail: Equatable {
     let ticketId: Int64
     let eventTitle: String
     let eventDateTime: Date

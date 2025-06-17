@@ -34,7 +34,9 @@ enum Endpoint {
     case ticketDetailByNumber(number: String)
     
     case buyerTicketList
+    case ticketEnter(ticketId: Int64)
     case buyerEnter(ticketId: String)
+    
     case buyerPhotocardList
     case buyerPhotocardDetail(ticketId: Int64)
     
@@ -68,7 +70,7 @@ enum Endpoint {
         case .buyerApply(let eid, let sid):
             return "/api/buyer/events/\(eid)/sessions/\(sid)/apply"
         case .buyerTicketPrice(let sid):
-            return "/api/tickets/buyer/\(sid)"
+            return "/api/buyer/events\(sid)"
         case .buyerEventDetail(let eid):
             return "/api/buyer/events/\(eid)"
             
@@ -79,8 +81,11 @@ enum Endpoint {
         case .buyerTicketList:
             return "/api/user/tickets"
             
+        case .ticketEnter(let ticketId):
+                    return "/api/tickets/organizer/\(ticketId)/enter"
         case .buyerEnter(let tid):
             return "/api/buyer/tickets/\(tid)/enter"
+            
         case .buyerPhotocardList:
             return "/api/buyer/photocards"
         case .buyerPhotocardDetail(let tid):
@@ -112,7 +117,8 @@ enum Endpoint {
                 .buyerApply,
                 .buyerTicketPrice:
             return "POST"
-        case .buyerEnter:
+        case .buyerEnter,
+                .ticketEnter:
             return "PATCH"
         default:
             return "GET"

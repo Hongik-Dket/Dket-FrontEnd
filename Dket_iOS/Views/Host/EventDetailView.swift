@@ -17,6 +17,9 @@ struct EventDetailView: View {
     @State private var verifyTitle = ""
     @State private var verifyMessage = ""
     
+    @State private var showTicketDetail = false
+    @State private var showInvalidTicket = false
+    
     // 외부에서 eventId 만 넘기면 뷰-모델을 알아서 만들도록 편의 init 제공
     @MainActor
     init(eventId: Int64) {
@@ -44,16 +47,16 @@ struct EventDetailView: View {
         .navigationTitle("공연 상세")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-                .toolbar {                                  
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(.black)
-                        }
-                    }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.black)
                 }
-        // ② QR 스캐너 풀스크린 커버
+            }
+        }
+        // ✅ QR 스캐너 화면
         .fullScreenCover(isPresented: $showScanner) {
             QRScannerContainerView(
                 onScan: { code in
@@ -65,8 +68,24 @@ struct EventDetailView: View {
                 }
             )
         }
-       
-        // 검증 상태 변화 감지해서 Alert 띄우기
+        // ✅ 티켓 상세 화면
+        .fullScreenCover(isPresented: $showTicketDetail) {
+            if let ticket = vm.verifiedTicket {
+                OrganizerTicketDetailView(ticket: ticket) {
+                    showTicketDetail = false
+                    vm.verifiedTicket = nil
+                }
+            }
+        }
+        // ✅ ❌ 유효하지 않은 티켓 알림 화면
+        .fullScreenCover(isPresented: $showInvalidTicket) {
+            InvalidTicketView {
+                showInvalidTicket = false
+                vm.verificationFailed = false  // 상태 초기화
+            }
+        }
+
+        // ✅ 검증 결과 알림
         .onChange(of: vm.verificationState) { state in
             switch state {
             case .idle, .verifying:
@@ -81,6 +100,22 @@ struct EventDetailView: View {
                 showVerifyAlert = true
             }
         }
+
+        // ✅ 검증 성공 → 티켓 상세 뷰 표시
+        .onChange(of: vm.verifiedTicket) { ticket in
+            if ticket != nil {
+                showTicketDetail = true
+            }
+        }
+
+        // ✅ 검증 실패 → 유효하지 않은 티켓 뷰 표시
+        .onChange(of: vm.verificationFailed) { failed in
+            if failed {
+                showInvalidTicket = true
+            }
+        }
+
+        // ✅ 공통 알림 창
         .alert(verifyTitle, isPresented: $showVerifyAlert) {
             Button("확인", role: .cancel) {}
         } message: {
@@ -97,7 +132,6 @@ struct EventDetailView: View {
                     BasicInfoView(detail: d)
                     Divider()
                     
-                    // ① 응모 전엔 회차 선택 자체를 보여주지 않고 D-day 텍스트만
                     if d.status == .applyNotOpened {
                         Text("응모 D-\(Date().daysUntil(d.applyPeriod.lowerBound))일")
                             .font(.headline)
@@ -105,11 +139,10 @@ struct EventDetailView: View {
                     } else {
                         SessionPickerView(detail: d)
                         Divider()
-                        // ②/③/④/⑤/⑥ 상태별 통계 섹션
                         SessionStatSection()
                     }
                     
-                    Spacer(minLength: 80) // 플로팅 버튼 공간 확보
+                    Spacer(minLength: 80)
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -131,7 +164,7 @@ struct EventDetailView: View {
                         // 배경색을 isTodaySession 으로 분기
                         .background(
                             isTodaySession
-                            ? Color(red: 22/255, green: 29/255, blue: 111/255)    // 활성화 시 진한 파랑
+                            ? Color.dketBlue   // 활성화 시 진한 파랑
                             : Color.gray.opacity(0.5)                             // 비활성 시 반투명 회색
                         )
                         .cornerRadius(24)

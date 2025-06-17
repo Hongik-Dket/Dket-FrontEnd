@@ -11,6 +11,7 @@ protocol TicketServicing {
     func fetchTicketById(_ id: Int64) async throws -> TicketDetail
     func fetchTicketByNumber(_ number: String) async throws -> TicketDetail
     func fetchMyTickets() async throws -> [MyTicket]
+    func enterTicket(_ ticketId: Int64) async throws
     
 }
 
@@ -31,5 +32,9 @@ struct TicketService: TicketServicing {
         try await APIClient.shared.get(.buyerTicketList, as: APIResponse<[MyTicketDTO]>.self)
             .result
             .map { $0.domain }
+    }
+    
+    func enterTicket(_ ticketId: Int64) async throws {
+        _ = try await APIClient.shared.patch(.ticketEnter(ticketId: ticketId), as: APIResponseWithoutResult.self)
     }
 }

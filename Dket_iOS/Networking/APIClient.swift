@@ -119,6 +119,39 @@ extension APIClient {
     }
 }
 
+// MARK: - PATCH 요청
+extension APIClient {
+    func patch<Resp: Decodable>(
+        _ endpoint: Endpoint,
+        as type: Resp.Type = Resp.self
+    ) async throws -> Resp {
+        let url = Self.baseURL.appendingPathComponent(endpoint.path)
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        // PATCH에서는 대부분 body가 필요 없으므로 빈 바디 허용
+        request.httpBody = nil
+
+        let (data, response) = try await session.data(for: request)
+
+#if DEBUG
+        if let raw = String(data: data, encoding: .utf8) {
+            print("🟣 [PATCH \(endpoint.path)] Raw-Response ↓↓↓\n\(raw)\n")
+        }
+#endif
+
+        guard let http = response as? HTTPURLResponse else {
+            throw NetworkError.unknown
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            throw NetworkError.status(http.statusCode)
+        }
+
+        return try Self.decoder.decode(Resp.self, from: data)
+    }
+}
+
 // MARK: - Multipart 업로드
 
 extension APIClient {
@@ -199,4 +232,6 @@ private extension Data {
         append("\r\n".data(using: .utf8)!)
     }
 }
+
+
 

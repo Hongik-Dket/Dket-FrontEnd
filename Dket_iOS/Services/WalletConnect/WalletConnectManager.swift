@@ -52,7 +52,6 @@ final class WalletConnectManager {
         let crypto = MyCryptoProvider()
         
         // 4. AppKit 설정
-        // AppKit 설정
         AppKit.configure(
             projectId: projectId,
             metadata: metadata,
