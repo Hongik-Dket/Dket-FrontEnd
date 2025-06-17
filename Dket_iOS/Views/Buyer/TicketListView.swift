@@ -8,33 +8,67 @@
 import SwiftUI
 
 struct TicketListView: View {
-    let tickets: [TicketListItem]
-    var onBack: () -> Void = {}
-    var onMenu: () -> Void = {}
+    @StateObject private var vm = TicketListViewModel()
+    @Environment(\.dismiss) private var dismiss
+    @State private var showErrorAlert = false
+
+    @State private var selectedTicketId: Int64? = nil
+    @State private var showTicketDetail = false
 
     var body: some View {
         VStack(spacing: 0) {
-            TicketListHeaderView(title: "MY 티켓", onBack: onBack, onMenu: onMenu)
+            // 상단 헤더
+            TicketListHeaderView(
+                title: "MY 티켓",
+                onBack: { dismiss() },
+                onMenu: { print("메뉴 클릭") }
+            )
 
-            ScrollView {
-                VStack(spacing: 10) {
-                    ForEach(tickets) { ticket in
-                        TicketCardView(ticket: ticket)
+            if vm.isLoading {
+                Spacer()
+                ProgressView()
+                Spacer()
+            } else if !vm.tickets.isEmpty {
+                ScrollView {
+                    VStack(spacing: 13) {
+                        ForEach(vm.tickets) { ticket in
+                            Button {
+                                selectedTicketId = ticket.ticketId
+                                showTicketDetail = true
+                            } label: {
+                                TicketCardView(ticket: ticket)
+                            }
+                            .buttonStyle(.plain) // 기본 버튼 스타일 제거 (카드처럼 보이게)
+                        }
                     }
+                    .padding(.top, 16)
+                    .padding(.bottom, 40)
                 }
-                .padding(.top, 16)
-                .padding(.bottom, 40)
+            } else {
+                Spacer()
+                Text("보유한 티켓이 없습니다.")
+                    .foregroundColor(.gray)
+                Spacer()
             }
         }
-    }
-}
-
-struct TicketListView_Previews: PreviewProvider {
-    static var previews: some View {
-        TicketListView(tickets: [
-            TicketListItem(ticketId: 1, title: "뮤지컬 고흐", location: "홍대 극장", dateFormatted: "2025.03.20 18:00", imageUrl: nil, entered: false),
-            TicketListItem(ticketId: 2, title: "재즈 나이트", location: "세종문화회관", dateFormatted: "2025.04.01 19:30", imageUrl: nil, entered: true),
-            TicketListItem(ticketId: 3, title: "페스티벌 2025", location: "서울 올림픽공원", dateFormatted: "2025.06.05 17:00", imageUrl: nil, entered: false)
-        ])
+        .task {
+            await vm.fetchTickets()
+        }
+        .alert(isPresented: $showErrorAlert) {
+            Alert(
+                title: Text("오류"),
+                message: Text(vm.errorMessage ?? "알 수 없는 오류가 발생했습니다."),
+                dismissButton: .default(Text("확인"))
+            )
+        }
+        .onChange(of: vm.errorMessage) { newValue in
+            showErrorAlert = newValue != nil
+        }
+        .navigationBarHidden(true)
+        .fullScreenCover(isPresented: $showTicketDetail) {
+            if let ticketId = selectedTicketId {
+                BuyerTicketDetailView(ticketId: ticketId)
+            }
+        }
     }
 }

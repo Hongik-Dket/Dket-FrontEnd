@@ -7,77 +7,74 @@
 
 import SwiftUI
 
-enum MypageRowType: String, CaseIterable {
-    case walletInfo = "내 지갑 정보"
-    case myTickets = "MY 티켓"
-    case myPhotocards = "MY 포토카드"
-    case logout = "로그아웃"
-    case deleteService = "서비스 탈퇴"
-    case terms = "이용약관"
-    case switchToBuyer = "구매자 모드로 전환"
-    case switchToOrganizer = "개최자 모드로 전환"
-}
-
 struct MypageView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appState: AppState
     
+    @State private var showMyTickets = false  // ✅ 추가
+    
     var body: some View {
-        ZStack(alignment: .top) {
-            Color.white.ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // 헤더
-                BackHeaderView(onBack: { dismiss() }, onMenu: {})
+        NavigationStack {  // ✅ NavigationStack 감싸기
+            ZStack(alignment: .top) {
+                Color.white.ignoresSafeArea()
                 
-                Divider()
-                
-                // 목록
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 40) {
-                        MypageRow(title: "내 지갑 정보") {
-                            print("지갑 정보")
-                        }
-                        
-                        if appState.userRole == .buyer {
-                            MypageRow(title: "MY 티켓") {
-                                print("MY 티켓")
+                VStack(spacing: 0) {
+                    // 헤더
+                    BackHeaderView(onBack: { dismiss() }, onMenu: {})
+                    
+                    Divider()
+                    
+                    // 목록
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 40) {
+                            MypageRow(title: "내 지갑 정보") {
+                                print("지갑 정보")
                             }
-                            MypageRow(title: "MY 포토카드") {
-                                print("포토카드")
+                            
+                            if appState.userRole == .buyer {
+                                MypageRow(title: "MY 티켓") {
+                                    showMyTickets = true  // ✅ 내 티켓 화면 전환
+                                }
+                                
+                                MypageRow(title: "MY 포토카드") {
+                                    print("포토카드")
+                                }
+                            }
+                            
+                            MypageRow(title: "로그아웃") {
+                                print("로그아웃")
+                            }
+                            
+                            MypageRow(title: "서비스 탈퇴") {
+                                print("탈퇴")
+                            }
+                            
+                            MypageRow(title: "이용약관") {
+                                print("약관")
+                            }
+                            
+                            if appState.userRole == .buyer {
+                                MypageRow(title: "개최자 모드로 전환") {
+                                    appState.userRole = .host
+                                }
+                            } else {
+                                MypageRow(title: "구매자 모드로 전환") {
+                                    appState.userRole = .buyer
+                                }
                             }
                         }
-                        
-                        MypageRow(title: "로그아웃") {
-                            print("로그아웃")
-                        }
-                        
-                        MypageRow(title: "서비스 탈퇴") {
-                            print("탈퇴")
-                        }
-                        
-                        MypageRow(title: "이용약관") {
-                            print("약관")
-                        }
-                        
-                        if appState.userRole == .buyer {
-                            MypageRow(title: "개최자 모드로 전환") {
-                                appState.userRole = .host
-                            }
-                        } else {
-                            MypageRow(title: "구매자 모드로 전환") {
-                                appState.userRole = .buyer
-                            }
-                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 32)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 32)
                 }
+                
+                // ✅ Navigation 이동
+                NavigationLink("", destination: TicketListView(), isActive: $showMyTickets)
+                    .opacity(0) // 숨김
             }
         }
     }
 }
-
 struct MypageView_Previews: PreviewProvider {
     static var previews: some View {
         let appState = AppState()
