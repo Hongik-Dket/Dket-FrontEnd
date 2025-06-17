@@ -70,7 +70,7 @@ enum Endpoint {
         case .buyerApply(let eid, let sid):
             return "/api/buyer/events/\(eid)/sessions/\(sid)/apply"
         case .buyerTicketPrice(let sid):
-            return "/api/buyer/events\(sid)/price"
+            return "/api/buyer/events/\(sid)/price"
         case .buyerEventDetail(let eid):
             return "/api/buyer/events/\(eid)"
             

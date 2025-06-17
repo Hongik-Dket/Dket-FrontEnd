@@ -47,9 +47,9 @@ struct EventListView: View {
                         ForEach(vm.events) { event in
                             NavigationLink {
                                 if type.isBuyerList {
-                                    BuyerEventDetailView(eventId: event.id)  // ✅ 구매자용 뷰로 이동
+                                    BuyerEventDetailView(eventId: event.id)
                                 } else {
-                                    EventDetailView(eventId: event.id)       // ✅ 개최자용 뷰로 이동
+                                    EventDetailView(eventId: event.id)     
                                 }
                             } label: {
                                 VerticalEventCardView(event: event)
