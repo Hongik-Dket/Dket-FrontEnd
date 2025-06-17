@@ -13,11 +13,9 @@ struct TicketListView: View {
     @State private var showErrorAlert = false
 
     @State private var selectedTicketId: Int64? = nil
-    @State private var showTicketDetail = false
 
     var body: some View {
         VStack(spacing: 0) {
-            // 상단 헤더
             TicketListHeaderView(
                 title: "MY 티켓",
                 onBack: { dismiss() },
@@ -34,11 +32,10 @@ struct TicketListView: View {
                         ForEach(vm.tickets) { ticket in
                             Button {
                                 selectedTicketId = ticket.ticketId
-                                showTicketDetail = true
                             } label: {
                                 TicketCardView(ticket: ticket)
                             }
-                            .buttonStyle(.plain) // 기본 버튼 스타일 제거 (카드처럼 보이게)
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.top, 16)
@@ -65,10 +62,8 @@ struct TicketListView: View {
             showErrorAlert = newValue != nil
         }
         .navigationBarHidden(true)
-        .fullScreenCover(isPresented: $showTicketDetail) {
-            if let ticketId = selectedTicketId {
-                BuyerTicketDetailView(ticketId: ticketId)
-            }
+        .fullScreenCover(item: $selectedTicketId) { ticketId in
+            BuyerTicketDetailView(ticketId: ticketId)
         }
     }
 }

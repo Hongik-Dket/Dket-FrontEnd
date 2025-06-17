@@ -7,19 +7,17 @@
 
 import SwiftUI
 
-/// QRScanView 위에 UI를 얹는 SwiftUI 컨테이너
 struct QRScannerContainerView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var showManualEntry = false
     let onScan: (String) -> Void
     let onManualTap: () -> Void
-
+    
     var body: some View {
         ZStack {
-            // 1️⃣ 카메라 프리뷰
             QRScanView(onScan: onScan)
                 .edgesIgnoringSafeArea(.all)
-
-            // 2️⃣ 상단 뒤로가기
+            
             VStack {
                 HStack {
                     Button {
@@ -34,12 +32,20 @@ struct QRScannerContainerView: View {
                     }
                     Spacer()
                 }
-                .padding(.top, 44)    // notch / status bar 감안
+                .padding(.top, 44)
                 .padding(.horizontal, 16)
-
+                
                 Spacer()
-
-                // 3️⃣ 하단 수동 입력 버튼
+                
+                NavigationLink(
+                    destination: OrganizerTicketNumberCheckView {
+                        showManualEntry = false
+                    },
+                    isActive: $showManualEntry
+                ) {
+                    EmptyView()
+                }
+                
                 Button("티켓 번호로 확인하기") {
                     onManualTap()
                 }

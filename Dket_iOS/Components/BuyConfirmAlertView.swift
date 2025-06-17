@@ -1,21 +1,22 @@
 //
-//  ApplySuccessModalView.swift
+//  BuyConfirmAlertView.swift
 //  Dket_iOS
 //
-//  Created by 이지우 on 6/14/25.
+//  Created by 이지우 on 6/17/25.
 //
 
 import SwiftUI
 
-struct ApplySuccessModalView: View {
-    let onDismiss: () -> Void
+struct BuyConfirmAlertView: View {
+    let priceEth: String
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
 
     var body: some View {
         VStack(spacing: 20) {
-            // 상단 닫기 버튼만 남김
             HStack {
                 Spacer()
-                Button(action: onDismiss) {
+                Button(action: onCancel) {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.gray)
@@ -32,22 +33,25 @@ struct ApplySuccessModalView: View {
                 .scaledToFit()
                 .frame(width: 100, height: 100)
 
-            Text("응모가 완료되었습니다.")
-                .font(.headline)
-                .foregroundColor(.black)
-                .padding(.top, 8)
+            Text("티켓 가격은 다음과 같습니다:")
+                .font(.body)
 
-            Spacer().frame(height: 16)
+            Text("\(priceEth) ETH")
+                .font(.title3).bold()
+                .foregroundColor(Color.dketBlue)
 
-            Button(action: onDismiss) {
-                Text("돌아가기")
+            Text("결제를 진행하시겠습니까?")
+                .font(.body)
+
+            Button(action: onConfirm) {
+                Text("결제하기")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity, maxHeight: 48)
-                    .background(Color(red: 22/255, green: 29/255, blue: 111/255)) // Dket Blue
+                    .background(Color.dketBlue)
                     .cornerRadius(12)
-                    .padding(.horizontal)
             }
+            .padding(.horizontal)
 
             Spacer().frame(height: 10)
         }

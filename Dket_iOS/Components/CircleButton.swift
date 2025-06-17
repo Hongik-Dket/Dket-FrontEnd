@@ -19,7 +19,7 @@ struct CircleButton: View {
             Text(title)
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.white)
-                .frame(maxWidth: .infinity, maxHeight: 48)
+                .frame(width: 360, height: 48)
                 .background(isDisabled ? Color.gray.opacity(0.4) : Color.dketBlue)
                 .cornerRadius(24)
                 .shadow(radius: 4)

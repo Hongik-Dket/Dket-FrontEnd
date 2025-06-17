@@ -23,6 +23,7 @@ struct OrganizerTicketDetailView: View {
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
+                .allowsHitTesting(false)
 
             VStack {
                 HStack {

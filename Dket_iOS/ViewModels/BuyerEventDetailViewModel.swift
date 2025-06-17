@@ -9,6 +9,7 @@ import Foundation
 import web3swift
 import Combine
 import UIKit
+import BigInt
 
 struct EmptyBody: Encodable {}
 
@@ -40,6 +41,10 @@ final class BuyerEventViewModel: ObservableObject {
     
     @Published var showApplySuccessAlert: Bool = false
     
+    @Published var ticketPriceWei: BigUInt?
+    @Published var ticketPriceEthString: String = ""
+    @Published var showBuyConfirmAlert: Bool = false
+    
     private let service: BuyerEventServicing
     private let applyService: BuyerApplyServicing
     private let buyTicketService: BuyTicketServicing
@@ -69,7 +74,6 @@ final class BuyerEventViewModel: ObservableObject {
         // 이전 fetch 작업이 있다면 취소
         fetchTask?.cancel()
         
-        // 새로운 fetch 작업 시작
         fetchTask = Task {
             await MainActor.run { self.state = .loading }
             
@@ -86,7 +90,7 @@ final class BuyerEventViewModel: ObservableObject {
                     
                     self.sessionList = updatedSessions
                     self.state = .loaded
-
+                    
                     if let first = updatedSessions.first {
                         selectedSessionId = first.id
                         selectedSession = first
@@ -124,13 +128,13 @@ final class BuyerEventViewModel: ObservableObject {
             let response = responseWrapper.result
             print("✅ 응모 완료: \(response)")
             await MainActor.run {
-                        self.showApplySuccessAlert = true
-                        
-                        // fetch 후 다시 상태 반영
-                        if let selected = self.selectedSession {
-                            self.updateFloatingButton(for: selected)
-                        }
-                    }
+                self.showApplySuccessAlert = true
+                
+                // fetch 후 다시 상태 반영
+                if let selected = self.selectedSession {
+                    self.updateFloatingButton(for: selected)
+                }
+            }
             return true
         } catch {
             print("[Error] 응모 실패: \(error)")
@@ -238,12 +242,15 @@ final class BuyerEventViewModel: ObservableObject {
             if session.ticketId != nil {
                 floatingButtonTitle = "공연 입장하기"
                 isFloatingButtonEnabled = true
+                floatingAction = .enter
             } else if session.buyable {
                 floatingButtonTitle = "티켓 구매하기"
                 isFloatingButtonEnabled = true
+                floatingAction = .buy
             } else {
                 floatingButtonTitle = "티켓 구매하기"
                 isFloatingButtonEnabled = false
+                floatingAction = .none
             }
             
         case .ended:
@@ -258,34 +265,62 @@ final class BuyerEventViewModel: ObservableObject {
         print("[DEBUG] 버튼 타이틀: \(floatingButtonTitle), 액션: \(floatingAction.rawValue), enabled: \(isFloatingButtonEnabled)")
     }
     
-    func purchaseTicket() async -> Bool {
-        guard let sessionId = selectedSession?.id,
-              let walletAddress = UserWalletStore.shared.address else {
-            print("❌ 지갑 주소 혹은 세션이 없습니다.")
-            return false
+    func preparePurchase() async {
+        guard let sessionId = selectedSession?.id else {
+            print("❌ 세션 ID 없음")
+            return
         }
         
         do {
             let priceWei = try await buyTicketService.getPriceWei(for: sessionId)
-
-            // sendBuyTicketTransaction에 walletAddress는 from으로만 사용됨, priceWei는 msg.value로
+            let priceEth: String = {
+                let ethDouble = Double(priceWei) / pow(10.0, 18.0)
+                return String(format: "%.4f", ethDouble)
+            }()
+            
+            await MainActor.run {
+                self.ticketPriceWei = priceWei
+                self.ticketPriceEthString = priceEth
+                self.showBuyConfirmAlert = true
+            }
+        } catch {
+            print("❌ 가격 조회 실패: \(error)")
+        }
+    }
+    
+    func confirmPurchase() async {
+        guard let sessionId = selectedSession?.id,
+              let walletAddress = UserWalletStore.shared.address,
+              let priceWei = ticketPriceWei else {
+            print("❌ 정보 부족")
+            return
+        }
+        
+        do {
             try await buyTicketService.sendBuyTicketTransaction(
                 sessionId: sessionId,
                 from: walletAddress,
                 value: priceWei
             )
             
-            if let url = URL(string: "metamask://"), UIApplication.shared.canOpenURL(url) {
-                await UIApplication.shared.open(url)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                let url = URL(string: "metamask://")!
+                let canOpen = UIApplication.shared.canOpenURL(url)
+                print("🔍 canOpenURL: \(canOpen)")
+                if canOpen {
+                    UIApplication.shared.open(url)
+                    print("📲 MetaMask로 전환 시도")
+                } else {
+                    print("❌ MetaMask 딥링크 실패 — 앱 미설치 or Info.plist 누락")
+                }
             }
-
-            print("✅ 트랜잭션 전송 완료")
+            
+            print("✅ 결제 완료")
+            showBuyConfirmAlert = false
             await fetch()
-            return true
+            
         } catch {
             print("❌ 결제 실패: \(error)")
-            debugPrint("결제실패에러:", error)
-            return false
         }
     }
     

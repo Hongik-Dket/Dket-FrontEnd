@@ -37,7 +37,15 @@ struct BuyerHomeView: View {
                     case .loaded:
                         if let bundle = vm.home {
                             EventSectionView(
-                                title: "💖 인기 공연",
+                                title: {
+                                    HStack(spacing: 8) {
+                                        Image("Popular") 
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                        Text("인기 공연")
+                                            .font(.headline).bold()
+                                    }
+                                },
                                 emptyMessage: "응모된 공연이 없습니다",
                                 events: bundle.popular,
                                 onEventTap: { event in selectedEventId = event.id },
@@ -45,7 +53,15 @@ struct BuyerHomeView: View {
                             )
                             
                             EventSectionView(
-                                title: "⏳ 응모한 공연",
+                                title: {
+                                    HStack(spacing: 8) {
+                                        Image("ApplyEvent")
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                        Text("응모한 공연")
+                                            .font(.headline).bold()
+                                    }
+                                },
                                 emptyMessage: "응모한 공연이 없습니다",
                                 events: bundle.applied,
                                 onEventTap: { event in selectedEventId = event.id },
@@ -53,7 +69,15 @@ struct BuyerHomeView: View {
                             )
                             
                             EventSectionView(
-                                title: "🎟️ 구매한 공연",
+                                title: {
+                                    HStack(spacing: 8) {
+                                        Image("ProgressEvent")
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                        Text("구매한 공연")
+                                            .font(.headline).bold()
+                                    }
+                                },
                                 emptyMessage: "구매한 공연이 없습니다",
                                 events: bundle.purchased,
                                 onEventTap: { event in selectedEventId = event.id },
@@ -61,7 +85,15 @@ struct BuyerHomeView: View {
                             )
                             
                             EventSectionView(
-                                title: "🗒️ 전체 공연",
+                                title: {
+                                    HStack(spacing: 8) {
+                                        Image("AllEvent")
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                        Text("전체 공연")
+                                            .font(.headline).bold()
+                                    }
+                                },
                                 emptyMessage: "공연이 없습니다",
                                 events: bundle.entire,
                                 onEventTap: { event in selectedEventId = event.id },

@@ -13,6 +13,7 @@ struct BuyerTicketDetailView: View {
     @State private var showPhotoCard = false
 
     init(ticketId: Int64) {
+        print("🧾 BuyerTicketDetailView INIT with ticketId: \(ticketId)")
         _vm = StateObject(wrappedValue: BuyerTicketDetailViewModel(ticketId: ticketId))
     }
 
@@ -35,7 +36,7 @@ struct BuyerTicketDetailView: View {
                         TicketInfoRow(label: "예매자 명", value: ticket.buyerName)
                         TicketInfoRow(label: "생년월일", value: ticket.birthDateFormatted)
                         TicketInfoRow(label: "티켓 번호", value: ticket.ticketNumber)
-                        TicketInfoRow(label: "자석 번호", value: ticket.seatNumber)
+                        TicketInfoRow(label: "좌석 번호", value: ticket.seatNumber)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 50)
@@ -113,12 +114,6 @@ struct TicketInfoRow: View {
                 .font(.system(size: 14, weight: .semibold))
                 .multilineTextAlignment(.leading)
         }
-    }
-}
-
-struct BuyerTicketDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        BuyerTicketDetailView(ticketId: 16)
     }
 }
 

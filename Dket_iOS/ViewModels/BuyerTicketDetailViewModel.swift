@@ -23,12 +23,10 @@ final class BuyerTicketDetailViewModel: ObservableObject {
         do {
             print("👉 fetchTicketById 시작: \(ticketId)")
             let detail = try await ticketService.fetchTicketById(ticketId)
-            await MainActor.run {
-                self.ticket = detail
-            }
+            self.ticket = detail
             print("✅ 티켓 조회 성공: \(detail)")
         } catch {
-            print("❌ 티켓 상세 조회 실패: \(error)")
+            print("❌ 티켓 상세 조회 실패: \(error.localizedDescription)")
         }
     }
 }

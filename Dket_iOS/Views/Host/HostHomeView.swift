@@ -36,21 +36,45 @@ struct HostHomeView: View {
                         case .loaded:
                             if let bundle = vm.home {
                                 EventSectionView(
-                                    title: "⏰ 오늘 공연",
+                                    title: {
+                                        HStack(spacing: 8) {
+                                            Image("todayEvent") 
+                                                .resizable()
+                                                .frame(width: 20, height: 20)
+                                            Text("오늘 공연")
+                                                .font(.headline).bold()
+                                        }
+                                    },
                                     emptyMessage: "오늘 공연이 없습니다",
                                     events: bundle.today,
                                     onSeeAllTap: { selectedListType = .today }
                                 )
                                 
                                 EventSectionView(
-                                    title: "⏳ 최근 응모 마감 공연",
+                                    title: {
+                                        HStack(spacing: 8) {
+                                            Image("ApplyEvent")
+                                                .resizable()
+                                                .frame(width: 20, height: 20)
+                                            Text("최근 응모 마감 공연")
+                                                .font(.headline).bold()
+                                        }
+                                    },
                                     emptyMessage: "최근 응모 마감 공연이 없습니다",
                                     events: bundle.recentlyClosed,
                                     onSeeAllTap: { selectedListType = .closed }
                                 )
                                 
                                 EventSectionView(
-                                    title: "💖 개최한 공연",
+                                    title: {
+                                        HStack(spacing: 8) {
+                                            Image("Popular")
+                                                .resizable()
+                                                .frame(width: 20, height: 20)
+                                            Text("개최한 공연")
+                                                .font(.headline).bold()
+                                        }
+                                    },
                                     emptyMessage: "개최한 공연이 없습니다",
                                     events: bundle.all,
                                     onSeeAllTap: { selectedListType = .all }

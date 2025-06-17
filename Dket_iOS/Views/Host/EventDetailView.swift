@@ -3,7 +3,7 @@ import SwiftUI
 struct EventDetailView: View {
     private let eventId: Int64
     @Environment(\.dismiss) private var dismiss
-    
+
     @State private var showScanner = false
     @State private var showTicketNumberEntry = false
     @State private var showVerifyAlert = false
@@ -11,15 +11,15 @@ struct EventDetailView: View {
     @State private var verifyMessage = ""
     @State private var showTicketDetail = false
     @State private var showInvalidTicket = false
-    
+
     @StateObject private var vm: EventDetailViewModel
-    
+
     @MainActor
     init(eventId: Int64) {
         self.eventId = eventId
         _vm = StateObject(wrappedValue: EventDetailViewModel(eventId: eventId))
     }
-    
+
     var body: some View {
         bodyView
             .navigationTitle("공연 상세")
@@ -34,7 +34,6 @@ struct EventDetailView: View {
                     }
                 }
             }
-        // ✅ QR 스캐너 화면
             .fullScreenCover(isPresented: $showScanner) {
                 QRScannerContainerView(
                     onScan: { code in
@@ -42,11 +41,13 @@ struct EventDetailView: View {
                         vm.verifyTicket(with: code)
                     },
                     onManualTap: {
-                        showTicketNumberEntry = true
+                        showScanner = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showTicketNumberEntry = true
+                        }
                     }
                 )
             }
-        // ✅ 티켓 상세 화면
             .fullScreenCover(isPresented: $showTicketDetail) {
                 if let ticket = vm.verifiedTicket {
                     OrganizerTicketDetailView(ticket: ticket) {
@@ -55,7 +56,14 @@ struct EventDetailView: View {
                     }
                 }
             }
-        // ✅ 검증 결과 알림
+            .fullScreenCover(isPresented: $showTicketNumberEntry) {
+                OrganizerTicketNumberCheckView {
+                    showTicketNumberEntry = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showScanner = true
+                    }
+                }
+            }
             .onChange(of: vm.verificationState) { state in
                 switch state {
                 case .idle, .verifying:
@@ -81,14 +89,14 @@ struct EventDetailView: View {
                 Text(verifyMessage)
             }
     }
-    
+
     // MARK: - 분리된 bodyView
     @ViewBuilder
     private var bodyView: some View {
         switch vm.state {
         case .idle, .loading:
             ProgressView().task { vm.onAppear() }
-            
+
         case .failed(let error):
             VStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
@@ -97,14 +105,14 @@ struct EventDetailView: View {
                 Text(error.localizedDescription)
                 Button("다시 시도") { vm.onAppear() }
             }
-            
+
         case .loaded:
             if let detail = vm.detail {
                 content(detail)
             }
         }
     }
-    
+
     // MARK: - 티켓 검증 상태 처리
     private func handleVerificationState(_ state: EventDetailViewModel.VerificationState) {
         switch state {
@@ -120,38 +128,46 @@ struct EventDetailView: View {
             showVerifyAlert = true
         }
     }
-    
+
     // MARK: - 메인 콘텐츠
     @ViewBuilder
     func content(_ d: EventDetail) -> some View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    PosterView(url: d.poster)
-                    BasicInfoView(detail: d)
-                    Divider()
-                    
-                    if d.status == .applyNotOpened {
-                        Text("응모 D-\(Date().daysUntil(d.applyPeriod.lowerBound))일")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                    } else {
-                        SessionPickerView(detail: d)
-                        Divider()
-                        SessionStatSection()
+
+                    HStack {
+                        Spacer()
+                        PosterView(url: d.poster)
+                        Spacer()
                     }
-                    
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        BasicInfoView(detail: d)
+                        Divider()
+
+                        if d.status == .applyNotOpened {
+                            Text("응모 D-\(Date().daysUntil(d.applyPeriod.lowerBound))일")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            SessionPickerView(detail: d)
+                            Divider()
+                            SessionStatSection()
+                        }
+                    }
+                    .padding(.horizontal)
+
                     Spacer(minLength: 80)
                 }
-                .padding(.horizontal)
                 .padding(.vertical, 12)
             }
             .refreshable { await vm.refresh() }
-            
+
             if d.status == .inProgress {
                 FloatingEnterButton()
             }
-            
+
             if d.status == .ended {
                 Color.black.opacity(0.4).ignoresSafeArea()
                 Image("EndedEvent")
@@ -163,7 +179,7 @@ struct EventDetailView: View {
         }
         .environmentObject(vm)
     }
-    
+
     // MARK: - 입장 확인 플로팅 버튼
     @ViewBuilder
     private func FloatingEnterButton() -> some View {
@@ -185,7 +201,7 @@ struct EventDetailView: View {
             .padding()
         }
     }
-    
+
     private var isTodaySession: Bool {
         guard let s = vm.selectedSession else { return false }
         let today = Calendar.current.startOfDay(for: Date())

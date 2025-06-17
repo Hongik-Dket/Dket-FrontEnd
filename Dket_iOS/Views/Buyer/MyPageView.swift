@@ -11,10 +11,10 @@ struct MypageView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appState: AppState
     
-    @State private var showMyTickets = false  // ✅ 추가
+    @State private var showMyTickets = false
     
     var body: some View {
-        NavigationStack {  // ✅ NavigationStack 감싸기
+        NavigationStack { 
             ZStack(alignment: .top) {
                 Color.white.ignoresSafeArea()
                 
@@ -33,7 +33,7 @@ struct MypageView: View {
                             
                             if appState.userRole == .buyer {
                                 MypageRow(title: "MY 티켓") {
-                                    showMyTickets = true  // ✅ 내 티켓 화면 전환
+                                    showMyTickets = true
                                 }
                                 
                                 MypageRow(title: "MY 포토카드") {
@@ -68,10 +68,10 @@ struct MypageView: View {
                     }
                 }
                 
-                // ✅ Navigation 이동
                 NavigationLink("", destination: TicketListView(), isActive: $showMyTickets)
-                    .opacity(0) // 숨김
+                    .opacity(0) 
             }
+            .navigationBarHidden(true)
         }
     }
 }

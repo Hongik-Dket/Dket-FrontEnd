@@ -9,16 +9,19 @@ import SwiftUI
 
 struct PosterView: View {
     let url: URL
-    
+
     var body: some View {
         AsyncImage(url: url) { image in
-            image.resizable().scaledToFit()
+            image
+                .resizable()
+                .scaledToFill()
         } placeholder: {
             Rectangle()
                 .fill(Color.gray.opacity(0.3))
                 .overlay { ProgressView() }
         }
-        .frame(maxWidth: .infinity)
+        .frame(width: 393, height: 524)
+        .clipped()
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

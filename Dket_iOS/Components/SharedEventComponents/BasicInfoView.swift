@@ -31,7 +31,9 @@ struct BasicInfoView: View {
             Text("\(DateFormatter.HHmm.string(from: startTime)) ~ \(DateFormatter.HHmm.string(from: endTime))")
                 .font(.subheadline)
             
-            Text(detail.ageLimit.label).font(.footnote)
+            Text(detail.ageLimit.label)
+                .font(.footnote)
+                .fontWeight(.semibold)
             Divider().padding(.vertical, 4)
             
             HStack {
@@ -41,15 +43,17 @@ struct BasicInfoView: View {
             HStack {
                 Text("공연 상태"); Spacer(); Text(detail.status.label)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(Color(red: 22/255, green: 29/255, blue: 111/255))
+                    .foregroundColor(Color.dketBlue)
             }.font(.footnote)
             
             HStack {
-                Text("관람 인원"); Spacer(); Text("\(detail.capacity)명")
+                Text("관람 인원"); Spacer(); Text("\(detail.capacity) 명")
             }.font(.footnote)
             
             HStack {
-                Text("가격"); Spacer(); Text("\(detail.priceKrw.formatted()) 원")
+                Text("가격").bold()
+                Spacer()
+                Text("\(detail.priceKrw.formatted()) 원").bold()
             }.font(.footnote)
         }
     }

@@ -19,45 +19,51 @@ struct PhotoCardDetailView: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            BackHeaderView(
-                onBack: { dismiss() },
-                onMenu: { showMypage = true }
-            )
-            
-            if let photoCard = vm.photoCard {
-                if let url = URL(string: photoCard.imageUrl) {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 350, height: 540)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .clipped()
-                    } placeholder: {
-                        ProgressView()
-                            .frame(width: 280, height: 370)
-                    }
-                }
-                
-                Spacer()
+        NavigationStack {
+            ZStack(alignment: .top) {
                 
                 VStack(spacing: 16) {
-                    CircleButton(title: "티켓 보기") {
-                        showTicket = true
-                    }
-                    CircleButton(title: "NFT 티켓 보러가기") {
-                        if let url = URL(string: photoCard.nftUrl) {
-                            UIApplication.shared.open(url)
+                    BackHeaderView(
+                        onBack: { dismiss() },
+                        onMenu: { showMypage = true }
+                    )
+                    .frame(maxWidth: .infinity)
+                    
+                    if let photoCard = vm.photoCard {
+                        if let url = URL(string: photoCard.imageUrl) {
+                            AsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 350, height: 540)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    .clipped()
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(width: 280, height: 370)
+                            }
                         }
+                        
+                        Spacer()
+                        
+                        VStack(spacing: 16) {
+                            CircleButton(title: "티켓 보기") {
+                                showTicket = true
+                            }
+                            CircleButton(title: "NFT 티켓 보러가기") {
+                                if let url = URL(string: photoCard.nftUrl) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 40)
+                    } else {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
                     }
                 }
-                .padding(.horizontal, 32)
-                .padding(.bottom, 40)
-            } else {
-                Spacer()
-                ProgressView()
-                Spacer()
             }
         }
         .task {
@@ -67,7 +73,7 @@ struct PhotoCardDetailView: View {
         .fullScreenCover(isPresented: $showTicket) {
             BuyerTicketDetailView(ticketId: vm.photoCard?.ticketId ?? 0)
         }
-        .fullScreenCover(isPresented: $showMypage) {  // ✅ 마이페이지 연결
+        .fullScreenCover(isPresented: $showMypage) {
             MypageView()
                 .environmentObject(appState)
         }

@@ -23,6 +23,6 @@ struct MyTicket: Identifiable {
     }
     
     var startTimeFormatted: String {
-        DateFormatter.hhmmss.string(from: startTime)
+        DateFormatter.HHmm.string(from: startTime)
     }
 }

@@ -107,8 +107,6 @@ enum Endpoint {
         }
     }
     
-    
-    
     // MARK: - Method 설정 (기본은 GET)
     var method: String {
         switch self {

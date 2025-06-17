@@ -57,7 +57,6 @@ struct VerticalEventCardView: View {
                     .foregroundColor(Color(red: 22/255, green: 29/255, blue: 111/255))
             }
 
-            // 장소 / 날짜
             Text(event.location)
                 .font(.system(size: 12))
             Text(dateRangeString)
@@ -65,6 +64,7 @@ struct VerticalEventCardView: View {
                 .foregroundColor(.gray)
         }
         .frame(width: 382, height: 278)  // 전체 카드 크기 고정
+        .contentShape(Rectangle())
     }
 
     // MARK: – Helpers
