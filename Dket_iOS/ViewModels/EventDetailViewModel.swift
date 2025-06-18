@@ -52,10 +52,10 @@ final class EventDetailViewModel: ObservableObject {
     private func loadDetail() async {
         state = .loading
         do {
-            // 1) 이벤트 상세 가져오기
+            // 이벤트 상세 가져오기
             let d = try await service.fetchDetail(eventId: eventId)
             
-            // 2) 각 세션별로 병렬(또는 순차)로 상세 가져오기
+            // 각 세션별로 상세 가져오기
             var newCache: [Int64: SessionDetail] = [:]
             for sid in d.sessionIds {
                 let s = try await service.fetchSession(
@@ -65,12 +65,12 @@ final class EventDetailViewModel: ObservableObject {
                 newCache[sid] = s
             }
             
-            // 3) UI 업데이트
+            // UI 업데이트
             detail = d
             sessionCache = newCache
             state = .loaded
             
-            // 4) 첫 번째 회차 자동 선택 & selectedSession 세팅
+            // 첫 번째 회차 자동 선택, selectedSession 세팅
             if let first = d.sessionIds.first {
                 selectedSessionId = first
                 selectedSession   = newCache[first]
@@ -99,7 +99,7 @@ final class EventDetailViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Public: 티켓 검증 호출
+    // 티켓 검증 호출
     func verifyTicket(with code: String) {
         Task {
             verificationState = .verifying
@@ -108,7 +108,7 @@ final class EventDetailViewModel: ObservableObject {
                 self.verifiedTicket = ticket
                 verificationState = .success(message: "입장 처리되었습니다.")
             } catch {
-                self.verificationFailed = true  
+                self.verificationFailed = true
                 verificationState = .failure(error: error.localizedDescription)
             }
         }

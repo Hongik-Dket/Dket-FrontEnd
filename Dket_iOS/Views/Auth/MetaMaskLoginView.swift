@@ -15,7 +15,6 @@ struct MetaMaskLoginView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                // DKet 로고 이미지
                 Image("Dket")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -24,7 +23,6 @@ struct MetaMaskLoginView: View {
                 
                 Spacer()
                 
-                // 메타마스크로 시작하기 버튼
                 Button {
                     print("MetaMask 연결하기 버튼 클릭")
                     connectToWallet()
@@ -32,7 +30,7 @@ struct MetaMaskLoginView: View {
                     HStack {
                         ZStack {
                             Circle()
-                                .fill(Color(red: 255/255, green: 245/255, blue: 229/255))
+                                .fill(Color.dketBlue)
                                 .frame(width: 30, height: 30)
                                 .shadow(radius: 2)
                             
@@ -64,25 +62,24 @@ struct MetaMaskLoginView: View {
     func connectToWallet() {
         Task {
             do {
-                await resetSession()  // optional
-
+                await resetSession()
+                
                 let uri = try await AppKit.instance.connect(walletUniversalLink: nil)
-
+                
                 print("📡 WalletConnect URI 생성됨")
-
+                
                 let base = "https://metamask.app.link/wc?uri="
                 guard let encoded = uri?.absoluteString.addingPercentEncoding(
-                        withAllowedCharacters: .alphanumerics),
+                    withAllowedCharacters: .alphanumerics),
                       let url = URL(string: base + encoded) else {
                     print("❗ URI 인코딩 실패")
                     return
                 }
-
-                // ✅ 반드시 Main Thread에서 실행
+                
                 DispatchQueue.main.async {
                     UIApplication.shared.open(url)
                 }
-
+                
             } catch {
                 print("❌ 연결 실패:", error)
             }
@@ -95,12 +92,6 @@ struct MetaMaskLoginView: View {
             try? await AppKit.instance.disconnect(topic: session.topic)
         }
         print("🧹 기존 세션 정리 완료")
-    }
-}
-
-struct MetaMaskLoginView_Previews: PreviewProvider {
-    static var previews: some View {
-        MetaMaskLoginView()
     }
 }
 

@@ -10,7 +10,7 @@ import SwiftUI
 struct BackHeaderView: View {
     var onBack: () -> Void
     var onMenu: () -> Void
-
+    
     var body: some View {
         ZStack {
             Color.white

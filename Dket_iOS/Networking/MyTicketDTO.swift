@@ -12,11 +12,10 @@ struct MyTicketDTO: Decodable {
     let eventTitle: String
     let posterUrl: String
     let location: String
-    let sessionDate: Date    // LocalDate → String
-    let startTime: String      // LocalTime → String
+    let sessionDate: Date
+    let startTime: String
     let entered: Bool
     
-    // 도메인 객체로 변환
     var domain: MyTicket {
         let parsedStartTime = DateFormatter.hhmmss.date(from: startTime) ?? Date()
         return MyTicket(

@@ -225,13 +225,6 @@ private struct BuyerSessionStatSection: View {
     }
 }
 
-struct BuyerEventDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        BuyerEventDetailView(eventId: 16)
-    }
-}
-
-
 extension Int64: Identifiable {
     public var id: Int64 { self }
 }

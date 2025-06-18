@@ -14,17 +14,15 @@ struct MypageView: View {
     @State private var showMyTickets = false
     
     var body: some View {
-        NavigationStack { 
+        NavigationStack {
             ZStack(alignment: .top) {
                 Color.white.ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // 헤더
                     BackHeaderView(onBack: { dismiss() }, onMenu: {})
                     
                     Divider()
                     
-                    // 목록
                     ScrollView {
                         VStack(alignment: .leading, spacing: 40) {
                             MypageRow(title: "내 지갑 정보") {
@@ -69,19 +67,10 @@ struct MypageView: View {
                 }
                 
                 NavigationLink("", destination: TicketListView(), isActive: $showMyTickets)
-                    .opacity(0) 
+                    .opacity(0)
             }
             .navigationBarHidden(true)
         }
     }
 }
-struct MypageView_Previews: PreviewProvider {
-    static var previews: some View {
-        let appState = AppState()
-        appState.isLoggedIn = true
-        appState.userRole = .buyer   // 또는 .host 로 바꿔보기
-        
-        return MypageView()
-            .environmentObject(appState)
-    }
-}
+

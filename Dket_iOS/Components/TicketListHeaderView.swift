@@ -11,7 +11,7 @@ struct TicketListHeaderView: View {
     var title: String
     var onBack: () -> Void
     var onMenu: () -> Void
-
+    
     var body: some View {
         HStack {
             Button(action: onBack) {
@@ -19,15 +19,15 @@ struct TicketListHeaderView: View {
                     .font(.title2)
                     .foregroundColor(.black)
             }
-
+            
             Spacer()
-
+            
             Text(title)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.black)
-
+            
             Spacer()
-
+            
             Button(action: onMenu) {
                 Image(systemName: "line.horizontal.3")
                     .font(.title2)

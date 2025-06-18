@@ -9,7 +9,7 @@ import SwiftUI
 
 struct StepIndicatorView: View {
     let current: EventSetupView.Step
-
+    
     var body: some View {
         HStack(spacing: 0) {
             indicator("STEP 1", isActive: current == .one)
@@ -18,7 +18,7 @@ struct StepIndicatorView: View {
         }
         .frame(height: 50)
     }
-
+    
     private func indicator(_ text: String, isActive: Bool) -> some View {
         Text(text)
             .font(.system(size: 20, weight: .bold))
@@ -27,8 +27,8 @@ struct StepIndicatorView: View {
             .padding(.vertical, 6)
             .background(
                 isActive
-                    ? Color(red: 22/255, green: 29/255, blue: 111/255)
-                    : Color.clear
+                ? Color.dketBlue
+                : Color.clear
             )
     }
 }

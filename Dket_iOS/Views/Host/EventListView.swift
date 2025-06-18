@@ -8,26 +8,24 @@
 import SwiftUI
 
 struct EventListView: View {
-    // 어떤 리스트인지 구분
     let type: ListingType
-
+    
     @StateObject private var vm: EventListViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var didLoad = false
-
-    // ViewModel 주입
+    
     init(type: ListingType) {
         self.type = type
         _vm = StateObject(wrappedValue: EventListViewModel(type: type))
     }
-
+    
     var body: some View {
         Group {
             switch vm.state {
             case .idle, .loading:
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-
+                
             case .failed(let error):
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle")
@@ -40,7 +38,7 @@ struct EventListView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
+                
             case .loaded:
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 12, pinnedViews: []) {
@@ -49,7 +47,7 @@ struct EventListView: View {
                                 if type.isBuyerList {
                                     BuyerEventDetailView(eventId: event.id)
                                 } else {
-                                    EventDetailView(eventId: event.id)     
+                                    EventDetailView(eventId: event.id)
                                 }
                             } label: {
                                 VerticalEventCardView(event: event)
@@ -75,7 +73,7 @@ struct EventListView: View {
                 }
             }
         }
-        // ❗️ onAppear에서 한 번만 로드
+        
         .onAppear {
             if !didLoad {
                 didLoad = true

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PosterView: View {
     let url: URL
-
+    
     var body: some View {
         AsyncImage(url: url) { image in
             image

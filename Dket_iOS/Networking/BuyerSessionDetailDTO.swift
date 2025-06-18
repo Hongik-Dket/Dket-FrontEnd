@@ -9,7 +9,7 @@ import Foundation
 
 struct BuyerSessionDetailDTO: Decodable {
     let sessionId: Int64
-    let date: Date  // "yyyy-MM-dd"
+    let date: Date  
     
     let applyStatus: ApplyStatus?
     let ticketId: Int64?

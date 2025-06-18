@@ -25,7 +25,6 @@ struct BuyerSessionPickerView: View {
                             vm.selectSession(session.id)
                         }) {
                             VStack(spacing: 4) {
-                                // 날짜 표시
                                 Text(session.date.formatted(.dateTime.month().day()))
                                     .font(.subheadline)
                                     .bold()

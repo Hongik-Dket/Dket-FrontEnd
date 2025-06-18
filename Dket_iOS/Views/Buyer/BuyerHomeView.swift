@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-/// "구매자 홈" – 서버 데이터와 연결된 최종 화면
 struct BuyerHomeView: View {
     @StateObject private var vm = BuyerHomeViewModel()
     
@@ -39,7 +38,7 @@ struct BuyerHomeView: View {
                             EventSectionView(
                                 title: {
                                     HStack(spacing: 8) {
-                                        Image("Popular") 
+                                        Image("Popular")
                                             .resizable()
                                             .frame(width: 20, height: 20)
                                         Text("인기 공연")
@@ -120,11 +119,5 @@ struct BuyerHomeView: View {
             MypageView()
                 .environmentObject(appState)
         }
-    }
-}
-
-struct BuyerHomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        BuyerHomeView()
     }
 }

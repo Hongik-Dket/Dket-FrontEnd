@@ -6,7 +6,6 @@
 //
 import SwiftUI
 
-/// “개최자 홈” – 서버 데이터와 연결된 최종 화면
 struct HostHomeView: View {
     @StateObject private var vm = OrganizerHomeViewModel()
     @State private var isCreating = false
@@ -38,7 +37,7 @@ struct HostHomeView: View {
                                 EventSectionView(
                                     title: {
                                         HStack(spacing: 8) {
-                                            Image("TodayEvent") 
+                                            Image("TodayEvent")
                                                 .resizable()
                                                 .frame(width: 20, height: 20)
                                             Text("오늘 공연")
@@ -109,7 +108,7 @@ struct HostHomeView: View {
                 print("🔄 [HostHomeView] eventCreated 감지 → 새로고침")
                 Task { await vm.onAppear() }
             }
-            .navigationDestination(item: $selectedListType) { type in  // 🔹 추가
+            .navigationDestination(item: $selectedListType) { type in  
                 EventListView(type: type)
             }
         }
@@ -120,9 +119,4 @@ struct HostHomeView: View {
     }
 }
 
-struct HostHomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        HostHomeView()
-    }
-}
 

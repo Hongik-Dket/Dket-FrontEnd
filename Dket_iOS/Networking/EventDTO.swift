@@ -14,7 +14,7 @@ struct EventDTO: Decodable {
     let startDate: Date
     let endDate: Date
     let imageUrl: URL
-    let eventStatus: EventStatus?      // home 에선 nil
+    let eventStatus: EventStatus?     
     
     enum CodingKeys: String, CodingKey {
             case eventId, title, location, startDate, endDate, imageUrl, eventStatus

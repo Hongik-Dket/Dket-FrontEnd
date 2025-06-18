@@ -10,7 +10,7 @@ import Foundation
 struct SessionDetailDTO: Decodable {
     let eventId:      Int64
     let sessionId:    Int64
-    let date:         Date        // yyyy-MM-dd
+    let date:         Date       
     let applyCount:   Int
     let paidCount:    Int?
     let attendeeCount:Int?

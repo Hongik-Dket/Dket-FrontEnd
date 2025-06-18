@@ -253,7 +253,5 @@ struct EventSetupView: View {
             return bannerImage != nil && posterImage != nil
         }
     }
-    
-    
 }
 

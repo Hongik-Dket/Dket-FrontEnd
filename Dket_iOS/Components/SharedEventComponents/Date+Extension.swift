@@ -8,7 +8,6 @@
 import Foundation
 
 extension Date {
-    /// self부터 to까지 남은 일수를 계산합니다.
     func daysUntil(_ to: Date) -> Int {
         Calendar.current
             .dateComponents([.day], from: self, to: to)

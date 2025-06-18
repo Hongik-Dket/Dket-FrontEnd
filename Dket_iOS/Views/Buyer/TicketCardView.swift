@@ -12,7 +12,6 @@ struct TicketCardView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            // 배경 이미지
             Image(ticket.entered ? "EnteredTicket" : "BeforeEnterTicket")
                 .resizable()
                 .frame(width: 350, height: 150)
