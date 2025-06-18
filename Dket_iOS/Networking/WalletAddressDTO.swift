@@ -13,7 +13,6 @@ struct WalletAddressRequest: Encodable {
     }
 }
 
-// Response
 struct MetaMaskDTO: Decodable {
     let isSuccess: Bool
     let code: String

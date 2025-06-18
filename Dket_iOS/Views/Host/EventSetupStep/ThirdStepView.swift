@@ -9,22 +9,18 @@ import SwiftUI
 import PhotosUI
 
 struct ThirdStepView: View {
-    // 상위에서 바인딩으로 내려받는 상태
     @Binding var bannerImage: UIImage?
     @Binding var posterImage: UIImage?
     @Binding var photocardImage: UIImage?
-
-    // 내부에서 PhotosPickerItem 으로 받을 임시 변수
+    
     @State private var bannerItem: PhotosPickerItem?
     @State private var posterItem: PhotosPickerItem?
     @State private var photocardItem: PhotosPickerItem?
-
-    // 모든 플레이스홀더 크기
+    
     private let imageSize: CGFloat = 100
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // 공연 배너
             LabeledRow(label: "공연 배너 이미지") {
                 PhotosPicker(
                     selection: $bannerItem,
@@ -35,8 +31,7 @@ struct ThirdStepView: View {
                 }
                 .onChange(of: bannerItem) { loadImage(from: $0) { bannerImage = $0 } }
             }
-
-            // 공연 포스터
+            
             LabeledRow(label: "공연 포스터 이미지") {
                 PhotosPicker(
                     selection: $posterItem,
@@ -47,8 +42,7 @@ struct ThirdStepView: View {
                 }
                 .onChange(of: posterItem) { loadImage(from: $0) { posterImage = $0 } }
             }
-
-            // 포토카드 (선택)
+            
             LabeledRow(label: "포토카드 이미지") {
                 PhotosPicker(
                     selection: $photocardItem,
@@ -59,12 +53,12 @@ struct ThirdStepView: View {
                 }
                 .onChange(of: photocardItem) { loadImage(from: $0) { photocardImage = $0 } }
             }
-
+            
             Spacer()
         }
-        .padding(.horizontal, 30) // 좌측/우측 여백 step1과 동일
+        .padding(.horizontal, 30)
     }
-
+    
     // MARK: - PhotosPickerItem → UIImage 로 비동기 로드
     private func loadImage(from item: PhotosPickerItem?, completion: @escaping (UIImage?) -> Void) {
         guard let item else { return completion(nil) }
@@ -78,7 +72,7 @@ struct ThirdStepView: View {
             }
         }
     }
-
+    
     // MARK: - 플레이스홀더 + 실제 이미지 뷰
     @ViewBuilder
     private func imagePlaceholder(uiImage: UIImage?, showsPlus: Bool = false) -> some View {

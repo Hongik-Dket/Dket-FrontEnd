@@ -11,11 +11,11 @@ struct EventSectionView<Title: View>: View {
     let title: Title
     let emptyMessage: String
     let events: [Event]
-
+    
     var onEventTap: ((Event) -> Void)? = nil
     var onSeeAllTap: (() -> Void)? = nil
     var type: ListingType? = nil
-
+    
     init(
         @ViewBuilder title: () -> Title,
         emptyMessage: String,
@@ -31,11 +31,11 @@ struct EventSectionView<Title: View>: View {
         self.onSeeAllTap = onSeeAllTap
         self.type = type
     }
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                title // ← 이제 뷰 조합 가능
+                title 
                 Spacer()
                 if let onSeeAllTap {
                     Button(action: onSeeAllTap) {
@@ -45,7 +45,7 @@ struct EventSectionView<Title: View>: View {
                 }
             }
             .padding(.horizontal)
-
+            
             if events.isEmpty {
                 VStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle")

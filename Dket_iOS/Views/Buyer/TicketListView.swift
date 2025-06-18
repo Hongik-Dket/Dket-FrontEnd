@@ -11,9 +11,9 @@ struct TicketListView: View {
     @StateObject private var vm = TicketListViewModel()
     @Environment(\.dismiss) private var dismiss
     @State private var showErrorAlert = false
-
+    
     @State private var selectedTicketId: Int64? = nil
-
+    
     var body: some View {
         VStack(spacing: 0) {
             TicketListHeaderView(
@@ -21,7 +21,7 @@ struct TicketListView: View {
                 onBack: { dismiss() },
                 onMenu: { print("메뉴 클릭") }
             )
-
+            
             if vm.isLoading {
                 Spacer()
                 ProgressView()

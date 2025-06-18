@@ -11,13 +11,13 @@ struct EventCreateRequestDTO: Encodable {
     let title:       String
     let location:    String
     let description: String
-    let startDate:   Date            // yyyy-MM-dd
+    let startDate:   Date
     let endDate:     Date
-    let startTime:   String          // HH:mm:ss
+    let startTime:   String
     let endTime:     String
     let priceKrw:       Int
     let capacity:    Int
-    let applyStart:  Date            // yyyy-MM-dd'T'HH:mm:ss
+    let applyStart:  Date
     let applyEnd:    Date
     let ageLimit:    AgeLimit
     
@@ -27,7 +27,6 @@ struct EventCreateRequestDTO: Encodable {
              priceKrw, capacity, applyStart, applyEnd, ageLimit
     }
     
-    // 날짜 둘을 서로 다른 포맷으로 보내야 하므로 직접 encode(to:)
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(title,        forKey: .title)

@@ -8,7 +8,6 @@
 import Foundation
 import WalletConnectRelay
 
-// 1. WebSocket 구현체
 final class CustomWebSocket: WalletConnectRelay.WebSocketConnecting {
     var isConnected: Bool = false
 
@@ -64,7 +63,6 @@ final class CustomWebSocket: WalletConnectRelay.WebSocketConnecting {
     }
 }
 
-// 2. WebSocketFactory 구현체
 final class DefaultSocketFactory: WalletConnectRelay.WebSocketFactory {
     func create(with url: URL) -> any WalletConnectRelay.WebSocketConnecting {
         return CustomWebSocket(url: url)

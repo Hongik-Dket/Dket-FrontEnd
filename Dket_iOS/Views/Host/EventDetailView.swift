@@ -222,12 +222,16 @@ private struct SessionStatSection: View {
                 Group {
                     let (title, count): (String, Int) = {
                         switch detail.status {
-                        case .applyOpen:      return ("응모자 수",      s.applyCount)
-                        case .applyClosed,
-                                .ticketed:       return ("예매자 수",      s.paidCount ?? 0)
-                        case .inProgress:     return ("입장 완료 수",    s.attendeeCount ?? 0)
-                        case .ended:          return ("관람자 수",      s.attendeeCount ?? 0)
-                        default:              return ("",               0)
+                        case .applyOpen:
+                            return ("응모자 수", s.applyCount)
+                        case .applyClosed, .ticketed:
+                            return ("예매자 수", s.paidCount ?? 0)
+                        case .inProgress:
+                            return ("입장 완료 수", s.attendeeCount ?? 0)
+                        case .ended:
+                            return ("관람자 수", s.attendeeCount ?? 0)
+                        default:
+                            return ("", 0)
                         }
                     }()
                     

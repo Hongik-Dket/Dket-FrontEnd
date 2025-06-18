@@ -9,10 +9,9 @@ import SwiftUI
 
 struct PaySuccessModalView: View {
     let onDismiss: () -> Void
-
+    
     var body: some View {
         VStack(spacing: 20) {
-            // 상단 닫기 버튼만 남김
             HStack {
                 Spacer()
                 Button(action: onDismiss) {
@@ -24,21 +23,21 @@ struct PaySuccessModalView: View {
                         .clipShape(Circle())
                 }
             }
-
+            
             Spacer().frame(height: 10)
-
+            
             Image("DketEmpty")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)
-
+            
             Text("결제가 완료되었습니다.")
                 .font(.headline)
                 .foregroundColor(.black)
                 .padding(.top, 8)
-
+            
             Spacer().frame(height: 16)
-
+            
             Button(action: onDismiss) {
                 Text("돌아가기")
                     .font(.system(size: 16, weight: .bold))
@@ -48,7 +47,7 @@ struct PaySuccessModalView: View {
                     .cornerRadius(12)
                     .padding(.horizontal)
             }
-
+            
             Spacer().frame(height: 10)
         }
         .padding()

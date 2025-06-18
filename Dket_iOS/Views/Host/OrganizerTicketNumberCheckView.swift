@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 struct OrganizerTicketNumberCheckView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appState: AppState

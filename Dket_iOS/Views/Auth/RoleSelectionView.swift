@@ -23,7 +23,6 @@ struct RoleSelectionView: View {
                 Spacer()
                 
                 VStack(spacing: 10) {
-                    // 개최자 버튼
                     Button {
                         appState.userRole = .host
                         appState.isLoggedIn = true
@@ -36,7 +35,6 @@ struct RoleSelectionView: View {
                             .cornerRadius(5)
                     }
                     
-                    // 구매자 버튼
                     Button {
                         appState.userRole = .buyer
                         appState.isLoggedIn = true
@@ -53,7 +51,6 @@ struct RoleSelectionView: View {
                 .padding(.horizontal, 30)
                 .padding(.bottom, 50)
                 
-                // HostHomeView로 이동.
                 NavigationLink(destination: HostHomeView(), isActive: $goToHostHome) {
                     EmptyView()
                 }
@@ -62,8 +59,3 @@ struct RoleSelectionView: View {
     }
 }
 
-struct RoleSelectionView_Previews: PreviewProvider {
-    static var previews: some View {
-        RoleSelectionView().environmentObject(AppState())
-    }
-}

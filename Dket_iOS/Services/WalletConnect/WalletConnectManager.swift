@@ -24,7 +24,7 @@ final class WalletConnectManager {
     func configure() {
         let projectId = "549a0d9180df684b3f0a6038d4542092"
         
-        // 0. Networking 명시적으로 먼저 초기화
+        // Networking 명시적으로 초기화
         let groupIdentifier = "group.com.a.Dket-iOS"
         
         Networking.configure(
@@ -33,13 +33,13 @@ final class WalletConnectManager {
                     projectId: projectId,
                     socketFactory: DefaultSocketFactory()
                 )
-        // 1. redirect 설정
+        // redirect 설정
         let redirect = try! AppMetadata.Redirect(
             native: "dket://",
             universal: nil
         )
         
-        // 2. metadata 구성
+        // metadata 구성
         let metadata = AppMetadata(
             name: "Dket",
             description: "블록체인 기반 티켓 DApp",
@@ -48,10 +48,10 @@ final class WalletConnectManager {
             redirect: redirect
         )
         
-        // 3. 커스텀 CryptoProvider (서명 알고리즘 구현)
+        // 커스텀 CryptoProvider (서명 알고리즘 구현)
         let crypto = MyCryptoProvider()
         
-        // 4. AppKit 설정
+        // AppKit 설정
         AppKit.configure(
             projectId: projectId,
             metadata: metadata,

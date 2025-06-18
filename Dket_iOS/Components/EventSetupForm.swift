@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-/// 상단 STEP 버튼
+
 struct StepButton: View {
     let title: String
     let current: EventSetupView.Step
@@ -24,13 +24,12 @@ struct StepButton: View {
                 .padding(.vertical, 6)
                 .frame(maxWidth: .infinity)
                 .background(selected == current
-                            ? Color(red: 22/255, green: 29/255, blue: 111/255)
+                            ? Color.dketBlue
                             : Color.clear)
         }
     }
 }
 
-/// 강조된 버튼 스타일
 struct PrimaryButtonStyle: ButtonStyle {
     var filled: Bool
     func makeBody(configuration: Configuration) -> some View {
@@ -39,13 +38,12 @@ struct PrimaryButtonStyle: ButtonStyle {
             .font(.system(size: 16, weight: .bold))
             .frame(maxWidth: .infinity, minHeight: 48)
             .background(filled
-                        ? Color(red: 22/255, green: 29/255, blue: 111/255)
+                        ? Color.dketBlue
                         : Color.gray.opacity(0.3))
             .cornerRadius(8)
     }
 }
 
-/// 밑줄 텍스트필드 스타일
 struct UnderlineTextFieldStyle: TextFieldStyle {
     var icon: String? = nil
     func _body(configuration: TextField<Self._Label>) -> some View {
@@ -60,7 +58,6 @@ struct UnderlineTextFieldStyle: TextFieldStyle {
     }
 }
 
-/// 관람연령 토글 버튼
 struct AgeOptionButton: View {
     let title: String
     @Binding var selected: String?
@@ -74,7 +71,7 @@ struct AgeOptionButton: View {
                 .fixedSize()
                 .padding(.vertical, 6).padding(.horizontal, 8)
                 .background(selected == value
-                            ? Color.blue.opacity(0.2)
+                            ? Color.dketBlue.opacity(0.2)
                             : Color.gray.opacity(0.2))
                 .foregroundColor(.black)
                 .cornerRadius(6)

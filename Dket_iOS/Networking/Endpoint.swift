@@ -107,7 +107,7 @@ enum Endpoint {
         }
     }
     
-    // MARK: - Method 설정 (기본은 GET)
+    // MARK: - Method 설정 
     var method: String {
         switch self {
         case .organizerCreateEvent,

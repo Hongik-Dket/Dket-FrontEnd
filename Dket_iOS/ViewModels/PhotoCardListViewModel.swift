@@ -12,7 +12,6 @@ final class PhotoCardListViewModel: ObservableObject {
     @Published var photoCards: [PhotoCardItem] = []
 
     func fetchPhotoCards() {
-        // 실제 네트워크 요청은 생략하고, 미리보기용 더미 데이터 삽입
         self.photoCards = [
             PhotoCardItem(photoCardId: 101, imageUrl: "https://ipfs.io/ipfs/Qm123abc/photo1.png"),
             PhotoCardItem(photoCardId: 102, imageUrl: "https://ipfs.io/ipfs/Qm456def/photo2.png"),

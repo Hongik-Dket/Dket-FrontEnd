@@ -23,7 +23,7 @@ struct FirstStepView: View {
                     TextField("공연명 입력", text: $title)
                         .textFieldStyle(UnderlineTextFieldStyle())
                 }
-
+                
                 HStack {
                     Text("관람연령")
                         .frame(width: 80, alignment: .leading)
@@ -61,16 +61,5 @@ struct FirstStepView: View {
             .padding(.vertical, 20)
             .hideKeyboardOnTap()
         }
-    }
-}
-
-struct FirstStepView_Previews: PreviewProvider {
-    static var previews: some View {
-        FirstStepView(
-            title: .constant(""),
-            ageFilter: .constant(nil),
-            location: .constant(""),
-            description: .constant("")
-        )
     }
 }

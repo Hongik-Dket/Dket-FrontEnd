@@ -9,11 +9,10 @@ import SwiftUI
 
 struct VerticalEventCardView: View {
     let event: Event
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             
-            // 배너 이미지 – 고정 크기
             AsyncImage(url: event.imageUrl) { phase in
                 switch phase {
                 case .success(let image):
@@ -46,31 +45,28 @@ struct VerticalEventCardView: View {
             }
             .clipped()
             .cornerRadius(6)
-
-            // 타이틀 + 상태
+            
             HStack {
                 Text(event.title)
                     .font(.system(size: 16, weight: .bold))
                 Spacer()
                 Text(event.status?.label ?? "")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color(red: 22/255, green: 29/255, blue: 111/255))
+                    .foregroundColor(Color.dketBlue)
             }
-
+            
             Text(event.location)
                 .font(.system(size: 12))
             Text(dateRangeString)
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
         }
-        .frame(width: 382, height: 278)  // 전체 카드 크기 고정
+        .frame(width: 382, height: 278)
         .contentShape(Rectangle())
     }
-
-    // MARK: – Helpers
+    
     private var dateRangeString: String {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy.MM.dd"
+        let fmt = DateFormatter.yyyyDMMDdd
         return "\(fmt.string(from: event.period.lowerBound)) ~ \(fmt.string(from: event.period.upperBound))"
     }
 }
