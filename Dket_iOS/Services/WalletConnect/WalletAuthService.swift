@@ -13,7 +13,6 @@ struct WalletAuthService {
         
         let res: APIResponse<MetaMaskLoginResponse> = try await api.post(.connectWallet, body: req)
         
-        // JWT 토큰 저장
         TokenManager.saveToken(res.result.token)
     }
 }

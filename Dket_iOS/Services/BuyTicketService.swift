@@ -33,7 +33,7 @@ final class BuyTicketService: BuyTicketServicing {
             throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "ABI 파일을 찾을 수 없습니다"])
         }
         let abi = try String(contentsOf: url)
-        guard let contractAddress = EthereumAddress("0x3fc31f1a5EF9F401Cc0c584F452dba0384596495") else {
+        guard let contractAddress = EthereumAddress("0x2ea3dccfc3114f43a0ab126eb24c55cc762a4407") else {
             throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "잘못된 컨트랙트 주소"])
         }
         
@@ -72,7 +72,7 @@ final class BuyTicketService: BuyTicketServicing {
         print("🟠 Step 2: 트랜잭션 딕셔너리 구성")
             let tx = try buildTransactionDict(
                 from: from,
-                to: "0x701a820fa0f04f797f640a89ea6ad92d54f5458a",
+                to: "0x2ea3dccfc3114f43a0ab126eb24c55cc762a4407",
                 value: value,
                 data: encoded
             )

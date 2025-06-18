@@ -50,6 +50,8 @@ final class BuyerEventViewModel: ObservableObject {
     private let buyTicketService: BuyTicketServicing
     
     @Published var applyResult: ApplyResult = .none
+    
+    @Published var isPurchasing: Bool = false
     private var fetchTask: Task<Void, Never>?
     
     // MARK: - Init
@@ -90,8 +92,13 @@ final class BuyerEventViewModel: ObservableObject {
                     
                     self.sessionList = updatedSessions
                     self.state = .loaded
+                    self.isPurchasing = false
                     
-                    if let first = updatedSessions.first {
+                    if let previousId = selectedSessionId,
+                       let previous = updatedSessions.first(where: { $0.id == previousId }) {
+                        selectedSession = previous
+                        updateFloatingButton(for: previous)
+                    } else if let first = updatedSessions.first {
                         selectedSessionId = first.id
                         selectedSession = first
                         updateFloatingButton(for: first)
@@ -99,7 +106,6 @@ final class BuyerEventViewModel: ObservableObject {
                 }
             } catch {
                 if let urlError = error as? URLError, urlError.code == .cancelled {
-                    // 취소된 요청은 무시
                     return
                 }
                 
@@ -130,7 +136,6 @@ final class BuyerEventViewModel: ObservableObject {
             await MainActor.run {
                 self.showApplySuccessAlert = true
                 
-                // fetch 후 다시 상태 반영
                 if let selected = self.selectedSession {
                     self.updateFloatingButton(for: selected)
                 }
@@ -168,9 +173,16 @@ final class BuyerEventViewModel: ObservableObject {
             default:           return "미응모"
             }
         case .ticketed:
-            if session.ticketId != nil { return "결제 완료" }
-            else if session.buyable { return "구매 가능" }
-            else { return "품절" }
+            if session.ticketId != nil {
+                return "결제 완료"
+            } else if detail!.capacity > session.paidCount {
+                return "구매 가능"
+            } else {
+                return "품절"
+            }
+            
+        case .inProgress:
+            return "공연 중"
         default:
             return ""
         }
@@ -181,6 +193,13 @@ final class BuyerEventViewModel: ObservableObject {
         guard let session = session else {
             floatingButtonTitle = ""
             isFloatingButtonEnabled = false
+            return
+        }
+        
+        if isPurchasing {
+            floatingButtonTitle = "결제 진행 중..."
+            isFloatingButtonEnabled = false
+            floatingAction = .none
             return
         }
         
@@ -224,18 +243,23 @@ final class BuyerEventViewModel: ObservableObject {
             if session.applyStatus == .paid {
                 floatingButtonTitle = "티켓 조회하기"
                 isFloatingButtonEnabled = true
+                floatingAction = .view
             } else if session.applyStatus == .canceled && session.buyable {
                 floatingButtonTitle = "티켓 구매하기"
                 isFloatingButtonEnabled = true
+                floatingAction = .buy
             } else if session.applyStatus == nil && session.buyable {
                 floatingButtonTitle = "티켓 구매하기"
                 isFloatingButtonEnabled = true
+                floatingAction = .buy
             } else if session.buyable == false {
                 floatingButtonTitle = "티켓 구매하기"
                 isFloatingButtonEnabled = false
+                floatingAction = .none
             } else {
                 floatingButtonTitle = ""
                 isFloatingButtonEnabled = false
+                floatingAction = .none
             }
             
         case .inProgress:
@@ -296,6 +320,17 @@ final class BuyerEventViewModel: ObservableObject {
             return
         }
         
+        guard !isPurchasing else {
+            print("⚠️ 결제 중이므로 무시됨")
+            return
+        }
+        
+        await MainActor.run {
+            self.isPurchasing = true
+            self.isFloatingButtonEnabled = false
+            self.floatingButtonTitle = "티켓 결제하기"
+        }
+        
         do {
             try await buyTicketService.sendBuyTicketTransaction(
                 sessionId: sessionId,
@@ -321,6 +356,10 @@ final class BuyerEventViewModel: ObservableObject {
             
         } catch {
             print("❌ 결제 실패: \(error)")
+        }
+        await MainActor.run {
+            self.isPurchasing = false
+            self.updateFloatingButton(for: self.selectedSession)
         }
     }
     

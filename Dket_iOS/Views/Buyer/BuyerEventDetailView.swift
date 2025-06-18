@@ -55,6 +55,15 @@ struct BuyerEventDetailView: View {
                 }
             }
         }
+        .onAppear {
+            Task {
+                await vm.fetch()
+                await MainActor.run {
+                    vm.updateFloatingButton(for: vm.selectedSession)
+                }
+            }
+        }
+        
     }
     
     @ViewBuilder

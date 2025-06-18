@@ -51,7 +51,7 @@ struct BasicInfoView: View {
             }.font(.footnote)
             
             HStack {
-                Text("가격").bold()
+                Text("가격")
                 Spacer()
                 Text("\(detail.priceKrw.formatted()) 원").bold()
             }.font(.footnote)

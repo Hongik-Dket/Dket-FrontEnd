@@ -22,10 +22,8 @@ struct SecondStepView: View {
     let now = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
     
     var body: some View {
-        // 1) ScrollView로 감싸서 전체 화면을 터치 영역으로 확보
         ScrollView {
             VStack(alignment: .leading, spacing: 35) {
-                // 공연기간
                 HStack {
                     Text("공연기간")
                         .frame(width: 80, alignment: .leading)
@@ -38,7 +36,6 @@ struct SecondStepView: View {
                         .datePickerStyle(.compact)
                 }
                 
-                // 공연시간
                 HStack {
                     Text("공연시간")
                         .frame(width: 80, alignment: .leading)
@@ -51,7 +48,6 @@ struct SecondStepView: View {
                         .datePickerStyle(.compact)
                 }
                 
-                // 가격
                 HStack {
                     Text("가격")
                         .frame(width: 80, alignment: .leading)
@@ -64,7 +60,6 @@ struct SecondStepView: View {
                         .font(.system(size: 16))
                 }
                 
-                // 관람인원
                 HStack {
                     Text("관람인원")
                         .frame(width: 80, alignment: .leading)
@@ -77,7 +72,6 @@ struct SecondStepView: View {
                         .font(.system(size: 16))
                 }
                 
-                // 응모기간
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 12) {
                         Text("응모시작")
@@ -109,7 +103,6 @@ struct SecondStepView: View {
     }
 }
 
-/// 간단한 언더라인 텍스트필드 래퍼
 struct UnderlineTextField: View {
     @Binding var text: String
     var placeholder: String

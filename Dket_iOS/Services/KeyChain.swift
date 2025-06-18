@@ -18,7 +18,7 @@ enum TokenManager {
             kSecAttrAccount as String: tokenKey,
             kSecValueData as String: data
         ]
-        SecItemDelete(query as CFDictionary)  // 기존 항목 제거
+        SecItemDelete(query as CFDictionary)  
         SecItemAdd(query as CFDictionary, nil)
     }
 

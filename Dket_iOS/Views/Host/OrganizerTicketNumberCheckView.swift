@@ -17,10 +17,12 @@ struct OrganizerTicketNumberCheckView: View {
     @State private var showErrorAlert = false
     @State private var errorMessage = ""
     @State private var goToMypage = false
-
+    
+    @FocusState private var isTextFieldFocused: Bool
+    
     let onDismiss: () -> Void
     let ticketService = TicketService()
-
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -28,22 +30,32 @@ struct OrganizerTicketNumberCheckView: View {
                     onBack: { dismiss() },
                     onMenu: { goToMypage = true }
                 )
-
+                
                 Spacer()
-
+                
                 ZStack {
                     Image("TicketNumberCheck")
                         .resizable()
                         .frame(width: 350, height: 150)
                         .shadow(radius: 2)
-
-                    if ticketNumber.isEmpty {
-                        Text("티켓 번호를 입력하세요")
-                            .foregroundColor(Color(red: 217/255, green: 217/255, blue: 217/255))
-                            .font(.system(size: 16, weight: .medium))
+                        .allowsHitTesting(false)
+                    
+                    Button(action: {
+                        isTextFieldFocused = true
+                    }) {
+                        Color.clear
                     }
-
-                    TextField("", text: $ticketNumber)
+                    .frame(width: 350, height: 150)
+                    
+                    VStack(spacing: 0) {
+                        TextField(
+                            "",
+                            text: $ticketNumber,
+                            prompt: Text("티켓 번호를 입력하세요")
+                                .foregroundColor(Color(red: 217/255, green: 217/255, blue: 217/255))
+                                .font(.system(size: 16, weight: .medium))
+                        )
+                        .focused($isTextFieldFocused)
                         .foregroundColor(.dketMint)
                         .font(.system(size: 26, weight: .bold))
                         .multilineTextAlignment(.center)
@@ -58,16 +70,17 @@ struct OrganizerTicketNumberCheckView: View {
                                 .foregroundColor(.dketMint),
                             alignment: .bottom
                         )
+                    }
                 }
                 .padding(.vertical, 40)
-
+                
                 if isSearching {
                     ProgressView("조회 중입니다...")
                         .padding(.bottom, 10)
                 }
-
+                
                 Spacer()
-
+                
                 VStack(spacing: 12) {
                     Button {
                         Task {
@@ -96,7 +109,7 @@ struct OrganizerTicketNumberCheckView: View {
                             .shadow(radius: 4)
                     }
                     .disabled(ticketNumber.isEmpty)
-
+                    
                     Button {
                         dismiss()
                         onDismiss()

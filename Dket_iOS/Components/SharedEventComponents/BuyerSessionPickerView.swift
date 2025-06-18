@@ -30,7 +30,6 @@ struct BuyerSessionPickerView: View {
                                     .font(.subheadline)
                                     .bold()
                                 
-                                // 응모 상태 or 티켓 상태 표시
                                 Text(vm.sessionApplyStatusLabel(session))
                                     .font(.caption2)
                                     .foregroundColor(.secondary)

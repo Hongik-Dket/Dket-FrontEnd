@@ -38,7 +38,7 @@ struct HostHomeView: View {
                                 EventSectionView(
                                     title: {
                                         HStack(spacing: 8) {
-                                            Image("todayEvent") 
+                                            Image("TodayEvent") 
                                                 .resizable()
                                                 .frame(width: 20, height: 20)
                                             Text("오늘 공연")

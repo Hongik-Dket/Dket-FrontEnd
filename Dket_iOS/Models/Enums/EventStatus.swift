@@ -18,7 +18,7 @@ enum EventStatus: String, Decodable {
         case .applyNotOpened: "응모 전"
         case .applyOpen:      "응모 중"
         case .applyClosed:    "응모 마감"
-        case .ticketed:       "예매 완료"
+        case .ticketed:       "선착순 판매"
         case .inProgress:     "공연 중"
         case .ended:          "공연 종료"
         }

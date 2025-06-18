@@ -37,8 +37,8 @@ struct EventSetupView: View {
     
     // MARK: – 최종 모달 플로우
     @State private var showModal = false
-    @State private var modalStep = 1   // 1,2,3 단계를 PopupFlowView 에 전달
-    @State private var showNotice = false     // 개최 완료 공지
+    @State private var modalStep = 1
+    @State private var showNotice = false
     
     @State private var showingAlert = false
     @State private var alertMessage = ""
@@ -50,18 +50,15 @@ struct EventSetupView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // MARK: A) 커스텀 백헤더
             BackHeaderView(
                 onBack: { dismiss() },
                 onMenu: { showMypage = true }
             )
             
-            // MARK: B) STEP 인디케이터
             StepIndicatorView(current: step)
                 .padding(.vertical, 8)
             Divider()
             
-            // MARK: C) STEP 콘텐츠
             Group {
                 switch step {
                 case .one: FirstStepView(
@@ -106,7 +103,6 @@ struct EventSetupView: View {
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
             
-            // MARK: D) 하단 이전/다음 버튼
             HStack(spacing: 12) {
                 if step != .one {
                     Button("이전으로") { back() }
@@ -136,7 +132,6 @@ struct EventSetupView: View {
             )
         }
         
-        // 뷰모델 상태 변화를 관찰해서 모달 띄우기
         .onReceive(viewModel.$state) { state in
             if case .loaded = state {
                 modalStep = 1
@@ -177,13 +172,6 @@ struct EventSetupView: View {
                 return
             }
             
-            // 현재 시각보다 이후여야 함
-            if finalApplyStart < Date() {
-                alertMessage = "응모 시작 시간은 현재 시각보다 이후여야 합니다."
-                showingAlert = true
-                return
-            }
-            
             if finalApplyEnd <= finalApplyStart {
                 alertMessage = "응모 마감일은 시작일보다 이후여야 합니다."
                 showingAlert = true
@@ -203,8 +191,7 @@ struct EventSetupView: View {
             }
             step = .three
             
-        case .three: // 로컬 @State → 뷰모델로 복사
-            // 응모 시작/종료 시간 조합
+        case .three:
             let calendar = Calendar(identifier: .gregorian)
             let startDateTime = calendar.date(
                 bySettingHour: calendar.component(.hour, from: enrollStartTime),
@@ -224,7 +211,6 @@ struct EventSetupView: View {
                 return
             }
             
-            // viewModel에 복사
             viewModel.title          = title
             viewModel.location       = location
             viewModel.description    = description
@@ -271,8 +257,3 @@ struct EventSetupView: View {
     
 }
 
-struct EventSetupStep1View_Previews: PreviewProvider {
-    static var previews: some View {
-        EventSetupView()
-    }
-}

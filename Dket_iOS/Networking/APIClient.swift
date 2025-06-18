@@ -46,7 +46,7 @@ extension APIClient {
             }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        authorizedRequest(&request)
+        authorizedRequest(&request, for: endpoint)
         
         let (data, response) = try await session.data(for: request)
         
@@ -90,7 +90,7 @@ extension APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        authorizedRequest(&request)
+        authorizedRequest(&request, for: endpoint)
         
         let encoder = JSONEncoder()
         //encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -132,7 +132,7 @@ extension APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "PATCH"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        authorizedRequest(&request)
+        authorizedRequest(&request, for: endpoint)
 
         // PATCH에서는 대부분 body가 필요 없으므로 빈 바디 허용
         request.httpBody = nil
@@ -173,7 +173,7 @@ extension APIClient {
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)",
                          forHTTPHeaderField: "Content-Type")
-        authorizedRequest(&request)
+        authorizedRequest(&request, for: endpoint)
         
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .useDefaultKeys
@@ -239,11 +239,17 @@ private extension Data {
 }
 
 extension APIClient {
-    private func authorizedRequest(_ request: inout URLRequest) {
+    private func authorizedRequest(_ request: inout URLRequest, for endpoint: Endpoint) {
+        print("➡️ 요청 path: \(endpoint.path)")
+
+        let nonAuthPaths = ["/api/auth/login", "/api/user/login"]
+        if nonAuthPaths.contains(where: { endpoint.path.hasPrefix($0) }) {
+            print("🚫 Authorization 헤더 제외")
+            return
+        }
+
         if let token = TokenManager.loadToken() {
-            #if DEBUG
             print("🔐 Authorization 헤더 삽입: Bearer \(token)")
-            #endif
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
     }
