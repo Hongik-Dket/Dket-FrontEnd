@@ -7,23 +7,35 @@
 
 import SwiftUI
 
-/// 가로 스크롤 섹션 재사용 뷰
-struct EventSectionView: View {
-    let title: String
+struct EventSectionView<Title: View>: View {
+    let title: Title
     let emptyMessage: String
     let events: [Event]
 
-    // 공연 카드 클릭 시: 선택적으로 사용
     var onEventTap: ((Event) -> Void)? = nil
-
-    // 전체 보기 클릭 시: 선택적으로 사용
     var onSeeAllTap: (() -> Void)? = nil
+    var type: ListingType? = nil
+
+    init(
+        @ViewBuilder title: () -> Title,
+        emptyMessage: String,
+        events: [Event],
+        onEventTap: ((Event) -> Void)? = nil,
+        onSeeAllTap: (() -> Void)? = nil,
+        type: ListingType? = nil
+    ) {
+        self.title = title()
+        self.emptyMessage = emptyMessage
+        self.events = events
+        self.onEventTap = onEventTap
+        self.onSeeAllTap = onSeeAllTap
+        self.type = type
+    }
 
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                Text(title)
-                    .font(.headline).bold()
+                title // ← 이제 뷰 조합 가능
                 Spacer()
                 if let onSeeAllTap {
                     Button(action: onSeeAllTap) {
@@ -57,7 +69,7 @@ struct EventSectionView: View {
                                 .buttonStyle(.plain)
                             } else {
                                 NavigationLink {
-                                    EventDetailView(eventId: event.id) // 기본 동작
+                                    EventDetailView(eventId: event.id)
                                 } label: {
                                     EventCardView(event: event)
                                 }

@@ -16,7 +16,6 @@ struct FirstStepView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 35) {
-                // 공연명
                 HStack {
                     Text("공연명")
                         .frame(width: 80, alignment: .leading)
@@ -24,8 +23,7 @@ struct FirstStepView: View {
                     TextField("공연명 입력", text: $title)
                         .textFieldStyle(UnderlineTextFieldStyle())
                 }
-                
-                // 관람연령
+
                 HStack {
                     Text("관람연령")
                         .frame(width: 80, alignment: .leading)
@@ -39,7 +37,6 @@ struct FirstStepView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
-                // 공연장소
                 HStack {
                     Text("공연장소")
                         .frame(width: 80, alignment: .leading)
@@ -48,7 +45,6 @@ struct FirstStepView: View {
                         .textFieldStyle(UnderlineTextFieldStyle(icon: "mappin.and.ellipse"))
                 }
                 
-                // 설명
                 HStack(alignment: .top) {
                     Text("설명")
                         .frame(width: 80, alignment: .leading)

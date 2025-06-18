@@ -20,7 +20,7 @@ struct MypageRow: View {
 
                 Text(title)
                     .foregroundColor(.black)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.system(size: 17, weight: .semibold))
 
                 Spacer()
             }

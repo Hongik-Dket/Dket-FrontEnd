@@ -13,13 +13,13 @@ protocol OrganizerEventServicing {
     func createEvent(_ req: EventCreateRequestDTO) async throws -> Int64
     
     func verifyTicket(
-        eventId: Int64,
-        ticketId: String
+        ticketId: Int64
     ) async throws -> TicketDetail
     
 }
 
 struct OrganizerEventService: OrganizerEventServicing {
+    
     private let api = APIClient.shared
     
     func fetchDetail(eventId: Int64) async throws -> EventDetail {
@@ -43,11 +43,10 @@ struct OrganizerEventService: OrganizerEventServicing {
     }
     
     func verifyTicket(
-        eventId: Int64,
-        ticketId: String
+        ticketId: Int64
     ) async throws -> TicketDetail {
         let wrapper: APIResponse<TicketDetailDTO> = try await api.get(
-            .organizerTicket(eventId: eventId, ticketId: ticketId),
+            .ticketDetailById(id: ticketId),
             as: APIResponse<TicketDetailDTO>.self
         )
         return wrapper.result.domain

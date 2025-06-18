@@ -11,7 +11,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
     
-    private static let baseURL = URL(string: "http://192.168.0.16:8080")! // 실제 서버 주소
+    private static let baseURL = URL(string: "http://192.168.100.13:8080")! // 실제 서버 주소
     private let session = URLSession.shared
     
     // MARK: - JSON Decoder 설정
@@ -28,14 +28,25 @@ final class APIClient {
         }
         return d
     }()
+    
 }
 
 // MARK: - GET 요청
 extension APIClient {
     func get<T: Decodable>(_ endpoint: Endpoint, as type: T.Type = T.self) async throws -> T {
-        let url = Self.baseURL.appendingPathComponent(endpoint.path)
+        var components = URLComponents()
+            components.scheme = Self.baseURL.scheme
+            components.host = Self.baseURL.host
+            components.port = Self.baseURL.port
+            components.path = endpoint.path
+            components.queryItems = endpoint.queryItems
+
+            guard let url = components.url else {
+                throw URLError(.badURL)
+            }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        authorizedRequest(&request, for: endpoint)
         
         let (data, response) = try await session.data(for: request)
         
@@ -79,6 +90,7 @@ extension APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        authorizedRequest(&request, for: endpoint)
         
         let encoder = JSONEncoder()
         //encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -110,6 +122,40 @@ extension APIClient {
     }
 }
 
+// MARK: - PATCH 요청
+extension APIClient {
+    func patch<Resp: Decodable>(
+        _ endpoint: Endpoint,
+        as type: Resp.Type = Resp.self
+    ) async throws -> Resp {
+        let url = Self.baseURL.appendingPathComponent(endpoint.path)
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        authorizedRequest(&request, for: endpoint)
+
+        // PATCH에서는 대부분 body가 필요 없으므로 빈 바디 허용
+        request.httpBody = nil
+
+        let (data, response) = try await session.data(for: request)
+
+#if DEBUG
+        if let raw = String(data: data, encoding: .utf8) {
+            print("🟣 [PATCH \(endpoint.path)] Raw-Response ↓↓↓\n\(raw)\n")
+        }
+#endif
+
+        guard let http = response as? HTTPURLResponse else {
+            throw NetworkError.unknown
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            throw NetworkError.status(http.statusCode)
+        }
+
+        return try Self.decoder.decode(Resp.self, from: data)
+    }
+}
+
 // MARK: - Multipart 업로드
 
 extension APIClient {
@@ -127,6 +173,7 @@ extension APIClient {
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)",
                          forHTTPHeaderField: "Content-Type")
+        authorizedRequest(&request, for: endpoint)
         
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .useDefaultKeys
@@ -135,7 +182,7 @@ extension APIClient {
         
         
         var body = Data()
-        body.appendMultiPart(field: "request", filename: nil, mime: "application/json", value: jsonData, boundary: boundary)
+        body.appendMultiPart(field: "request", filename: "event.json", mime: "application/json", value: jsonData, boundary: boundary)
         body.appendMultiPart(field: "banner", filename: "banner.jpg", mime: "image/jpeg", value: banner, boundary: boundary)
         body.appendMultiPart(field: "poster", filename: "poster.jpg", mime: "image/jpeg", value: poster, boundary: boundary)
         body.appendMultiPart(field: "photocardList", filename: "photocard.jpg", mime: "image/jpeg", value: photocard ?? Data(), boundary: boundary)
@@ -190,4 +237,23 @@ private extension Data {
         append("\r\n".data(using: .utf8)!)
     }
 }
+
+extension APIClient {
+    private func authorizedRequest(_ request: inout URLRequest, for endpoint: Endpoint) {
+        print("➡️ 요청 path: \(endpoint.path)")
+
+        let nonAuthPaths = ["/api/auth/login", "/api/user/login"]
+        if nonAuthPaths.contains(where: { endpoint.path.hasPrefix($0) }) {
+            print("🚫 Authorization 헤더 제외")
+            return
+        }
+
+        if let token = TokenManager.loadToken() {
+            print("🔐 Authorization 헤더 삽입: Bearer \(token)")
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+    }
+}
+
+
 

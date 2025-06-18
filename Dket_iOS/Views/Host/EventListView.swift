@@ -42,15 +42,18 @@ struct EventListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             case .loaded:
-                // ⬇︎ 두 번째 예시와 동일한 레이아웃
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 12, pinnedViews: []) {
                         ForEach(vm.events) { event in
                             NavigationLink {
-                                EventDetailView(eventId: event.id)
+                                if type.isBuyerList {
+                                    BuyerEventDetailView(eventId: event.id)
+                                } else {
+                                    EventDetailView(eventId: event.id)     
+                                }
                             } label: {
                                 VerticalEventCardView(event: event)
-                                    .padding(.bottom, 10)   // 동일한 패딩
+                                    .padding(.bottom, 10)
                             }
                             .buttonStyle(.plain)
                         }

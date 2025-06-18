@@ -21,6 +21,16 @@ enum ListingType {
     case purchased
     case entire
     
+    var isBuyerList: Bool {
+        switch self {
+        case .popular, .applied, .purchased, .entire:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    
     /// 화면 타이틀 기본값
     var defaultTitle: String {
         switch self {
@@ -64,7 +74,7 @@ final class EventListViewModel: ObservableObject {
             do {
                 let list: [Event]
                 switch type {
-                // 개최자 홈화면
+                    // 개최자 홈화면
                 case .today:
                     list = try await organizerService?.fetchToday() ?? []
                 case .closed:
@@ -72,7 +82,7 @@ final class EventListViewModel: ObservableObject {
                 case .all:
                     list = try await organizerService?.fetchAll() ?? []
                     
-                // 구매자 홈화면
+                    // 구매자 홈화면
                 case .popular:
                     list = try await buyerService?.fetchPopular() ?? []
                 case .applied:

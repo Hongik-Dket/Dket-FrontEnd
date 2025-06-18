@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		038288C92DFEC8C8005F3DB7 /* web3swift in Frameworks */ = {isa = PBXBuildFile; productRef = 038288C82DFEC8C8005F3DB7 /* web3swift */; };
+		038288CC2DFEEB33005F3DB7 /* AnyCodable in Frameworks */ = {isa = PBXBuildFile; productRef = 038288CB2DFEEB33005F3DB7 /* AnyCodable */; };
 		038426DE2DDEE868001849B2 /* ReownAppKit in Frameworks */ = {isa = PBXBuildFile; productRef = 038426DD2DDEE868001849B2 /* ReownAppKit */; };
 		038426E02DDEE868001849B2 /* ReownWalletKit in Frameworks */ = {isa = PBXBuildFile; productRef = 038426DF2DDEE868001849B2 /* ReownWalletKit */; };
 		038426E22DDEE868001849B2 /* WalletConnect in Frameworks */ = {isa = PBXBuildFile; productRef = 038426E12DDEE868001849B2 /* WalletConnect */; };
@@ -37,9 +39,23 @@
 		03FC7B292DA4218C002D15B3 /* Dket_iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Dket_iOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		03319D982E01AD4000E0C0C4 /* Exceptions for "Dket_iOS" folder in "Dket_iOS" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Dket-iOS-Info.plist",
+				Info.plist,
+			);
+			target = 03FC7B0D2DA4218A002D15B3 /* Dket_iOS */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		03FC7B102DA4218A002D15B3 /* Dket_iOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				03319D982E01AD4000E0C0C4 /* Exceptions for "Dket_iOS" folder in "Dket_iOS" target */,
+			);
 			path = Dket_iOS;
 			sourceTree = "<group>";
 		};
@@ -65,6 +81,8 @@
 				038426DE2DDEE868001849B2 /* ReownAppKit in Frameworks */,
 				038426E22DDEE868001849B2 /* WalletConnect in Frameworks */,
 				038426EA2DE30E6D001849B2 /* WalletConnectNetworking in Frameworks */,
+				038288C92DFEC8C8005F3DB7 /* web3swift in Frameworks */,
+				038288CC2DFEEB33005F3DB7 /* AnyCodable in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +157,8 @@
 				038426E12DDEE868001849B2 /* WalletConnect */,
 				038426E72DDEFE6E001849B2 /* CryptoSwift */,
 				038426E92DE30E6D001849B2 /* WalletConnectNetworking */,
+				038288C82DFEC8C8005F3DB7 /* web3swift */,
+				038288CB2DFEEB33005F3DB7 /* AnyCodable */,
 			);
 			productName = Dket_iOS;
 			productReference = 03FC7B0E2DA4218A002D15B3 /* Dket_iOS.app */;
@@ -225,6 +245,8 @@
 			packageReferences = (
 				038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */,
 				038426E62DDEFE6E001849B2 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
+				038288C72DFEC8C8005F3DB7 /* XCRemoteSwiftPackageReference "web3swift" */,
+				038288CA2DFEEB33005F3DB7 /* XCRemoteSwiftPackageReference "AnyCodable" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 03FC7B0F2DA4218A002D15B3 /* Products */;
@@ -352,6 +374,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -407,6 +430,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -427,6 +451,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Dket-iOS-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "공연 입장 확인을 위해 카메라로 QR 코드를 스캔합니다.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "이 앱은 동일 네트워크 내 서버와 통신하기 위해 로컬 네트워크에 접근합니다.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -469,6 +494,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Dket-iOS-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "공연 입장 확인을 위해 카메라로 QR 코드를 스캔합니다.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "이 앱은 동일 네트워크 내 서버와 통신하기 위해 로컬 네트워크에 접근합니다.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -630,6 +656,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		038288C72DFEC8C8005F3DB7 /* XCRemoteSwiftPackageReference "web3swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/skywinder/web3swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.3.0;
+			};
+		};
+		038288CA2DFEEB33005F3DB7 /* XCRemoteSwiftPackageReference "AnyCodable" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Flight-School/AnyCodable.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.6.7;
+			};
+		};
 		038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/reown-com/reown-swift";
@@ -649,6 +691,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		038288C82DFEC8C8005F3DB7 /* web3swift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038288C72DFEC8C8005F3DB7 /* XCRemoteSwiftPackageReference "web3swift" */;
+			productName = web3swift;
+		};
+		038288CB2DFEEB33005F3DB7 /* AnyCodable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 038288CA2DFEEB33005F3DB7 /* XCRemoteSwiftPackageReference "AnyCodable" */;
+			productName = AnyCodable;
+		};
 		038426DD2DDEE868001849B2 /* ReownAppKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 038426DC2DDEE868001849B2 /* XCRemoteSwiftPackageReference "reown-swift" */;

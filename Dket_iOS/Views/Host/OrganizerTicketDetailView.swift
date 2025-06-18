@@ -1,15 +1,21 @@
-//
-//  OrganizerTicketDetailView.swift
-//  Dket_iOS
-//
-//  Created by 이지우 on 6/15/25.
+////
+////  OrganizerTicketDetailView.swift
+////  Dket_iOS
+////
+////  Created by 이지우 on 6/15/25.
+////
 //
 
 import SwiftUI
 
 struct OrganizerTicketDetailView: View {
     let ticket: TicketDetail
+    var onDismiss: () -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
+    let service: TicketServicing = TicketService()
 
     var body: some View {
         ZStack {
@@ -17,6 +23,7 @@ struct OrganizerTicketDetailView: View {
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
+                .allowsHitTesting(false)
 
             VStack {
                 HStack {
@@ -30,16 +37,16 @@ struct OrganizerTicketDetailView: View {
                 .padding(.trailing, 16)
 
                 VStack(spacing: 20) {
-                    Text(ticket.title)
+                    Text(ticket.eventTitle)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(Color.dketBlue)
 
                     VStack(alignment: .leading, spacing: 10) {
-                        TicketInfoRow(label: "공연 일시", value: ticket.dateFormatted)
-                        TicketInfoRow(label: "예매자 명", value: ticket.userName)
-                        TicketInfoRow(label: "생년월일", value: ticket.userBirth)
+                        TicketInfoRow(label: "공연 일시", value: ticket.startDateFormatted)
+                        TicketInfoRow(label: "예매자 명", value: ticket.buyerName)
+                        TicketInfoRow(label: "생년월일", value: ticket.birthDateFormatted)
                         TicketInfoRow(label: "티켓 번호", value: ticket.ticketNumber)
-                        TicketInfoRow(label: "좌석 번호", value: ticket.seat)
+                        TicketInfoRow(label: "좌석 번호", value: ticket.seatNumber)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 50)
@@ -49,7 +56,15 @@ struct OrganizerTicketDetailView: View {
                 Spacer()
 
                 Button {
-                    // 입장 완료 처리
+                    Task {
+                        do {
+                            try await service.enterTicket(ticket.ticketId)
+                            alertMessage = "입장 처리되었습니다."
+                        } catch {
+                            alertMessage = error.localizedDescription
+                        }
+                        showAlert = true
+                    }
                 } label: {
                     Text("입장 완료")
                         .font(.system(size: 16, weight: .bold))
@@ -60,22 +75,15 @@ struct OrganizerTicketDetailView: View {
                         .shadow(radius: 4)
                 }
                 .padding(.bottom, 60)
+                .alert("알림", isPresented: $showAlert) {
+                    Button("확인") {
+                        onDismiss()
+                    }
+                } message: {
+                    Text(alertMessage)
+                }
             }
         }
     }
 }
 
-struct OrganizerTicketDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        OrganizerTicketDetailView(ticket: TicketDetail(
-            id: 1,
-            title: "공연 이름",
-            dateFormatted: "2025.03.10 18:00",
-            userName: "여희주",
-            userBirth: "2003.02.25",
-            ticketNumber: "T152670849345203",
-            seat: "39",
-            qrCodeUrl: nil
-        ))
-    }
-}

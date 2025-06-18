@@ -10,6 +10,12 @@ import ReownAppKit
 import WalletConnectSigner  // 필수
 import WalletConnectNetworking
 import WalletConnectRelay
+import WalletConnectSign
+import WalletConnectUtils
+import web3swift
+import Web3Core
+import AnyCodable
+import Commons
 
 final class WalletConnectManager {
     static let shared = WalletConnectManager()
@@ -46,7 +52,6 @@ final class WalletConnectManager {
         let crypto = MyCryptoProvider()
         
         // 4. AppKit 설정
-        // AppKit 설정
         AppKit.configure(
             projectId: projectId,
             metadata: metadata,
@@ -57,6 +62,7 @@ final class WalletConnectManager {
         
         print("✅ AppKit 설정 완료")
     }
+    
 }
 
 extension WalletConnectManager {
@@ -64,4 +70,5 @@ extension WalletConnectManager {
         // Reown AppKit 내부로 전달 → 세션/페어링 처리
         _ = AppKit.instance.handleDeeplink(url)
     }
+    
 }

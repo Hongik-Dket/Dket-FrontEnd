@@ -27,13 +27,11 @@ struct PaySuccessModalView: View {
 
             Spacer().frame(height: 10)
 
-            // ✅ 이미지
             Image("DketEmpty")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)
 
-            // ✅ 메시지
             Text("결제가 완료되었습니다.")
                 .font(.headline)
                 .foregroundColor(.black)
@@ -41,7 +39,6 @@ struct PaySuccessModalView: View {
 
             Spacer().frame(height: 16)
 
-            // ✅ 확인 버튼
             Button(action: onDismiss) {
                 Text("돌아가기")
                     .font(.system(size: 16, weight: .bold))

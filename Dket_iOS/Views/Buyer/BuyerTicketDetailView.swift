@@ -8,8 +8,14 @@
 import SwiftUI
 
 struct BuyerTicketDetailView: View {
-    let ticket: TicketDetail
+    @StateObject private var vm: BuyerTicketDetailViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var showPhotoCard = false
+
+    init(ticketId: Int64) {
+        print("🧾 BuyerTicketDetailView INIT with ticketId: \(ticketId)")
+        _vm = StateObject(wrappedValue: BuyerTicketDetailViewModel(ticketId: ticketId))
+    }
 
     var body: some View {
         ZStack {
@@ -18,80 +24,77 @@ struct BuyerTicketDetailView: View {
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            VStack(spacing: 12) {
-                // 상단 닫기 버튼
-                HStack {
-                    Spacer()
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .foregroundColor(.black)
-                            .padding(20)
-                    }
-                }
-                .padding(.trailing, 16)
-
-                // 공연 제목
-                Text(ticket.title)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(Color(red: 22/255, green: 29/255, blue: 111/255))
-                    .padding(.top, 60) // 노치와 겹치지 않게
-
-                // 정보 영역
-                VStack(alignment: .leading, spacing: 10) {
-                    TicketInfoRow(label: "공연 일시", value: ticket.dateFormatted)
-                    TicketInfoRow(label: "예매자 명", value: ticket.userName)
-                    TicketInfoRow(label: "생년월일", value: ticket.userBirth)
-                    TicketInfoRow(label: "티켓 번호", value: ticket.ticketNumber)
-                    TicketInfoRow(label: "좌석 번호", value: ticket.seat)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 50)
-                .padding(.top, 20)
-
-                // QR 코드
-                if let qr = ticket.qrCodeUrl, let url = URL(string: qr) {
-                    AsyncImage(url: url) { image in
-                        image.resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 260, height: 260)
-                            .padding(.top, 12)
-                    } placeholder: {
-                        ProgressView()
-                            .frame(width: 260, height: 260)
-                            .padding(.top, 12)
-                    }
-                }
-
-                Spacer()
-
-                // 하단 버튼
+            if let ticket = vm.ticket {
                 VStack(spacing: 12) {
-                    Button {
-                        // 포토카드 보기 액션
-                    } label: {
-                        Text("포토카드 보기")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: 360, maxHeight: 48)
-                            .background(Color.dketBlue)
-                            .cornerRadius(24)
-                            .shadow(radius: 4)
+                    Text(ticket.eventTitle)
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(Color.dketBlue)
+                        .padding(.top, 120)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        TicketInfoRow(label: "공연 일시", value: ticket.startDateFormatted)
+                        TicketInfoRow(label: "예매자 명", value: ticket.buyerName)
+                        TicketInfoRow(label: "생년월일", value: ticket.birthDateFormatted)
+                        TicketInfoRow(label: "티켓 번호", value: ticket.ticketNumber)
+                        TicketInfoRow(label: "좌석 번호", value: ticket.seatNumber)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 50)
+                    .padding(.top, 20)
+
+                    if let qr = ticket.qrCodeUrl, let url = URL(string: qr) {
+                        AsyncImage(url: url) { image in
+                            image.resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 260, height: 260)
+                                .padding(.top, 12)
+                        } placeholder: {
+                            ProgressView()
+                                .frame(width: 260, height: 260)
+                                .padding(.top, 12)
+                        }
                     }
 
-                    Button {
-                        // NFT 티켓 보기 액션
-                    } label: {
-                        Text("NFT 티켓 보러가기")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: 360, maxHeight: 48)
-                            .background(Color.dketBlue)
-                            .cornerRadius(24)
-                            .shadow(radius: 4)
+                    Spacer()
+
+                    VStack(spacing: 16) {
+                        CircleButton(title: "포토카드 보기") {
+                            showPhotoCard = true
+                        }
+
+                        CircleButton(title: "NFT 티켓 보러가기") {
+                            if let url = URL(string: ticket.nftUrl) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
                     }
+                    .padding(.bottom, 50)
                 }
-                .padding(.bottom, 50)
+
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark")
+                                .foregroundColor(.black)
+                                .padding(10)
+                                .background(Color.white.opacity(0.7))
+                                .clipShape(Circle())
+                        }
+                        .padding(.top, 50)
+                        .padding(.trailing, 20)
+                    }
+                    Spacer()
+                }
+            } else {
+                ProgressView()
             }
+        }
+        .task {
+            await vm.fetch()
+        }
+        .fullScreenCover(isPresented: $showPhotoCard) {
+            PhotoCardDetailView(ticketId: vm.ticket?.ticketId ?? 0)
         }
     }
 }
@@ -99,14 +102,14 @@ struct BuyerTicketDetailView: View {
 struct TicketInfoRow: View {
     let label: String
     let value: String
-
+    
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(label)
                 .foregroundColor(.black)
                 .font(.system(size: 14, weight: .medium))
                 .frame(width: 80, alignment: .leading) // ← 고정된 너비로 정렬 기준 맞춤
-
+            
             Text(value)
                 .font(.system(size: 14, weight: .semibold))
                 .multilineTextAlignment(.leading)
@@ -114,17 +117,4 @@ struct TicketInfoRow: View {
     }
 }
 
-struct BuyerTicketDetailView_Preview: PreviewProvider {
-    static var previews: some View {
-        BuyerTicketDetailView(ticket: TicketDetail(
-            id: 1,
-            title: "공연 이름",
-            dateFormatted: "2025.06.30 18:00",
-            userName: "여희주",
-            userBirth: "2003.02.25",
-            ticketNumber: "T152670849345203",
-            seat: "39",
-            qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?data=DKET_SAMPLE"
-        ))
-    }
-}
+

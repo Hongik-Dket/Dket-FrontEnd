@@ -10,6 +10,9 @@ import SwiftUI
 struct HostHomeView: View {
     @StateObject private var vm = OrganizerHomeViewModel()
     @State private var isCreating = false
+    @State private var selectedListType: ListingType?
+    @EnvironmentObject private var appState: AppState
+    @State private var showMypage = false
     
     var body: some View {
         NavigationStack {
@@ -18,7 +21,7 @@ struct HostHomeView: View {
                     VStack(spacing: 30) {
                         SearchHeaderView(
                             onSearch: { /* TODO */ },
-                            onMenu:   { /* TODO */ }
+                            onMenu:   { showMypage = true }
                         )
                         
                         switch vm.state {
@@ -33,27 +36,55 @@ struct HostHomeView: View {
                         case .loaded:
                             if let bundle = vm.home {
                                 EventSectionView(
-                                    title: "오늘 공연",
+                                    title: {
+                                        HStack(spacing: 8) {
+                                            Image("TodayEvent") 
+                                                .resizable()
+                                                .frame(width: 20, height: 20)
+                                            Text("오늘 공연")
+                                                .font(.headline).bold()
+                                        }
+                                    },
                                     emptyMessage: "오늘 공연이 없습니다",
-                                    events: bundle.today
+                                    events: bundle.today,
+                                    onSeeAllTap: { selectedListType = .today }
                                 )
                                 
                                 EventSectionView(
-                                    title: "최근 응모 마감 공연",
+                                    title: {
+                                        HStack(spacing: 8) {
+                                            Image("ApplyEvent")
+                                                .resizable()
+                                                .frame(width: 20, height: 20)
+                                            Text("최근 응모 마감 공연")
+                                                .font(.headline).bold()
+                                        }
+                                    },
                                     emptyMessage: "최근 응모 마감 공연이 없습니다",
-                                    events: bundle.recentlyClosed
+                                    events: bundle.recentlyClosed,
+                                    onSeeAllTap: { selectedListType = .closed }
                                 )
                                 
                                 EventSectionView(
-                                    title: "개최한 공연",
+                                    title: {
+                                        HStack(spacing: 8) {
+                                            Image("Popular")
+                                                .resizable()
+                                                .frame(width: 20, height: 20)
+                                            Text("개최한 공연")
+                                                .font(.headline).bold()
+                                        }
+                                    },
                                     emptyMessage: "개최한 공연이 없습니다",
-                                    events: bundle.all
+                                    events: bundle.all,
+                                    onSeeAllTap: { selectedListType = .all }
                                 )
                             }
                         }
                     }
                     .padding(.bottom, 80)
                 }
+                .refreshable { await vm.refresh() }
                 
                 Button {
                     isCreating = true
@@ -78,6 +109,13 @@ struct HostHomeView: View {
                 print("🔄 [HostHomeView] eventCreated 감지 → 새로고침")
                 Task { await vm.onAppear() }
             }
+            .navigationDestination(item: $selectedListType) { type in  // 🔹 추가
+                EventListView(type: type)
+            }
+        }
+        .fullScreenCover(isPresented: $showMypage) {
+            MypageView()
+                .environmentObject(appState)
         }
     }
 }

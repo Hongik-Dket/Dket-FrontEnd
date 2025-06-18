@@ -13,7 +13,6 @@ struct BackHeaderView: View {
 
     var body: some View {
         ZStack {
-            
             Color.white
                 .edgesIgnoringSafeArea(.top)
             HStack {

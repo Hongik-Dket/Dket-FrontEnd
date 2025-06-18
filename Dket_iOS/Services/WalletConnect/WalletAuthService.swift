@@ -7,9 +7,12 @@
 
 struct WalletAuthService {
     private let api = APIClient.shared
-
+    
     func completeLogin(with walletAddress: String) async throws {
         let req = WalletAddressRequest(walletAddress: walletAddress)
-        let _: MetaMaskDTO = try await api.post(.connectWallet, body: req)
+        
+        let res: APIResponse<MetaMaskLoginResponse> = try await api.post(.connectWallet, body: req)
+        
+        TokenManager.saveToken(res.result.token)
     }
 }

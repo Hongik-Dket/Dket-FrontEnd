@@ -23,7 +23,7 @@ struct EventSetupView: View {
     @State private var performanceEnd   = Date()
     @State private var startTime        = Date()
     @State private var endTime          = Date()
-    @State private var price            = ""
+    @State private var priceKrw            = ""
     @State private var capacity         = ""
     @State private var enrollStartDate = Date()
     @State private var enrollStartTime = Date()
@@ -37,28 +37,28 @@ struct EventSetupView: View {
     
     // MARK: – 최종 모달 플로우
     @State private var showModal = false
-    @State private var modalStep = 1   // 1,2,3 단계를 PopupFlowView 에 전달
-    @State private var showNotice = false     // 개최 완료 공지
+    @State private var modalStep = 1
+    @State private var showNotice = false
     
     @State private var showingAlert = false
     @State private var alertMessage = ""
+    
+    @EnvironmentObject private var appState: AppState
+    @State private var showMypage = false
     
     enum Step { case one, two, three }
     
     var body: some View {
         VStack(spacing: 0) {
-            // MARK: A) 커스텀 백헤더
             BackHeaderView(
                 onBack: { dismiss() },
-                onMenu: { /* 메뉴 토글 */ }
+                onMenu: { showMypage = true }
             )
             
-            // MARK: B) STEP 인디케이터
             StepIndicatorView(current: step)
                 .padding(.vertical, 8)
             Divider()
             
-            // MARK: C) STEP 콘텐츠
             Group {
                 switch step {
                 case .one: FirstStepView(
@@ -73,7 +73,7 @@ struct EventSetupView: View {
                         performanceEnd:   $performanceEnd,
                         startTime:        $startTime,
                         endTime:          $endTime,
-                        price:            $price,
+                        priceKrw:         $priceKrw,
                         capacity:         $capacity,
                         enrollStartDate:  $enrollStartDate,
                         enrollStartTime:  $enrollStartTime,
@@ -103,7 +103,6 @@ struct EventSetupView: View {
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
             
-            // MARK: D) 하단 이전/다음 버튼
             HStack(spacing: 12) {
                 if step != .one {
                     Button("이전으로") { back() }
@@ -133,7 +132,6 @@ struct EventSetupView: View {
             )
         }
         
-        // 뷰모델 상태 변화를 관찰해서 모달 띄우기
         .onReceive(viewModel.$state) { state in
             if case .loaded = state {
                 modalStep = 1
@@ -143,6 +141,10 @@ struct EventSetupView: View {
         .alert(isPresented: $showingAlert) {
             Alert(title: Text("입력 오류"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
         }
+        .fullScreenCover(isPresented: $showMypage) {
+            MypageView()
+                .environmentObject(appState)
+        }
     }
     
     private func next() {
@@ -150,7 +152,7 @@ struct EventSetupView: View {
         case .one:   step = .two
         case .two:
             let calendar = Calendar(identifier: .gregorian)
-
+            
             guard
                 let finalApplyStart = calendar.date(
                     bySettingHour: calendar.component(.hour, from: enrollStartTime),
@@ -169,26 +171,19 @@ struct EventSetupView: View {
                 showingAlert = true
                 return
             }
-
-            // 현재 시각보다 이후여야 함
-            if finalApplyStart < Date() {
-                alertMessage = "응모 시작 시간은 현재 시각보다 이후여야 합니다."
-                showingAlert = true
-                return
-            }
-
+            
             if finalApplyEnd <= finalApplyStart {
                 alertMessage = "응모 마감일은 시작일보다 이후여야 합니다."
                 showingAlert = true
                 return
             }
-
+            
             if calendar.date(byAdding: .day, value: 2, to: finalApplyEnd)! > calendar.startOfDay(for: performanceStart) {
                 alertMessage = "응모 마감 후 최소 2일 후에 공연이 시작되어야 합니다."
                 showingAlert = true
                 return
             }
-
+            
             if performanceEnd < performanceStart {
                 alertMessage = "공연 종료일은 시작일보다 이후여야 합니다."
                 showingAlert = true
@@ -196,8 +191,7 @@ struct EventSetupView: View {
             }
             step = .three
             
-        case .three: // 로컬 @State → 뷰모델로 복사
-            // 응모 시작/종료 시간 조합
+        case .three:
             let calendar = Calendar(identifier: .gregorian)
             let startDateTime = calendar.date(
                 bySettingHour: calendar.component(.hour, from: enrollStartTime),
@@ -217,7 +211,6 @@ struct EventSetupView: View {
                 return
             }
             
-            // viewModel에 복사
             viewModel.title          = title
             viewModel.location       = location
             viewModel.description    = description
@@ -225,7 +218,7 @@ struct EventSetupView: View {
             viewModel.endDate        = performanceEnd
             viewModel.startTimeText  = DateFormatter.HHmm.string(from: startTime)
             viewModel.endTimeText    = DateFormatter.HHmm.string(from: endTime)
-            viewModel.price          = Int(price) ?? 0
+            viewModel.priceKrw       = Int(priceKrw) ?? 0
             viewModel.capacity       = Int(capacity) ?? 0
             viewModel.applyStart     = finalApplyStart
             viewModel.applyEnd       = finalApplyEnd
@@ -254,18 +247,13 @@ struct EventSetupView: View {
         case .two:
             return performanceStart <= performanceEnd
             && startTime       <= endTime
-            && !price.isEmpty
+            && !priceKrw.isEmpty
             && !capacity.isEmpty
         case .three:
             return bannerImage != nil && posterImage != nil
         }
     }
-        
+    
     
 }
 
-struct EventSetupStep1View_Previews: PreviewProvider {
-    static var previews: some View {
-        EventSetupView()
-    }
-}

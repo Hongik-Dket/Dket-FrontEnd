@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct BuyerEventDetailView: View {
     let eventId: Int64
     @Environment(\.dismiss) private var dismiss
@@ -14,6 +15,9 @@ struct BuyerEventDetailView: View {
     @StateObject private var vm: BuyerEventViewModel
     
     @State private var showApplySuccessAlert = false
+    
+    @State private var showTicketDetail = false
+    @State private var selectedTicketId: Int64?
     
     init(eventId: Int64) {
         self.eventId = eventId
@@ -51,6 +55,15 @@ struct BuyerEventDetailView: View {
                 }
             }
         }
+        .onAppear {
+            Task {
+                await vm.fetch()
+                await MainActor.run {
+                    vm.updateFloatingButton(for: vm.selectedSession)
+                }
+            }
+        }
+        
     }
     
     @ViewBuilder
@@ -58,37 +71,79 @@ struct BuyerEventDetailView: View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    PosterView(url: detail.poster)
-                    BasicInfoView(detail: detail)
-                    Divider()
-                    
-                    if detail.status == .applyNotOpened {
-                        Text("응모 D-\(Date().daysUntil(detail.applyPeriod.lowerBound))일")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                    } else {
-                        BuyerSessionPickerView(detail: detail)
-                            .environmentObject(vm)
-                        Divider()
-                        BuyerSessionStatSection()
-                            .environmentObject(vm)
+                    HStack {
+                        Spacer()
+                        PosterView(url: detail.poster)
+                        Spacer()
                     }
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        BasicInfoView(detail: detail)
+                        Divider()
+                        
+                        if detail.status == .applyNotOpened {
+                            Text("응모 D-\(Date().daysUntil(detail.applyPeriod.lowerBound))일")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            BuyerSessionPickerView(detail: detail)
+                                .environmentObject(vm)
+                            Divider()
+                            BuyerSessionStatSection()
+                                .environmentObject(vm)
+                        }
+                    }
+                    .padding(.horizontal)
                     
                     Spacer(minLength: 80)
                 }
-                .padding(.horizontal)
                 .padding(.vertical, 12)
             }
+            .refreshable { await vm.refresh() }
             
             VStack {
                 Spacer()
                 if vm.floatingButtonTitle != "" {
                     Button(action: {
-                        // TODO: 버튼 액션 처리 (예: 응모, 결제 등)
                         Task {
-                            let success = await vm.applyToSelectedSession()
-                            if success {
-                                showApplySuccessAlert = true
+                            print("[DEBUG] floatingAction = \(vm.floatingAction.rawValue)")
+                            switch vm.floatingAction {
+                            case .purchase, .buy:
+                                await vm.preparePurchase()
+                                await vm.fetch()
+                                
+                            case .apply:
+                                let success = await vm.applyToSelectedSession()
+                                if success {
+                                    await MainActor.run {
+                                        showApplySuccessAlert = true
+                                    }
+                                    await vm.fetch()
+                                }
+                            case .view:
+                                if let ticketId = vm.selectedSession?.ticketId {
+                                    print("🎯 ticketId 설정됨: \(ticketId)")
+                                    DispatchQueue.main.async {
+                                        self.selectedTicketId = ticketId
+                                        self.showTicketDetail = true
+                                    }
+                                } else {
+                                    print("❌ 선택된 세션에 ticketId가 없음")
+                                }
+                            case .enter:
+                                if let ticketId = vm.selectedSession?.ticketId {
+                                    print("🎫 공연 입장: ticketId = \(ticketId)")
+                                    DispatchQueue.main.async {
+                                        self.selectedTicketId = ticketId
+                                        self.showTicketDetail = true
+                                    }
+                                } else {
+                                    print("❌ 공연 입장 실패: ticketId 없음")
+                                }
+                                
+                            default:
+                                print("[DEBUG] default case triggered")
+                                break
                             }
                         }
                     }) {
@@ -105,11 +160,28 @@ struct BuyerEventDetailView: View {
                     .padding(.bottom)
                 }
             }
+            .fullScreenCover(item: $selectedTicketId) { ticketId in
+                BuyerTicketDetailView(ticketId: ticketId)
+            }
         }
         .overlay {
-            if showApplySuccessAlert {
-                ApplySuccessModalView {
-                    showApplySuccessAlert = false
+            ZStack {
+                if showApplySuccessAlert {
+                    ApplySuccessModalView {
+                        showApplySuccessAlert = false
+                    }
+                }
+                
+                if vm.showBuyConfirmAlert {
+                    BuyConfirmAlertView(
+                        priceEth: vm.ticketPriceEthString,
+                        onConfirm: {
+                            Task { await vm.confirmPurchase() }
+                        },
+                        onCancel: {
+                            vm.showBuyConfirmAlert = false
+                        }
+                    )
                 }
             }
         }
@@ -151,4 +223,15 @@ private struct BuyerSessionStatSection: View {
                 .frame(maxWidth: .infinity)
         }
     }
+}
+
+struct BuyerEventDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        BuyerEventDetailView(eventId: 16)
+    }
+}
+
+
+extension Int64: Identifiable {
+    public var id: Int64 { self }
 }
