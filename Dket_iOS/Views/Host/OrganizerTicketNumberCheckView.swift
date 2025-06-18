@@ -145,7 +145,7 @@ struct OrganizerTicketNumberCheckView: View {
                 }
             }
             .alert(isPresented: $showErrorAlert) {
-                Alert(title: Text("조회 실패"), message: Text(errorMessage), dismissButton: .default(Text("확인")))
+                Alert(title: Text("티켓 검증 실패"), message: Text("유효하지 않은 티켓입니다."), dismissButton: .default(Text("확인")))
             }
         }
     }

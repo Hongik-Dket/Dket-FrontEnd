@@ -24,7 +24,6 @@ final class EventDetailViewModel: ObservableObject {
     
     @Published var verificationFailed = false
     
-    // 티켓 검증 상태
     enum VerificationState: Equatable {
         case idle
         case verifying
@@ -52,10 +51,8 @@ final class EventDetailViewModel: ObservableObject {
     private func loadDetail() async {
         state = .loading
         do {
-            // 이벤트 상세 가져오기
             let d = try await service.fetchDetail(eventId: eventId)
             
-            // 각 세션별로 상세 가져오기
             var newCache: [Int64: SessionDetail] = [:]
             for sid in d.sessionIds {
                 let s = try await service.fetchSession(
@@ -65,7 +62,6 @@ final class EventDetailViewModel: ObservableObject {
                 newCache[sid] = s
             }
             
-            // UI 업데이트
             detail = d
             sessionCache = newCache
             state = .loaded
@@ -83,7 +79,6 @@ final class EventDetailViewModel: ObservableObject {
     private func loadSessionIfNeeded() async {
         guard let sid = selectedSessionId else { return }
         
-        // 이미 캐시가 있으면 즉시 반영
         if let cached = sessionCache[sid] {
             selectedSession = cached
             return
@@ -99,7 +94,6 @@ final class EventDetailViewModel: ObservableObject {
         }
     }
     
-    // 티켓 검증 호출
     func verifyTicket(with code: String) {
         Task {
             verificationState = .verifying
@@ -109,7 +103,9 @@ final class EventDetailViewModel: ObservableObject {
                 verificationState = .success(message: "입장 처리되었습니다.")
             } catch {
                 self.verificationFailed = true
-                verificationState = .failure(error: error.localizedDescription)
+                
+                let errorMessage = mapErrorMessage(error)
+                verificationState = .failure(error: errorMessage)
             }
         }
     }
@@ -118,6 +114,18 @@ final class EventDetailViewModel: ObservableObject {
     func refresh() async {
         print("🔄 개최자 공연상세보기 refresh() 실행")
         await onAppear()
+    }
+}
+
+private func mapErrorMessage(_ error: Error) -> String {
+    let rawMessage = error.localizedDescription.lowercased()
+    
+    if rawMessage.contains("not found") || rawMessage.contains("invalid") {
+        return "유효하지 않은 티켓입니다."
+    } else if rawMessage.contains("already entered") {
+        return "이미 입장 처리된 티켓입니다."
+    } else {
+        return "유효하지 않은 티켓입니다."
     }
 }
 
