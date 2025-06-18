@@ -57,12 +57,10 @@ struct OrganizerEventService: OrganizerEventServicing {
 extension JSONDecoder {
     static func makeEventDecoder() -> JSONDecoder {
         let d = JSONDecoder()
-        // ① LocalDate
         let dateF = DateFormatter()
         dateF.calendar = Calendar(identifier: .iso8601)
         dateF.dateFormat = "yyyy-MM-dd"
         
-        // ② LocalDateTime
         let dateTimeF = DateFormatter()
         dateTimeF.calendar = dateF.calendar
         dateTimeF.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"

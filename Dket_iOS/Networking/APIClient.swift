@@ -11,7 +11,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
     
-    private static let baseURL = URL(string: "http://192.168.100.13:8080")!
+    private static let baseURL = URL(string: "http://192.168.198.179:8080")!
     private let session = URLSession.shared
     
     // MARK: - JSON Decoder 설정
