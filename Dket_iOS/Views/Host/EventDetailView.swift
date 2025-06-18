@@ -73,7 +73,7 @@ struct EventDetailView: View {
                     verifyMessage = message
                     showVerifyAlert = true
                 case .failure(let error):
-                    verifyTitle = "입장 확인 실패"
+                    verifyTitle = "티켓 검증 실패"
                     verifyMessage = error
                     showVerifyAlert = true
                 }
@@ -90,7 +90,6 @@ struct EventDetailView: View {
             }
     }
     
-    // MARK: - 분리된 bodyView
     @ViewBuilder
     private var bodyView: some View {
         switch vm.state {

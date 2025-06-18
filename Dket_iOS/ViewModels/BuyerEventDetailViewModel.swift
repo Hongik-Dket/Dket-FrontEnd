@@ -359,7 +359,13 @@ final class BuyerEventViewModel: ObservableObject {
         }
         await MainActor.run {
             self.isPurchasing = false
-            self.updateFloatingButton(for: self.selectedSession)
+            if let sessionId = self.selectedSessionId,
+               let updatedSession = self.sessionList.first(where: { $0.id == sessionId }) {
+                self.selectedSession = updatedSession
+                self.updateFloatingButton(for: updatedSession)
+            } else {
+                self.updateFloatingButton(for: nil)
+            }
         }
     }
     

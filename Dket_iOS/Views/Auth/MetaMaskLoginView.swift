@@ -30,7 +30,7 @@ struct MetaMaskLoginView: View {
                     HStack {
                         ZStack {
                             Circle()
-                                .fill(Color.dketBlue)
+                                .fill(Color.white)
                                 .frame(width: 30, height: 30)
                                 .shadow(radius: 2)
                             

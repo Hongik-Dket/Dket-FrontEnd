@@ -39,9 +39,22 @@
 		03FC7B292DA4218C002D15B3 /* Dket_iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Dket_iOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		03319ED02E02B0D500E0C0C4 /* Exceptions for "Dket_iOS" folder in "Dket_iOS" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 03FC7B0D2DA4218A002D15B3 /* Dket_iOS */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		03FC7B102DA4218A002D15B3 /* Dket_iOS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				03319ED02E02B0D500E0C0C4 /* Exceptions for "Dket_iOS" folder in "Dket_iOS" target */,
+			);
 			path = Dket_iOS;
 			sourceTree = "<group>";
 		};
