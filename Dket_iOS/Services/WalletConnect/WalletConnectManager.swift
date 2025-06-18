@@ -48,7 +48,7 @@ final class WalletConnectManager {
             redirect: redirect
         )
         
-        // 커스텀 CryptoProvider (서명 알고리즘 구현)
+        // 서명 알고리즘 구현
         let crypto = MyCryptoProvider()
         
         // AppKit 설정
