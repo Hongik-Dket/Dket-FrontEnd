@@ -2,7 +2,8 @@
 //  APIClient.swift
 //  Dket_iOS
 //
-//  Created by 이지우 on 4/27/25.
+//  Created by 이지우 o
+//  4/27/25.
 //
 
 import Foundation
@@ -11,7 +12,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
     
-    private static let baseURL = URL(string: "http://192.168.100.13:8080")!
+    private static let baseURL = URL(string: "http://192.168.198.22:8080")!
     private let session = URLSession.shared
     
     // MARK: - JSON Decoder 설정
