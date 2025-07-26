@@ -328,7 +328,7 @@ final class BuyerEventViewModel: ObservableObject {
         await MainActor.run {
             self.isPurchasing = true
             self.isFloatingButtonEnabled = false
-            self.floatingButtonTitle = "티켓 결제하기"
+            self.floatingButtonTitle = "결제 진행 중..."
         }
         
         do {

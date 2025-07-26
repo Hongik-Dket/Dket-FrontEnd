@@ -176,10 +176,12 @@ struct BuyerEventDetailView: View {
                     BuyConfirmAlertView(
                         priceEth: vm.ticketPriceEthString,
                         onConfirm: {
-                            Task { await vm.confirmPurchase()
+                            Task {
+                                await vm.confirmPurchase()
                                 await MainActor.run {
                                     vm.updateFloatingButton(for: vm.selectedSession)
-                                }}
+                                }
+                            }
                         },
                         onCancel: {
                             vm.showBuyConfirmAlert = false
