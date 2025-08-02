@@ -48,7 +48,7 @@ extension BuyerConcertDetailDTO {
             applyPeriod: applyStart ... applyEnd,
             capacity: capacity,
             status: concertStatus,
-            sessionIds: sessionList.map { $0.sessionId }  // sessionId만 추출
+            sessionIds: sessionList.map { $0.sessionId }  
         )
     }
     

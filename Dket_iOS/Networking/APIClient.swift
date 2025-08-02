@@ -12,7 +12,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
     
-    private static let baseURL = URL(string: "http://54.252.186.243:8080")!
+    private static let baseURL = URL(string: "https://api.dket.kr")!
     private let session = URLSession.shared
     
     // MARK: - JSON Decoder 설정

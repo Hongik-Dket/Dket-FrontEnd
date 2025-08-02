@@ -14,7 +14,7 @@ struct ConcertDetailDTO: Decodable {
     let location: String
     let startDate: Date
     let endDate:   Date
-    let startTime: String       
+    let startTime: String
     let endTime:   String
     let ageLimit:  AgeLimit
     let priceKrw:     Int

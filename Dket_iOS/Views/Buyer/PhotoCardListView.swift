@@ -42,6 +42,7 @@ struct PhotoCardListView: View {
                 }
             }
         }
+        .navigationBarHidden(true)
         .onAppear {
             Task { await vm.fetchCards() }
         }

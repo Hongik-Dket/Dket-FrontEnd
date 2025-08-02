@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ConcertDetail: Identifiable {
+struct ConcertDetail {
     let id: Int64
     let title: String
     let poster: URL
