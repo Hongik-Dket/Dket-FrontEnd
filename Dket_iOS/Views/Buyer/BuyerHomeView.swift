@@ -10,7 +10,7 @@ import SwiftUI
 struct BuyerHomeView: View {
     @StateObject private var vm = BuyerHomeViewModel()
     
-    @State private var selectedEventId: Int64?
+    @State private var selectedConcertId: Int64?
     @State private var selectedListType: ListingType?
     @EnvironmentObject private var appState: AppState
     @State private var showMypage = false
@@ -35,7 +35,7 @@ struct BuyerHomeView: View {
                         
                     case .loaded:
                         if let bundle = vm.home {
-                            EventSectionView(
+                            ConcertSectionView(
                                 title: {
                                     HStack(spacing: 8) {
                                         Image("Popular")
@@ -46,12 +46,12 @@ struct BuyerHomeView: View {
                                     }
                                 },
                                 emptyMessage: "응모된 공연이 없습니다",
-                                events: bundle.popular,
-                                onEventTap: { event in selectedEventId = event.id },
+                                concerts: bundle.popular,
+                                onConcertTap: { concert in selectedConcertId = concert.id },
                                 onSeeAllTap: { selectedListType = .popular }
                             )
                             
-                            EventSectionView(
+                            ConcertSectionView(
                                 title: {
                                     HStack(spacing: 8) {
                                         Image("ApplyEvent")
@@ -62,12 +62,12 @@ struct BuyerHomeView: View {
                                     }
                                 },
                                 emptyMessage: "응모한 공연이 없습니다",
-                                events: bundle.applied,
-                                onEventTap: { event in selectedEventId = event.id },
+                                concerts: bundle.applied,
+                                onConcertTap: { concert in selectedConcertId = concert.id },
                                 onSeeAllTap: { selectedListType = .applied }
                             )
                             
-                            EventSectionView(
+                            ConcertSectionView(
                                 title: {
                                     HStack(spacing: 8) {
                                         Image("ProgressEvent")
@@ -78,12 +78,12 @@ struct BuyerHomeView: View {
                                     }
                                 },
                                 emptyMessage: "구매한 공연이 없습니다",
-                                events: bundle.purchased,
-                                onEventTap: { event in selectedEventId = event.id },
+                                concerts: bundle.purchased,
+                                onConcertTap: { concert in selectedConcertId = concert.id },
                                 onSeeAllTap: { selectedListType = .purchased }
                             )
                             
-                            EventSectionView(
+                            ConcertSectionView(
                                 title: {
                                     HStack(spacing: 8) {
                                         Image("AllEvent")
@@ -94,8 +94,8 @@ struct BuyerHomeView: View {
                                     }
                                 },
                                 emptyMessage: "공연이 없습니다",
-                                events: bundle.entire,
-                                onEventTap: { event in selectedEventId = event.id },
+                                concerts: bundle.entire,
+                                onConcertTap: { concert in selectedConcertId = concert.id },
                                 onSeeAllTap: { selectedListType = .entire }
                             )
                         }
@@ -107,12 +107,12 @@ struct BuyerHomeView: View {
             
             .task { await vm.onAppear() }
             
-            .navigationDestination(item: $selectedEventId) { eventId in
-                BuyerEventDetailView(eventId: eventId)
+            .navigationDestination(item: $selectedConcertId) { concertId in
+                BuyerConcertDetailView(concertId: concertId)
             }
             
             .navigationDestination(item: $selectedListType) { type in
-                EventListView(type: type)
+                ConcertListView(type: type)
             }
         }
         .fullScreenCover(isPresented: $showMypage) {

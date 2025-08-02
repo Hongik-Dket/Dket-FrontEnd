@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct EventDetail: Identifiable {
+struct ConcertDetail {
     let id: Int64
     let title: String
     let poster: URL
@@ -18,7 +18,7 @@ struct EventDetail: Identifiable {
     let priceKrw: Int
     let applyPeriod: ClosedRange<Date>
     let capacity: Int
-    let status: EventStatus
+    let status: ConcertStatus
     let sessionIds: [Int64]
 }
 

@@ -7,13 +7,13 @@
 
 import SwiftUI
 
-struct VerticalEventCardView: View {
-    let event: Event
+struct VerticalConcertCardView: View {
+    let concert: Concert
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             
-            AsyncImage(url: event.imageUrl) { phase in
+            AsyncImage(url: concert.imageUrl) { phase in
                 switch phase {
                 case .success(let image):
                     image.resizable()
@@ -21,7 +21,7 @@ struct VerticalEventCardView: View {
                         .frame(width: 382, height: 216)
                         .overlay(
                             Group {
-                                if event.status == .ended {
+                                if concert.status == .ended {
                                     ZStack {
                                         Color.gray.opacity(0.5)
                                         Image("EndedEvent")
@@ -47,15 +47,15 @@ struct VerticalEventCardView: View {
             .cornerRadius(6)
             
             HStack {
-                Text(event.title)
+                Text(concert.title)
                     .font(.system(size: 16, weight: .bold))
                 Spacer()
-                Text(event.status?.label ?? "")
+                Text(concert.status?.label ?? "")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dketBlue)
             }
             
-            Text(event.location)
+            Text(concert.location)
                 .font(.system(size: 12))
             Text(dateRangeString)
                 .font(.system(size: 12))
@@ -67,6 +67,6 @@ struct VerticalEventCardView: View {
     
     private var dateRangeString: String {
         let fmt = DateFormatter.yyyyDMMDdd
-        return "\(fmt.string(from: event.period.lowerBound)) ~ \(fmt.string(from: event.period.upperBound))"
+        return "\(fmt.string(from: concert.period.lowerBound)) ~ \(fmt.string(from: concert.period.upperBound))"
     }
 }

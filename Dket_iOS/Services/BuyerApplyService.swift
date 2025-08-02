@@ -8,16 +8,16 @@
 import Foundation
 
 protocol BuyerApplyServicing {
-    func apply(to eventId: Int64, sessionId: Int64) async throws -> ApplyResponseDTO
+    func apply(to concertId: Int64, sessionId: Int64) async throws -> ApplyResponseDTO
 }
 
 import Foundation
 
 final class BuyerApplyService: BuyerApplyServicing {
-    func apply(to eventId: Int64, sessionId: Int64) async throws -> ApplyResponseDTO {
+    func apply(to concertId: Int64, sessionId: Int64) async throws -> ApplyResponseDTO {
         struct EmptyBody: Encodable {}
 
-        let endpoint = Endpoint.buyerApply(eventId: eventId, sessionId: sessionId)
+        let endpoint = Endpoint.buyerApply(concertId: concertId, sessionId: sessionId)
         return try await APIClient.shared.post(endpoint, body: EmptyBody())
     }
 }

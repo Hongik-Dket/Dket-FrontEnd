@@ -26,7 +26,7 @@ struct BuyerTicketDetailView: View {
             
             if let ticket = vm.ticket {
                 VStack(spacing: 12) {
-                    Text(ticket.eventTitle)
+                    Text(ticket.concertTitle)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(Color.dketBlue)
                         .padding(.top, 120)

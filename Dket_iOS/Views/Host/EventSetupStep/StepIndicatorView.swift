@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StepIndicatorView: View {
-    let current: EventSetupView.Step
+    let current: ConcertSetupView.Step
     
     var body: some View {
         HStack(spacing: 0) {

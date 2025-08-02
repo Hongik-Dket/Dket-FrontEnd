@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct EventDetailView: View {
-    private let eventId: Int64
+struct ConcertDetailView: View {
+    private let concertId: Int64
     @Environment(\.dismiss) private var dismiss
     
     @State private var showScanner = false
@@ -12,12 +12,12 @@ struct EventDetailView: View {
     @State private var showTicketDetail = false
     @State private var showInvalidTicket = false
     
-    @StateObject private var vm: EventDetailViewModel
+    @StateObject private var vm: ConcertDetailViewModel
     
     @MainActor
-    init(eventId: Int64) {
-        self.eventId = eventId
-        _vm = StateObject(wrappedValue: EventDetailViewModel(eventId: eventId))
+    init(concertId: Int64) {
+        self.concertId = concertId
+        _vm = StateObject(wrappedValue: ConcertDetailViewModel(concertId: concertId))
     }
     
     var body: some View {
@@ -113,7 +113,7 @@ struct EventDetailView: View {
     }
     
     // MARK: - 티켓 검증 상태 처리
-    private func handleVerificationState(_ state: EventDetailViewModel.VerificationState) {
+    private func handleVerificationState(_ state: ConcertDetailViewModel.VerificationState) {
         switch state {
         case .idle, .verifying:
             break
@@ -130,7 +130,7 @@ struct EventDetailView: View {
     
     // MARK: - 메인 콘텐츠
     @ViewBuilder
-    func content(_ d: EventDetail) -> some View {
+    func content(_ d: ConcertDetail) -> some View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -210,7 +210,7 @@ struct EventDetailView: View {
 }
 
 private struct SessionStatSection: View {
-    @EnvironmentObject private var vm: EventDetailViewModel
+    @EnvironmentObject private var vm: ConcertDetailViewModel
     
     var body: some View {
         if let detail = vm.detail, let s = vm.selectedSession {

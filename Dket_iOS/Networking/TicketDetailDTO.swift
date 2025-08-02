@@ -9,8 +9,8 @@ import Foundation
 
 struct TicketDetailDTO: Decodable {
     let ticketId: Int64
-    let eventTitle: String
-    let eventDateTime: Date
+    let concertTitle: String
+    let concertDateTime: Date
     let buyerName: String
     let birth: Date
     let ticketNumber: String
@@ -23,8 +23,8 @@ struct TicketDetailDTO: Decodable {
     var domain: TicketDetail {
         TicketDetail(
             ticketId: ticketId,
-            eventTitle: eventTitle,
-            eventDateTime: eventDateTime,
+            concertTitle: concertTitle,
+            concertDateTime: concertDateTime,
             buyerName: buyerName,
             birth: birth,
             ticketNumber: ticketNumber,

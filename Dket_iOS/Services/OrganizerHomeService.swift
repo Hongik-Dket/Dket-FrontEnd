@@ -9,9 +9,9 @@ import Foundation
 
 protocol OrganizerHomeServicing {
     func fetchHome()  async throws -> HomeBundle
-    func fetchToday() async throws -> [Event]
-    func fetchClosed()async throws -> [Event]
-    func fetchAll()   async throws -> [Event]
+    func fetchToday() async throws -> [Concert]
+    func fetchClosed()async throws -> [Concert]
+    func fetchAll()   async throws -> [Concert]
 }
 
 struct OrganizerHomeService: OrganizerHomeServicing {
@@ -22,32 +22,32 @@ struct OrganizerHomeService: OrganizerHomeServicing {
         return wrapper.result.domain
     }
     
-    func fetchToday() async throws -> [Event] {
+    func fetchToday() async throws -> [Concert] {
         let dto = try await api.get(.organizerToday, as: APIResponse<TodayResultDTO>.self)
-        return dto.result.todayEvents.map { $0.domain }
+        return dto.result.todayConcerts.map { $0.domain }
     }
     
-    func fetchClosed() async throws -> [Event] {
+    func fetchClosed() async throws -> [Concert] {
         let dto = try await api.get(.organizerClosed, as: APIResponse<ClosedResultDTO>.self)
-        return dto.result.recentlyClosedApplyEvents.map { $0.domain }
+        return dto.result.recentlyClosedApplyConcerts.map { $0.domain }
     }
     
-    func fetchAll() async throws -> [Event] {
+    func fetchAll() async throws -> [Concert] {
         let dto = try await api.get(.organizerAll, as: APIResponse<AllResultDTO>.self)
-        return dto.result.allEvents.map { $0.domain }
+        return dto.result.allConcerts.map { $0.domain }
     }
 }
 
 private struct TodayResultDTO : Decodable {
-    let eventCardList: [EventDTO]
-    var todayEvents: [EventDTO] { eventCardList }
+    let concertCardList: [ConcertDTO]
+    var todayConcerts: [ConcertDTO] { concertCardList }
 }
 private struct ClosedResultDTO: Decodable {
-    let eventCardList: [EventDTO]
-    var recentlyClosedApplyEvents: [EventDTO] { eventCardList }
+    let concertCardList: [ConcertDTO]
+    var recentlyClosedApplyConcerts: [ConcertDTO] { concertCardList }
 }
 private struct AllResultDTO   : Decodable {
-    let eventCardList: [EventDTO]
-    var allEvents: [EventDTO] { eventCardList }
+    let concertCardList: [ConcertDTO]
+    var allConcerts: [ConcertDTO] { concertCardList }
 }
 

@@ -6,26 +6,26 @@
 //
 
 struct HomeBundleDTO: Decodable {
-    let todayEvents:               [EventDTO]
-    let recentlyClosedApplyEvents: [EventDTO]
-    let allEvents:                 [EventDTO]
-    let endedEvents:               [EventDTO]
+    let todayConcerts:               [ConcertDTO]
+    let recentlyClosedApplyConcerts: [ConcertDTO]
+    let allConcerts:                 [ConcertDTO]
+    let endedConcerts:               [ConcertDTO]
 }
 
 extension HomeBundleDTO {
     var domain: HomeBundle {
         HomeBundle(
-            today:           todayEvents.map { $0.domain },
-            recentlyClosed:  recentlyClosedApplyEvents.map { $0.domain },
-            all:             allEvents.map { $0.domain },
-            ended:           endedEvents.map { $0.domain })
+            today:           todayConcerts.map { $0.domain },
+            recentlyClosed:  recentlyClosedApplyConcerts.map { $0.domain },
+            all:             allConcerts.map { $0.domain },
+            ended:           endedConcerts.map { $0.domain })
     }
 }
 
 // ViewModel이 한꺼번에 보관하는 묶음
 struct HomeBundle {
-    let today:          [Event]
-    let recentlyClosed: [Event]
-    let all:            [Event]
-    let ended:          [Event]
+    let today:          [Concert]
+    let recentlyClosed: [Concert]
+    let all:            [Concert]
+    let ended:          [Concert]
 }

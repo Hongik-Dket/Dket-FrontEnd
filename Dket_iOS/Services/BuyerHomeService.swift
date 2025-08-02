@@ -9,10 +9,10 @@ import Foundation
 
 protocol BuyerHomeServicing {
     func fetchHome() async throws -> BuyerHomeBundle
-    func fetchPopular() async throws -> [Event]
-    func fetchApplied() async throws -> [Event]
-    func fetchPurchased() async throws -> [Event]
-    func fetchEntire() async throws -> [Event]
+    func fetchPopular() async throws -> [Concert]
+    func fetchApplied() async throws -> [Concert]
+    func fetchPurchased() async throws -> [Concert]
+    func fetchEntire() async throws -> [Concert]
 }
 
 struct BuyerHomeService: BuyerHomeServicing {
@@ -23,29 +23,29 @@ struct BuyerHomeService: BuyerHomeServicing {
         return wrapper.result.domain
     }
     
-    func fetchPopular() async throws -> [Event] {
-        let wrapper = try await api.get(.buyerHomePopular, as: APIResponse<EventListResponse>.self)
-        return wrapper.result.events.map { $0.domain }
+    func fetchPopular() async throws -> [Concert] {
+        let wrapper = try await api.get(.buyerHomePopular, as: APIResponse<ConcertListResponse>.self)
+        return wrapper.result.concerts.map { $0.domain }
     }
 
-    func fetchApplied() async throws -> [Event] {
-        let wrapper = try await api.get(.buyerHomeApplied, as: APIResponse<EventListResponse>.self)
-        return wrapper.result.events.map { $0.domain }
+    func fetchApplied() async throws -> [Concert] {
+        let wrapper = try await api.get(.buyerHomeApplied, as: APIResponse<ConcertListResponse>.self)
+        return wrapper.result.concerts.map { $0.domain }
     }
 
-    func fetchPurchased() async throws -> [Event] {
-        let wrapper = try await api.get(.buyerHomePurchased, as: APIResponse<EventListResponse>.self)
-        return wrapper.result.events.map { $0.domain }
+    func fetchPurchased() async throws -> [Concert] {
+        let wrapper = try await api.get(.buyerHomePurchased, as: APIResponse<ConcertListResponse>.self)
+        return wrapper.result.concerts.map { $0.domain }
     }
 
-    func fetchEntire() async throws -> [Event] {
-        let wrapper = try await api.get(.buyerHomeEntire, as: APIResponse<EventListResponse>.self)
-        return wrapper.result.events.map { $0.domain }
+    func fetchEntire() async throws -> [Concert] {
+        let wrapper = try await api.get(.buyerHomeEntire, as: APIResponse<ConcertListResponse>.self)
+        return wrapper.result.concerts.map { $0.domain }
     }
 }
 
-private struct EventListResponse: Decodable {
-    let eventCardList: [EventDTO]
+private struct ConcertListResponse: Decodable {
+    let concertCardList: [ConcertDTO]
     
-    var events: [EventDTO] { eventCardList }
+    var concerts: [ConcertDTO] { concertCardList }
 }

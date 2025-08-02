@@ -46,8 +46,8 @@ enum ListingType {
 }
 
 @MainActor
-final class EventListViewModel: ObservableObject {
-    @Published var events: [Event] = []
+final class ConcertListViewModel: ObservableObject {
+    @Published var concerts: [Concert] = []
     @Published var state: LoadingState = .idle
     
     private let type: ListingType
@@ -72,7 +72,7 @@ final class EventListViewModel: ObservableObject {
         Task {
             state = .loading
             do {
-                let list: [Event]
+                let list: [Concert]
                 switch type {
                     // 개최자 홈화면
                 case .today:
@@ -93,7 +93,7 @@ final class EventListViewModel: ObservableObject {
                     list = try await buyerService?.fetchEntire() ?? []
                 }
                 
-                self.events = list
+                self.concerts = list
                 state = .loaded
             } catch {
                 state = .failed(error)

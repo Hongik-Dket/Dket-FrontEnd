@@ -7,10 +7,10 @@
 
 import Foundation
 
-protocol OrganizerEventServicing {
-    func fetchDetail(eventId: Int64) async throws -> EventDetail
-    func fetchSession(eventId: Int64, sessionId: Int64) async throws -> SessionDetail
-    func createEvent(_ req: EventCreateRequestDTO) async throws -> Int64
+protocol OrganizerConcertServicing {
+    func fetchDetail(concertId: Int64) async throws -> ConcertDetail
+    func fetchSession(concertId: Int64, sessionId: Int64) async throws -> SessionDetail
+    func createConcert(_ req: ConcertCreateRequestDTO) async throws -> Int64
     
     func verifyTicket(
         ticketId: Int64
@@ -18,28 +18,28 @@ protocol OrganizerEventServicing {
     
 }
 
-struct OrganizerEventService: OrganizerEventServicing {
+struct OrganizerConcertService: OrganizerConcertServicing {
     
     private let api = APIClient.shared
     
-    func fetchDetail(eventId: Int64) async throws -> EventDetail {
-        let wrapper = try await api.get(.organizerEventDetail(eventId: eventId),
-                                        as: APIResponse<EventDetailDTO>.self)
+    func fetchDetail(concertId: Int64) async throws -> ConcertDetail {
+        let wrapper = try await api.get(.organizerConcertDetail(concertId: concertId),
+                                        as: APIResponse<ConcertDetailDTO>.self)
         return wrapper.result.domain
     }
     
-    func fetchSession(eventId: Int64, sessionId: Int64) async throws -> SessionDetail {
-        let wrapper = try await api.get(.organizerSession(eventId: eventId,
+    func fetchSession(concertId: Int64, sessionId: Int64) async throws -> SessionDetail {
+        let wrapper = try await api.get(.organizerSession(concertId: concertId,
                                                           sessionId: sessionId),
                                         as: APIResponse<SessionDetailDTO>.self)
         return wrapper.result.domain
     }
     
-    func createEvent(_ req: EventCreateRequestDTO) async throws -> Int64 {
-        let wrapper = try await api.post(.organizerCreateEvent,
+    func createConcert(_ req: ConcertCreateRequestDTO) async throws -> Int64 {
+        let wrapper = try await api.post(.organizerCreateConcert,
                                          body: req,
-                                         as: CreateEventResponseDTO.self)
-        return wrapper.result.eventId
+                                         as: CreateConcertResponseDTO.self)
+        return wrapper.result.concertId
     }
     
     func verifyTicket(
@@ -55,7 +55,7 @@ struct OrganizerEventService: OrganizerEventServicing {
 }
 
 extension JSONDecoder {
-    static func makeEventDecoder() -> JSONDecoder {
+    static func makeConcertDecoder() -> JSONDecoder {
         let d = JSONDecoder()
         let dateF = DateFormatter()
         dateF.calendar = Calendar(identifier: .iso8601)

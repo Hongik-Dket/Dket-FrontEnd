@@ -8,7 +8,7 @@
 import Foundation
 
 struct SessionDetail: Identifiable, Equatable {
-    let eventId:   Int64
+    let concertId:   Int64
     let id:        Int64          // == sessionId
     let date:      Date
     let applyCount:    Int

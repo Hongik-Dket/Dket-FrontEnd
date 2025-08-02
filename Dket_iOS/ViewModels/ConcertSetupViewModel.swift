@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-final class EventSetupViewModel: ObservableObject {
+final class ConcertSetupViewModel: ObservableObject {
     @Published var title          = ""
     @Published var ageFilter: AgeLimit?
     @Published var location       = ""
@@ -68,8 +68,8 @@ final class EventSetupViewModel: ObservableObject {
             throw ValidationError("응모 종료일은 응모 시작일보다 이후여야 합니다.")
         }
         let paymentDeadlineEnd = Calendar.current.date(byAdding: .day, value: 2, to: applyEnd) ?? applyEnd
-        let eventStartAtMidnight = Calendar.current.startOfDay(for: startDate)
-        if paymentDeadlineEnd > eventStartAtMidnight {
+        let concertStartAtMidnight = Calendar.current.startOfDay(for: startDate)
+        if paymentDeadlineEnd > concertStartAtMidnight {
             throw ValidationError("응모 종료 후 2일 이내에 공연이 시작되어야 합니다.")
         }
         if endDate < startDate {
@@ -78,7 +78,7 @@ final class EventSetupViewModel: ObservableObject {
     }
     
     // MARK: - 업로드
-    func createEvent() {
+    func createConcert() {
         print("▶︎ startTimeText = [\(startTimeText)], endTimeText = [\(endTimeText)]")
         Task {
             do {
@@ -86,7 +86,7 @@ final class EventSetupViewModel: ObservableObject {
                 state = .loading
                 
                 // DTO 구성 (날짜 포맷은 DTO 내부 encode(to:)에서 처리)
-                let dto = EventCreateRequestDTO(
+                let dto = ConcertCreateRequestDTO(
                     title:       title,
                     location:    location,
                     description: description,
@@ -102,15 +102,15 @@ final class EventSetupViewModel: ObservableObject {
                 )
                 
                 // 실제 업로드
-                let response: APIResponse<EventCreateResponseDTO> = try await api.upload(
-                    .organizerCreateEvent,
+                let response: APIResponse<ConcertCreateResponseDTO> = try await api.upload(
+                    .organizerCreateConcert,
                     json: dto,
                     banner: bannerImageData!,
                     poster: posterImageData!,
                     photocard: photocardImageData
                 )
                 
-                NotificationCenter.default.post(name: .eventCreated, object: nil)
+                NotificationCenter.default.post(name: .concertCreated, object: nil)
                 
                 state = .loaded        // 성공
             } catch let e as ValidationError {

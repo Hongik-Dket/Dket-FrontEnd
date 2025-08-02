@@ -12,7 +12,7 @@ final class APIClient {
     static let shared = APIClient()
     private init() {}
     
-    private static let baseURL = URL(string: "http://192.168.198.22:8080")!
+    private static let baseURL = URL(string: "https://api.dket.kr")!
     private let session = URLSession.shared
     
     // MARK: - JSON Decoder 설정
@@ -159,7 +159,7 @@ extension APIClient {
 extension APIClient {
     func upload<U: Decodable>(
         _ endpoint: Endpoint,
-        json: EventCreateRequestDTO,
+        json: ConcertCreateRequestDTO,
         banner: Data,
         poster: Data,
         photocard: Data?
@@ -180,7 +180,7 @@ extension APIClient {
         
         
         var body = Data()
-        body.appendMultiPart(field: "request", filename: "event.json", mime: "application/json", value: jsonData, boundary: boundary)
+        body.appendMultiPart(field: "request", filename: "concert.json", mime: "application/json", value: jsonData, boundary: boundary)
         body.appendMultiPart(field: "banner", filename: "banner.jpg", mime: "image/jpeg", value: banner, boundary: boundary)
         body.appendMultiPart(field: "poster", filename: "poster.jpg", mime: "image/jpeg", value: poster, boundary: boundary)
         body.appendMultiPart(field: "photocardList", filename: "photocard.jpg", mime: "image/jpeg", value: photocard ?? Data(), boundary: boundary)

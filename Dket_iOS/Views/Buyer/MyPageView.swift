@@ -12,6 +12,7 @@ struct MypageView: View {
     @EnvironmentObject private var appState: AppState
     
     @State private var showMyTickets = false
+    @State private var showMyPhotoCards = false
     
     var body: some View {
         NavigationStack {
@@ -35,7 +36,7 @@ struct MypageView: View {
                                 }
                                 
                                 MypageRow(title: "MY 포토카드") {
-                                    print("포토카드")
+                                    showMyPhotoCards = true
                                 }
                             }
                             
@@ -67,6 +68,9 @@ struct MypageView: View {
                 }
                 
                 NavigationLink("", destination: TicketListView(), isActive: $showMyTickets)
+                    .opacity(0)
+                
+                NavigationLink("", destination: PhotoCardListView(onMenu: {}), isActive: $showMyPhotoCards)
                     .opacity(0)
             }
             .navigationBarHidden(true)

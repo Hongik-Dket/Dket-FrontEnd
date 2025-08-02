@@ -7,27 +7,27 @@
 
 import SwiftUI
 
-struct EventSectionView<Title: View>: View {
+struct ConcertSectionView<Title: View>: View {
     let title: Title
     let emptyMessage: String
-    let events: [Event]
+    let concerts: [Concert]
     
-    var onEventTap: ((Event) -> Void)? = nil
+    var onConcertTap: ((Concert) -> Void)? = nil
     var onSeeAllTap: (() -> Void)? = nil
     var type: ListingType? = nil
     
     init(
         @ViewBuilder title: () -> Title,
         emptyMessage: String,
-        events: [Event],
-        onEventTap: ((Event) -> Void)? = nil,
+        concerts: [Concert],
+        onConcertTap: ((Concert) -> Void)? = nil,
         onSeeAllTap: (() -> Void)? = nil,
         type: ListingType? = nil
     ) {
         self.title = title()
         self.emptyMessage = emptyMessage
-        self.events = events
-        self.onEventTap = onEventTap
+        self.concerts = concerts
+        self.onConcertTap = onConcertTap
         self.onSeeAllTap = onSeeAllTap
         self.type = type
     }
@@ -46,7 +46,7 @@ struct EventSectionView<Title: View>: View {
             }
             .padding(.horizontal)
             
-            if events.isEmpty {
+            if concerts.isEmpty {
                 VStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 24))
@@ -59,19 +59,19 @@ struct EventSectionView<Title: View>: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
-                        ForEach(events) { event in
-                            if let onEventTap {
+                        ForEach(concerts) { concert in
+                            if let onConcertTap {
                                 Button {
-                                    onEventTap(event)
+                                    onConcertTap(concert)
                                 } label: {
-                                    EventCardView(event: event)
+                                    ConcertCardView(concert: concert)
                                 }
                                 .buttonStyle(.plain)
                             } else {
                                 NavigationLink {
-                                    EventDetailView(eventId: event.id)
+                                    ConcertDetailView(concertId: concert.id)
                                 } label: {
-                                    EventCardView(event: event)
+                                    ConcertCardView(concert: concert)
                                 }
                                 .buttonStyle(.plain)
                             }

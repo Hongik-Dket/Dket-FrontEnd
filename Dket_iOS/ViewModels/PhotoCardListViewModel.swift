@@ -9,25 +9,23 @@ import Foundation
 
 @MainActor
 final class PhotoCardListViewModel: ObservableObject {
-    @Published var photoCards: [PhotoCardItem] = []
+    @Published var cards: [PhotoCardItem] = []
+    @Published var isLoading = false
+    @Published var errorMessage: String?
 
-    func fetchPhotoCards() {
-        self.photoCards = [
-            PhotoCardItem(photoCardId: 101, imageUrl: "https://ipfs.io/ipfs/Qm123abc/photo1.png"),
-            PhotoCardItem(photoCardId: 102, imageUrl: "https://ipfs.io/ipfs/Qm456def/photo2.png"),
-            PhotoCardItem(photoCardId: 103, imageUrl: "https://ipfs.io/ipfs/Qm789ghi/photo3.png")
-        ]
+    private let service: PhotoCardServicing
+
+    init(service: PhotoCardServicing = PhotoCardService()) {
+        self.service = service
     }
-}
 
-extension PhotoCardListViewModel {
-    static var preview: PhotoCardListViewModel {
-        let vm = PhotoCardListViewModel()
-        vm.photoCards = [
-            PhotoCardItem(photoCardId: 1, imageUrl: "https://ipfs.io/ipfs/Qm123/photo1.png"),
-            PhotoCardItem(photoCardId: 2, imageUrl: "https://ipfs.io/ipfs/Qm456/photo2.png"),
-            PhotoCardItem(photoCardId: 3, imageUrl: "https://ipfs.io/ipfs/Qm789/photo3.png")
-        ]
-        return vm
+    func fetchCards() async {
+        isLoading = true
+        do {
+            cards = try await service.fetchPhotoCardList()
+        } catch {
+            errorMessage = "포토카드를 불러오지 못했습니다."
+        }
+        isLoading = false
     }
 }

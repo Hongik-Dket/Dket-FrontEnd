@@ -8,11 +8,11 @@
 import SwiftUI
 
 @MainActor
-final class EventDetailViewModel: ObservableObject {
+final class ConcertDetailViewModel: ObservableObject {
     
     // MARK: - Output
     @Published private(set) var state: LoadingState = .idle
-    @Published private(set) var detail: EventDetail?
+    @Published private(set) var detail: ConcertDetail?
     @Published private(set) var selectedSession: SessionDetail?
     @Published private(set) var sessionCache: [Int64: SessionDetail] = [:]
     @Published var selectedSessionId: Int64? {
@@ -31,14 +31,14 @@ final class EventDetailViewModel: ObservableObject {
         case failure(error: String)
     }
     // MARK: - Dependency
-    private let service: OrganizerEventServicing
-    private let eventId: Int64
+    private let service: OrganizerConcertServicing
+    private let concertId: Int64
     
     
     // MARK: - Init
-    init(eventId: Int64,
-         service: OrganizerEventServicing = OrganizerEventService()) {
-        self.eventId = eventId
+    init(concertId: Int64,
+         service: OrganizerConcertServicing = OrganizerConcertService()) {
+        self.concertId = concertId
         self.service = service
     }
     
@@ -51,12 +51,12 @@ final class EventDetailViewModel: ObservableObject {
     private func loadDetail() async {
         state = .loading
         do {
-            let d = try await service.fetchDetail(eventId: eventId)
+            let d = try await service.fetchDetail(concertId: concertId)
             
             var newCache: [Int64: SessionDetail] = [:]
             for sid in d.sessionIds {
                 let s = try await service.fetchSession(
-                    eventId: eventId,
+                    concertId: concertId,
                     sessionId: sid
                 )
                 newCache[sid] = s
@@ -85,7 +85,7 @@ final class EventDetailViewModel: ObservableObject {
         }
         
         do {
-            let detail = try await service.fetchSession(eventId: eventId,
+            let detail = try await service.fetchSession(concertId: concertId,
                                                         sessionId: sid)
             sessionCache[sid] = detail
             selectedSession   = detail

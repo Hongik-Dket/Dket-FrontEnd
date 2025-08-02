@@ -10,7 +10,7 @@ struct PopupFlowView: View {
     @Binding var step: Int
     @Binding var isPresented: Bool
     let onComplete: () -> Void
-    let viewModel: EventSetupViewModel
+    let viewModel: ConcertSetupViewModel
     
     var body: some View {
         VStack(spacing: 20) {
@@ -38,7 +38,7 @@ struct PopupFlowView: View {
             Button(action: {
                 if step < 3 {
                     if step == 2 {
-                        viewModel.createEvent()
+                        viewModel.createConcert()
                     }
                     step += 1
                 } else {

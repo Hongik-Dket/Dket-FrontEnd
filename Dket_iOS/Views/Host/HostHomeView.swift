@@ -34,7 +34,7 @@ struct HostHomeView: View {
                             
                         case .loaded:
                             if let bundle = vm.home {
-                                EventSectionView(
+                                ConcertSectionView(
                                     title: {
                                         HStack(spacing: 8) {
                                             Image("TodayEvent")
@@ -45,11 +45,11 @@ struct HostHomeView: View {
                                         }
                                     },
                                     emptyMessage: "오늘 공연이 없습니다",
-                                    events: bundle.today,
+                                    concerts: bundle.today,
                                     onSeeAllTap: { selectedListType = .today }
                                 )
                                 
-                                EventSectionView(
+                                ConcertSectionView(
                                     title: {
                                         HStack(spacing: 8) {
                                             Image("ApplyEvent")
@@ -60,11 +60,11 @@ struct HostHomeView: View {
                                         }
                                     },
                                     emptyMessage: "최근 응모 마감 공연이 없습니다",
-                                    events: bundle.recentlyClosed,
+                                    concerts: bundle.recentlyClosed,
                                     onSeeAllTap: { selectedListType = .closed }
                                 )
                                 
-                                EventSectionView(
+                                ConcertSectionView(
                                     title: {
                                         HStack(spacing: 8) {
                                             Image("Popular")
@@ -75,7 +75,7 @@ struct HostHomeView: View {
                                         }
                                     },
                                     emptyMessage: "개최한 공연이 없습니다",
-                                    events: bundle.all,
+                                    concerts: bundle.all,
                                     onSeeAllTap: { selectedListType = .all }
                                 )
                             }
@@ -98,18 +98,18 @@ struct HostHomeView: View {
                 }
                 .padding(.bottom, 20)
                 
-                NavigationLink("", destination: EventSetupView(), isActive: $isCreating)
+                NavigationLink("", destination: ConcertSetupView(), isActive: $isCreating)
                     .opacity(0)
             }
             .onAppear {
                 Task { await vm.onAppear() }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .eventCreated)) { _ in
-                print("🔄 [HostHomeView] eventCreated 감지 → 새로고침")
+            .onReceive(NotificationCenter.default.publisher(for: .concertCreated)) { _ in
+                print("🔄 [HostHomeView] concertCreated 감지 → 새로고침")
                 Task { await vm.onAppear() }
             }
             .navigationDestination(item: $selectedListType) { type in  
-                EventListView(type: type)
+                ConcertListView(type: type)
             }
         }
         .fullScreenCover(isPresented: $showMypage) {

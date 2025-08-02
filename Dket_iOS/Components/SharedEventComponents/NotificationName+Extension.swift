@@ -8,5 +8,5 @@
 import Foundation
 
 extension Notification.Name {
-    static let eventCreated = Notification.Name("eventCreated")
+    static let concertCreated = Notification.Name("concertCreated")
 }
