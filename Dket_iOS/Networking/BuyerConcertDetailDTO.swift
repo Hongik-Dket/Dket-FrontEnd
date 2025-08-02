@@ -22,7 +22,7 @@ struct BuyerConcertDetailDTO: Decodable {
     let applyStart: Date
     let applyEnd:   Date
     let capacity:   Int
-    let conertStatus: ConcertStatus
+    let concertStatus: ConcertStatus
     
     let sessionList: [BuyerSessionDetailDTO]
     

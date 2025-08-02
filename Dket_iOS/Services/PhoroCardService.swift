@@ -9,6 +9,7 @@ import Foundation
 
 protocol PhotoCardServicing {
     func fetchPhotoCard(ticketId: Int64) async throws -> PhotoCardDetail
+    func fetchPhotoCardList() async throws -> [PhotoCardItem]
 }
 
 final class PhotoCardService: PhotoCardServicing {
@@ -16,5 +17,11 @@ final class PhotoCardService: PhotoCardServicing {
         let endpoint = Endpoint.buyerPhotocardDetail(ticketId: ticketId)
         let dto = try await APIClient.request(endpoint: endpoint) as PhotoCardDetailDTO
         return dto.domain
+    }
+    
+    func fetchPhotoCardList() async throws -> [PhotoCardItem] {
+        let endpoint = Endpoint.buyerPhotocardList
+        let dto = try await APIClient.request(endpoint: endpoint) as PhotoCardListResponseDTO
+        return dto.result.map { $0.toDomain() }
     }
 }

@@ -25,7 +25,7 @@ struct TicketDetail: Equatable {
     }
     
     var startDateFormatted: String {
-        DateFormatter.yyyyDMMDddHHmm.string(from: conertDateTime)
+        DateFormatter.yyyyDMMDddHHmm.string(from: concertDateTime)
     }
 }
 

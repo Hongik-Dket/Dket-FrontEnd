@@ -87,7 +87,7 @@ enum Endpoint {
             return "/api/buyer/tickets/\(tid)/enter"
             
         case .buyerPhotocardList:
-            return "/api/buyer/photocards"
+            return "/api/user/photocards"
         case .buyerPhotocardDetail(let tid):
             return "/api/user/photocards/\(tid)"
             
