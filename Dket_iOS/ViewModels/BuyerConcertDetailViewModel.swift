@@ -23,13 +23,13 @@ enum FloatingActionType: String {
 }
 
 @MainActor
-final class BuyerEventViewModel: ObservableObject {
+final class BuyerConcertViewModel: ObservableObject {
     // MARK: - Input
-    let eventId: Int64
+    let concertId: Int64
     
     // MARK: - Output (Published)
     @Published var state: LoadingState = .idle
-    @Published var detail: EventDetail?
+    @Published var detail: ConcertDetail?
     @Published var sessionList: [BuyerSessionDetail] = []
     @Published var selectedSessionId: Int64?
     @Published var selectedSession: BuyerSessionDetail?
@@ -45,7 +45,7 @@ final class BuyerEventViewModel: ObservableObject {
     @Published var ticketPriceEthString: String = ""
     @Published var showBuyConfirmAlert: Bool = false
     
-    private let service: BuyerEventServicing
+    private let service: BuyerConcertServicing
     private let applyService: BuyerApplyServicing
     private let buyTicketService: BuyTicketServicing
     
@@ -56,12 +56,12 @@ final class BuyerEventViewModel: ObservableObject {
     
     // MARK: - Init
     init(
-        eventId: Int64,
-        service: BuyerEventServicing = BuyerEventService(),
+        concertId: Int64,
+        service: BuyerConcertServicing = BuyerConcertService(),
         applyService: BuyerApplyServicing = BuyerApplyService(),
         buyTicketService: BuyTicketServicing = BuyTicketService()
     ) {
-        self.eventId = eventId
+        self.concertId = concertId
         self.service = service
         self.applyService = applyService
         self.buyTicketService = buyTicketService
@@ -80,13 +80,13 @@ final class BuyerEventViewModel: ObservableObject {
             await MainActor.run { self.state = .loading }
             
             do {
-                let (event, sessions) = try await service.fetchDetail(eventId: eventId)
+                let (concert, sessions) = try await service.fetchDetail(concertId: concertId)
                 await MainActor.run {
-                    self.detail = event
+                    self.detail = concert
                     
                     let updatedSessions = sessions.map { session -> BuyerSessionDetail in
                         var s = session
-                        s.remainingTickets = max(event.capacity - session.paidCount, 0)
+                        s.remainingTickets = max(concert.capacity - session.paidCount, 0)
                         return s
                     }
                     
@@ -110,7 +110,7 @@ final class BuyerEventViewModel: ObservableObject {
                 }
                 
                 await MainActor.run {
-                    print("[Error] Fetch BuyerEventDetail failed: \(error)")
+                    print("[Error] Fetch BuyerConcertDetail failed: \(error)")
                     self.state = .failed(error)
                 }
             }
@@ -118,15 +118,15 @@ final class BuyerEventViewModel: ObservableObject {
     }
     
     func applyToSelectedSession() async -> Bool {
-        guard let eventId = detail?.id,
+        guard let concertId = detail?.id,
               let sessionId = selectedSession?.id else {
-            print("[Error] applyToSelectedSession - No session or event selected")
+            print("[Error] applyToSelectedSession - No session or Concert selected")
             return false
         }
         
         do {
             let responseWrapper = try await APIClient.shared.post(
-                .buyerApply(eventId: eventId, sessionId: sessionId),
+                .buyerApply(concertId: concertId, sessionId: sessionId),
                 body: EmptyBody(),
                 as: APIResponse<ApplyResponseDTO>.self
             )
@@ -189,7 +189,7 @@ final class BuyerEventViewModel: ObservableObject {
     }
     
     func updateFloatingButton(for session: BuyerSessionDetail?) {
-        guard let event = detail else { return }
+        guard let concert = detail else { return }
         guard let session = session else {
             floatingButtonTitle = ""
             isFloatingButtonEnabled = false
@@ -203,7 +203,7 @@ final class BuyerEventViewModel: ObservableObject {
             return
         }
         
-        switch event.status {
+        switch concert.status {
         case .applyNotOpened:
             floatingButtonTitle = "티켓 응모하기"
             isFloatingButtonEnabled = false

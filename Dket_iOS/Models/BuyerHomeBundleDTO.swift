@@ -6,27 +6,27 @@
 //
 
 struct BuyerHomeBundleDTO: Decodable {
-    let popularEvents:   [EventDTO]
-    let appliedEvents:   [EventDTO]
-    let purchasedEvents: [EventDTO]
-    let entireEvents: [EventDTO]
+    let popularConcerts:   [ConcertDTO]
+    let appliedConcerts:   [ConcertDTO]
+    let purchasedConcerts: [ConcertDTO]
+    let entireConcerts: [ConcertDTO]
 }
 
 extension BuyerHomeBundleDTO {
     var domain: BuyerHomeBundle {
         BuyerHomeBundle(
-            popular:   popularEvents.map { $0.domain },
-            applied:   appliedEvents.map { $0.domain },
-            purchased: purchasedEvents.map { $0.domain },
-            entire:    entireEvents.map { $0.domain }
+            popular:   popularConcerts.map { $0.domain },
+            applied:   appliedConcerts.map { $0.domain },
+            purchased: purchasedConcerts.map { $0.domain },
+            entire:    entireConcerts.map { $0.domain }
         )
     }
 }
 
 struct BuyerHomeBundle {
-    let popular:   [Event]
-    let applied:   [Event]
-    let purchased: [Event]
-    let entire:    [Event]
+    let popular:   [Concert]
+    let applied:   [Concert]
+    let purchased: [Concert]
+    let entire:    [Concert]
 }
 

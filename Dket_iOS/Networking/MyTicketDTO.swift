@@ -9,7 +9,7 @@ import Foundation
 
 struct MyTicketDTO: Decodable {
     let ticketId: Int64
-    let eventTitle: String
+    let concertTitle: String
     let posterUrl: String
     let location: String
     let sessionDate: Date
@@ -20,7 +20,7 @@ struct MyTicketDTO: Decodable {
         let parsedStartTime = DateFormatter.hhmmss.date(from: startTime) ?? Date()
         return MyTicket(
             ticketId: ticketId,
-            eventTitle: eventTitle,
+            concertTitle: concertTitle,
             posterUrl: posterUrl,
             location: location,
             sessionDate: sessionDate,

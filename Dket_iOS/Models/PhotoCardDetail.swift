@@ -11,7 +11,7 @@ struct PhotoCardDetail: Decodable {
     let photoCardId: Int64
     let ticketId: Int64
     let imageUrl: String
-    let eventTitle: String
+    let concertTitle: String
     let sessionDate: Date?
     let ticketNumber: String
     let nftUrl: String

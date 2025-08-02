@@ -9,10 +9,10 @@ import SwiftUI
 
 struct StepButton: View {
     let title: String
-    let current: EventSetupView.Step
-    @Binding var selected: EventSetupView.Step
+    let current: ConcertSetupView.Step
+    @Binding var selected: ConcertSetupView.Step
     
-    init(_ title: String, current: EventSetupView.Step, selected: Binding<EventSetupView.Step>) {
+    init(_ title: String, current: ConcertSetupView.Step, selected: Binding<ConcertSetupView.Step>) {
         self.title = title; self.current = current; self._selected = selected
     }
     

@@ -5,7 +5,7 @@
 //  Created by 이지우 on 4/27/25.
 //
 
-enum EventStatus: String, Decodable {
+enum ConcertStatus: String, Decodable {
     case applyNotOpened  = "APPLY_NOT_OPENED"   // 응모 전
     case applyOpen       = "APPLY_OPEN"         // 응모 중 (D-N)
     case applyClosed     = "APPLY_CLOSED"       // 응모 마감

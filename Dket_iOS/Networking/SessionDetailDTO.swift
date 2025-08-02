@@ -8,7 +8,7 @@
 import Foundation
 
 struct SessionDetailDTO: Decodable {
-    let eventId:      Int64
+    let concertId:      Int64
     let sessionId:    Int64
     let date:         Date       
     let applyCount:   Int
@@ -16,7 +16,7 @@ struct SessionDetailDTO: Decodable {
     let attendeeCount:Int?
     
     enum CodingKeys: String, CodingKey {
-        case eventId, sessionId, date,
+        case concertId, sessionId, date,
              applyCount, paidCount, attendeeCount
     }
 }
@@ -24,7 +24,7 @@ struct SessionDetailDTO: Decodable {
 extension SessionDetailDTO {
     var domain: SessionDetail {
         SessionDetail(
-            eventId: eventId,
+            concertId: concertId,
             id:      sessionId,
             date:    date,
             applyCount:    applyCount,

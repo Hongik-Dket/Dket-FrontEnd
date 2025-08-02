@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct SessionPickerView: View {
-    @EnvironmentObject private var vm: EventDetailViewModel
-    let detail: EventDetail
+    @EnvironmentObject private var vm: ConcertDetailViewModel
+    let detail: ConcertDetail
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {

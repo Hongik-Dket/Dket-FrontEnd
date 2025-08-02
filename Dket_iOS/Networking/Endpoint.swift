@@ -14,10 +14,10 @@ enum Endpoint {
     case organizerToday
     case organizerClosed
     case organizerAll
-    case organizerEventDetail(eventId: Int64)
-    case organizerSession(eventId: Int64, sessionId: Int64)
-    case organizerCreateEvent
-    case organizerTicket(eventId: Int64, ticketId: String)
+    case organizerConcertDetail(concertId: Int64)
+    case organizerSession(concertId: Int64, sessionId: Int64)
+    case organizerCreateConcert
+    case organizerTicket(concertId: Int64, ticketId: String)
     
     // MARK: - Buyer (구매자)
     case buyerHomeMain
@@ -26,9 +26,9 @@ enum Endpoint {
     case buyerHomePurchased
     case buyerHomeEntire
     
-    case buyerApply(eventId: Int64, sessionId: Int64)
+    case buyerApply(concertId: Int64, sessionId: Int64)
     case buyerTicketPrice(sessionId: Int64)
-    case buyerEventDetail(eventId: Int64)
+    case buyerConcertDetail(concertId: Int64)
     
     case ticketDetailById(id: Int64)
     case ticketDetailByNumber(number: String)
@@ -51,14 +51,14 @@ enum Endpoint {
         case .organizerToday: return "/api/organizer/home/today"
         case .organizerClosed: return "/api/organizer/home/closed"
         case .organizerAll: return "/api/organizer/home/all"
-        case .organizerEventDetail(let eid):
-            return "/api/organizer/events/\(eid)"
-        case .organizerSession(let eid, let sid):
-            return "/api/organizer/events/\(eid)/\(sid)"
-        case .organizerCreateEvent:
-            return "/api/organizer/events"
-        case .organizerTicket(let eid, let tid):
-            return "/api/organizer/events/\(eid)/\(tid)"
+        case .organizerConcertDetail(let cid):
+            return "/api/organizer/concerts/\(cid)"
+        case .organizerSession(let cid, let sid):
+            return "/api/organizer/concerts/\(cid)/\(sid)"
+        case .organizerCreateConcert:
+            return "/api/organizer/concerts"
+        case .organizerTicket(let cid, let tid):
+            return "/api/organizer/concerts/\(cid)/\(tid)"
             
             // Buyer
         case .buyerHomeMain: return "/api/buyer/home"
@@ -67,12 +67,12 @@ enum Endpoint {
         case .buyerHomePurchased: return "/api/buyer/home/purchased"
         case .buyerHomeEntire: return "/api/buyer/home/entire"
             
-        case .buyerApply(let eid, let sid):
-            return "/api/buyer/events/\(eid)/sessions/\(sid)/apply"
+        case .buyerApply(let cid, let sid):
+            return "/api/buyer/concerts/\(cid)/sessions/\(sid)/apply"
         case .buyerTicketPrice(let sid):
-            return "/api/buyer/events/\(sid)/price"
-        case .buyerEventDetail(let eid):
-            return "/api/buyer/events/\(eid)"
+            return "/api/buyer/concerts/\(sid)/price"
+        case .buyerConcertDetail(let cid):
+            return "/api/buyer/concerts/\(cid)"
             
         case .ticketDetailById(let id):
             return "/api/tickets"
@@ -110,7 +110,7 @@ enum Endpoint {
     // MARK: - Method 설정 
     var method: String {
         switch self {
-        case .organizerCreateEvent,
+        case .organizerCreateConcert,
                 .connectWallet,
                 .buyerApply,
                 .buyerTicketPrice:

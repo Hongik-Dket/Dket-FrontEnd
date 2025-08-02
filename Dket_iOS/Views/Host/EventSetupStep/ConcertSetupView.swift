@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-struct EventSetupView: View {
+struct ConcertSetupView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var step: Step = .one
-    @StateObject private var viewModel = EventSetupViewModel()
+    @StateObject private var viewModel = ConcertSetupViewModel()
     
     // STEP 1
     @State private var title = ""

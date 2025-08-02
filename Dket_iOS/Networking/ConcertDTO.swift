@@ -7,28 +7,28 @@
 
 import Foundation
 
-struct EventDTO: Decodable {
-    let eventId: Int64
+struct ConcertDTO: Decodable {
+    let concertId: Int64
     let title: String
     let location: String
     let startDate: Date
     let endDate: Date
     let imageUrl: URL
-    let eventStatus: EventStatus?     
+    let concertStatus: ConcertStatus?
     
     enum CodingKeys: String, CodingKey {
-            case eventId, title, location, startDate, endDate, imageUrl, eventStatus
+            case concertId, title, location, startDate, endDate, imageUrl, concertStatus
         }
 }
 
-extension EventDTO {
-    var domain: Event {
-        Event(id: eventId,
+extension ConcertDTO {
+    var domain: Concert {
+        Concert(id: concertId,
               title: title,
               location: location,
               period: startDate ... endDate,
               imageUrl: imageUrl,
-              status: eventStatus)
+              status: concertStatus)
     }
 }
 

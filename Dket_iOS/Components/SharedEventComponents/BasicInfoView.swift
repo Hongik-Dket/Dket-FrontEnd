@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BasicInfoView: View {
-    let detail: EventDetail
+    let detail: ConcertDetail
     
     private var periodText: String {
         let df = DateFormatter.yyyyDMMDdd

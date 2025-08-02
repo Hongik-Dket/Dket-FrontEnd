@@ -11,7 +11,7 @@ struct MyTicket: Identifiable {
     var id: Int64 { ticketId }
 
     let ticketId: Int64
-    let eventTitle: String
+    let concertTitle: String
     let posterUrl: String
     let location: String
     let sessionDate: Date

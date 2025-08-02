@@ -37,7 +37,7 @@ struct OrganizerTicketDetailView: View {
                 .padding(.trailing, 16)
 
                 VStack(spacing: 20) {
-                    Text(ticket.eventTitle)
+                    Text(ticket.concertTitle)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(Color.dketBlue)
 

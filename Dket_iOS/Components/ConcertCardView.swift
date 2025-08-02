@@ -8,22 +8,22 @@
 // 섹션 안에 들어가는 공연이미지와 정보.
 import SwiftUI
 
-struct EventCardView: View {
-    let event: Event
+struct ConcertCardView: View {
+    let concert: Concert
     
     private let thumbSize = CGSize(width: 140, height: 170)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             
-            AsyncImage(url: event.imageUrl) { phase in
+            AsyncImage(url: concert.imageUrl) { phase in
                 switch phase {
                 case .success(let img):
                     img.resizable()
                         .scaledToFill()
                         .overlay(
                             Group {
-                                if event.status == .ended {
+                                if concert.status == .ended {
                                     ZStack {
                                         Color.gray.opacity(0.5)
                                         Image("EndedEvent")
@@ -48,11 +48,11 @@ struct EventCardView: View {
             .cornerRadius(6)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.title)
+                Text(concert.title)
                     .font(.system(size: 12, weight: .bold))
                     .lineLimit(1)
                 
-                Text(event.location)
+                Text(concert.location)
                     .font(.system(size: 10))
                     .foregroundColor(.primary)
                     .lineLimit(1)
@@ -68,6 +68,6 @@ struct EventCardView: View {
     
     private var dateRangeString: String {
         let fmt = DateFormatter.yyyyDMMDdd
-        return "\(fmt.string(from: event.period.lowerBound)) ~ \(fmt.string(from: event.period.upperBound))"
+        return "\(fmt.string(from: concert.period.lowerBound)) ~ \(fmt.string(from: concert.period.upperBound))"
     }
 }

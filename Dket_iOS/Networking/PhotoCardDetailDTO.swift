@@ -11,7 +11,7 @@ struct PhotoCardDetailDTO: Decodable {
     let photoCardId: Int64
     let ticketId: Int64
     let imageUrl: String
-    let eventTitle: String
+    let concertTitle: String
     let sessionDate: String
     let ticketNumber: String
     let nftUrl: String
@@ -21,7 +21,7 @@ struct PhotoCardDetailDTO: Decodable {
             photoCardId: photoCardId,
             ticketId: ticketId,
             imageUrl: imageUrl,
-            eventTitle: eventTitle,
+            concertTitle: concertTitle,
             sessionDate: DateFormatter.yyyyDMMDdd.date(from: sessionDate),
             ticketNumber: ticketNumber,
             nftUrl: nftUrl

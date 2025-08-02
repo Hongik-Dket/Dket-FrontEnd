@@ -1,24 +1,24 @@
 import Foundation
 
 // Models/Event.swift  –  뷰가 직접 쓰는 순수 모델
-struct Event: Identifiable, Equatable {
+struct Concert: Identifiable, Equatable {
     let id: Int64
     let title: String
     let location: String
     let period: ClosedRange<Date>
     let imageUrl: URL
-    let status: EventStatus?
+    let status: ConcertStatus?
 }
 
 // 변환 메서드 (DTO → Domain)
-extension Event {
-    init(dto: EventDTO) {
-        self.id        = dto.eventId
+extension Concert {
+    init(dto: ConcertDTO) {
+        self.id        = dto.concertId
         self.title     = dto.title
         self.location  = dto.location
         self.period   = dto.startDate ... dto.endDate
         self.imageUrl = dto.imageUrl                    
-        self.status   = dto.eventStatus
+        self.status   = dto.concertStatus
     }
 }
     

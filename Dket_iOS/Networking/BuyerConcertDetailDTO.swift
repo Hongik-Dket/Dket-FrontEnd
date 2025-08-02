@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct BuyerEventDetailDTO: Decodable {
-    let eventId: Int64
+struct BuyerConcertDetailDTO: Decodable {
+    let concertId: Int64
     let title: String
     let description: String
     let posterUrl: URL
@@ -22,22 +22,22 @@ struct BuyerEventDetailDTO: Decodable {
     let applyStart: Date
     let applyEnd:   Date
     let capacity:   Int
-    let eventStatus: EventStatus
+    let conertStatus: ConcertStatus
     
     let sessionList: [BuyerSessionDetailDTO]
     
     enum CodingKeys: String, CodingKey {
-        case eventId, title, description, posterUrl, location,
+        case concertId, title, description, posterUrl, location,
              startDate, endDate, startTime, endTime,
              ageLimit, priceKrw, applyStart, applyEnd,
-             capacity, eventStatus, sessionList
+             capacity, concertStatus, sessionList
     }
 }
 
-extension BuyerEventDetailDTO {
-    var domain: EventDetail {
-        EventDetail(
-            id: eventId,
+extension BuyerConcertDetailDTO {
+    var domain: ConcertDetail {
+        ConcertDetail(
+            id: concertId,
             title: title,
             poster: posterUrl,
             location: location,
@@ -47,7 +47,7 @@ extension BuyerEventDetailDTO {
             priceKrw: priceKrw,
             applyPeriod: applyStart ... applyEnd,
             capacity: capacity,
-            status: eventStatus,
+            status: concertStatus,
             sessionIds: sessionList.map { $0.sessionId }  // sessionId만 추출
         )
     }

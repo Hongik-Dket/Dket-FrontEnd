@@ -9,8 +9,8 @@ import Foundation
 
 struct TicketDetail: Equatable {
     let ticketId: Int64
-    let eventTitle: String
-    let eventDateTime: Date
+    let concertTitle: String
+    let concertDateTime: Date
     let buyerName: String
     let birth: Date
     let ticketNumber: String
@@ -25,7 +25,7 @@ struct TicketDetail: Equatable {
     }
     
     var startDateFormatted: String {
-        DateFormatter.yyyyDMMDddHHmm.string(from: eventDateTime)
+        DateFormatter.yyyyDMMDddHHmm.string(from: conertDateTime)
     }
 }
 

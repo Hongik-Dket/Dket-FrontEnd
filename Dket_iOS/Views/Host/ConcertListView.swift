@@ -7,16 +7,16 @@
 
 import SwiftUI
 
-struct EventListView: View {
+struct ConcertListView: View {
     let type: ListingType
     
-    @StateObject private var vm: EventListViewModel
+    @StateObject private var vm: ConcertListViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var didLoad = false
     
     init(type: ListingType) {
         self.type = type
-        _vm = StateObject(wrappedValue: EventListViewModel(type: type))
+        _vm = StateObject(wrappedValue: ConcertListViewModel(type: type))
     }
     
     var body: some View {
@@ -42,15 +42,15 @@ struct EventListView: View {
             case .loaded:
                 ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 12, pinnedViews: []) {
-                        ForEach(vm.events) { event in
+                        ForEach(vm.concerts) { concert in
                             NavigationLink {
                                 if type.isBuyerList {
-                                    BuyerEventDetailView(eventId: event.id)
+                                    BuyerConcertDetailView(concertId: concert.id)
                                 } else {
-                                    EventDetailView(eventId: event.id)
+                                    ConcertDetailView(concertId: concert.id)
                                 }
                             } label: {
-                                VerticalEventCardView(event: event)
+                                VerticalConcertCardView(concert: concert)
                                     .padding(.bottom, 10)
                             }
                             .buttonStyle(.plain)

@@ -8,20 +8,20 @@
 import SwiftUI
 
 
-struct BuyerEventDetailView: View {
-    let eventId: Int64
+struct BuyerConcertDetailView: View {
+    let concertId: Int64
     @Environment(\.dismiss) private var dismiss
     
-    @StateObject private var vm: BuyerEventViewModel
+    @StateObject private var vm: BuyerConcertViewModel
     
     @State private var showApplySuccessAlert = false
     
     @State private var showTicketDetail = false
     @State private var selectedTicketId: Int64?
     
-    init(eventId: Int64) {
-        self.eventId = eventId
-        _vm = StateObject(wrappedValue: BuyerEventViewModel(eventId: eventId))
+    init(concertId: Int64) {
+        self.concertId = concertId
+        _vm = StateObject(wrappedValue: BuyerConcertViewModel(concertId: concertId))
     }
     
     var body: some View {
@@ -67,7 +67,7 @@ struct BuyerEventDetailView: View {
     }
     
     @ViewBuilder
-    func content(_ detail: EventDetail) -> some View {
+    func content(_ detail: ConcertDetail) -> some View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -194,10 +194,10 @@ struct BuyerEventDetailView: View {
 }
 
 private struct BuyerSessionStatSection: View {
-    @EnvironmentObject private var vm: BuyerEventViewModel
+    @EnvironmentObject private var vm: BuyerConcertViewModel
     
     var body: some View {
-        if let event = vm.detail, let session = vm.selectedSession {
+        if let concert = vm.detail, let session = vm.selectedSession {
             VStack(alignment: .leading, spacing: 15) {
                 Text(session.date.formatted(.dateTime.year().month().day()))
                     .font(.title3).bold()
@@ -206,7 +206,7 @@ private struct BuyerSessionStatSection: View {
                     Text("잔여 티켓")
                         .font(.caption)
                     Spacer()
-                    Text("\(event.capacity - session.paidCount)장")
+                    Text("\(concert.capacity - session.paidCount)장")
                 }
                 .font(.subheadline)
                 

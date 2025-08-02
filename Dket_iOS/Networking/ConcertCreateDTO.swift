@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct EventCreateRequestDTO: Encodable {
+struct ConcertCreateRequestDTO: Encodable {
     let title:       String
     let location:    String
     let description: String
@@ -47,9 +47,9 @@ struct EventCreateRequestDTO: Encodable {
 }
 
 
-struct EventCreateResponseDTO: Decodable {
-    let eventId: Int64
+struct ConcertCreateResponseDTO: Decodable {
+    let concertId: Int64
 }
 
-typealias CreateEventResponseDTO = APIResponse<EventCreateResponseDTO>
+typealias CreateConcertResponseDTO = APIResponse<ConcertCreateResponseDTO>
 

@@ -34,7 +34,7 @@ struct TicketCardView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(ticket.eventTitle)
+                        Text(ticket.concertTitle)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.black)
 
