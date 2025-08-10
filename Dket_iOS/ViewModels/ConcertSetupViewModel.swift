@@ -28,7 +28,7 @@ final class ConcertSetupViewModel: ObservableObject {
     
     @Published var bannerImageData:    Data?
     @Published var posterImageData:    Data?
-    @Published var photocardImageData: Data?
+    @Published var photocardImageDatas: [Data] = []
     
     @Published var state: LoadingState = .idle
     @Published var alertMessage: String?
@@ -107,12 +107,12 @@ final class ConcertSetupViewModel: ObservableObject {
                     json: dto,
                     banner: bannerImageData!,
                     poster: posterImageData!,
-                    photocard: photocardImageData
+                    photocardList: photocardImageDatas
                 )
                 
                 NotificationCenter.default.post(name: .concertCreated, object: nil)
+                state = .loaded        
                 
-                state = .loaded        // 성공
             } catch let e as ValidationError {
                 state = .failed(e)
                 alertMessage = e.localizedDescription

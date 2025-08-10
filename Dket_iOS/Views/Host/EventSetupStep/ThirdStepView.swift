@@ -11,13 +11,14 @@ import PhotosUI
 struct ThirdStepView: View {
     @Binding var bannerImage: UIImage?
     @Binding var posterImage: UIImage?
-    @Binding var photocardImage: UIImage?
+    @Binding var photocardImages: [UIImage]
     
     @State private var bannerItem: PhotosPickerItem?
     @State private var posterItem: PhotosPickerItem?
-    @State private var photocardItem: PhotosPickerItem?
+    @State private var pickerItem: PhotosPickerItem?
     
     private let imageSize: CGFloat = 100
+    private let maxPhotocards = 10
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -44,15 +45,42 @@ struct ThirdStepView: View {
             }
             
             LabeledRow(label: "포토카드 이미지") {
-                PhotosPicker(
-                    selection: $photocardItem,
-                    matching: .images,
-                    photoLibrary: .shared()
-                ) {
-                    imagePlaceholder(uiImage: photocardImage, showsPlus: true)
+                VStack(alignment: .leading, spacing: 8) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(photocardImages, id: \.self) { img in
+                                Image(uiImage: img)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: imageSize, height: imageSize)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                            
+                            
+                            if photocardImages.count < maxPhotocards {
+                                PhotosPicker(selection: $pickerItem, matching: .images) {
+                                    imagePlaceholder(uiImage: nil, showsPlus: true)
+                                }
+                                .frame(width: imageSize, height: imageSize)
+                                .onChange(of: pickerItem) {
+                                    loadImage(from: $0) { img in
+                                        if let img {
+                                            photocardImages.append(img)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if photocardImages.count >= maxPhotocards {
+                        Text("📷 최대 \(maxPhotocards)장까지 업로드할 수 있어요")
+                            .font(.footnote)
+                            .foregroundColor(.gray)
+                    }
                 }
-                .onChange(of: photocardItem) { loadImage(from: $0) { photocardImage = $0 } }
             }
+            
             
             Spacer()
         }
@@ -70,6 +98,19 @@ struct ThirdStepView: View {
             } else {
                 completion(nil)
             }
+        }
+    }
+    
+    private func loadImages(from items: [PhotosPickerItem], completion: @escaping ([UIImage]) -> Void) {
+        Task {
+            var images: [UIImage] = []
+            for item in items {
+                if let data = try? await item.loadTransferable(type: Data.self),
+                   let ui = UIImage(data: data) {
+                    images.append(ui)
+                }
+            }
+            completion(images)
         }
     }
     

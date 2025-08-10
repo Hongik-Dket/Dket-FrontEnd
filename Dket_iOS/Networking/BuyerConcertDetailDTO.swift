@@ -10,7 +10,6 @@ import Foundation
 struct BuyerConcertDetailDTO: Decodable {
     let concertId: Int64
     let title: String
-    let description: String
     let posterUrl: URL
     let location: String
     let startDate: Date
@@ -23,14 +22,17 @@ struct BuyerConcertDetailDTO: Decodable {
     let applyEnd:   Date
     let capacity:   Int
     let concertStatus: ConcertStatus
+    let description: String
+    let photoCardList: [PhotoCardItemDTO]
     
     let sessionList: [BuyerSessionDetailDTO]
     
     enum CodingKeys: String, CodingKey {
-        case concertId, title, description, posterUrl, location,
+        case concertId, title, posterUrl, location,
              startDate, endDate, startTime, endTime,
              ageLimit, priceKrw, applyStart, applyEnd,
-             capacity, concertStatus, sessionList
+             capacity, concertStatus, sessionList,
+             description, photoCardList
     }
 }
 
@@ -48,7 +50,9 @@ extension BuyerConcertDetailDTO {
             applyPeriod: applyStart ... applyEnd,
             capacity: capacity,
             status: concertStatus,
-            sessionIds: sessionList.map { $0.sessionId }  
+            sessionIds: sessionList.map { $0.sessionId },
+            description: description,
+            photoCards: photoCardList.map { $0.toDomain()}
         )
     }
     

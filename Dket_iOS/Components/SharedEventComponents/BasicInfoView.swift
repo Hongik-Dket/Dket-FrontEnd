@@ -34,6 +34,8 @@ struct BasicInfoView: View {
             Text(detail.ageLimit.label)
                 .font(.footnote)
                 .fontWeight(.semibold)
+            
+            
             Divider().padding(.vertical, 4)
             
             HStack {
@@ -55,6 +57,11 @@ struct BasicInfoView: View {
                 Spacer()
                 Text("\(detail.priceKrw.formatted()) 원").bold()
             }.font(.footnote)
+            
+            Text(detail.description)
+                .font(.body)
+                .multilineTextAlignment(.leading)
+                .padding(.top, 4)
         }
     }
 }

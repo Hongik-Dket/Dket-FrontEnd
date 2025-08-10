@@ -33,7 +33,7 @@ struct ConcertSetupView: View {
     // STEP 3
     @State private var bannerImage: UIImage?
     @State private var posterImage: UIImage?
-    @State private var photocardImage: UIImage?
+    @State private var photocardImages: [UIImage] = []
     
     // MARK: – 최종 모달 플로우
     @State private var showModal = false
@@ -84,7 +84,7 @@ struct ConcertSetupView: View {
                     ThirdStepView(
                         bannerImage: $bannerImage,
                         posterImage: $posterImage,
-                        photocardImage: $photocardImage
+                        photocardImages: $photocardImages
                     )
                 }
             }
@@ -224,7 +224,7 @@ struct ConcertSetupView: View {
             viewModel.applyEnd       = finalApplyEnd
             viewModel.bannerImageData    = bannerImage?.jpegData(compressionQuality: 0.8)
             viewModel.posterImageData    = posterImage?.jpegData(compressionQuality: 0.8)
-            viewModel.photocardImageData = photocardImage?.jpegData(compressionQuality: 0.8)
+            viewModel.photocardImageDatas = photocardImages.compactMap { $0.jpegData(compressionQuality: 0.6) }
             
             modalStep = 1
             showModal = true

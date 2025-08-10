@@ -20,5 +20,7 @@ struct ConcertDetail {
     let capacity: Int
     let status: ConcertStatus
     let sessionIds: [Int64]
+    let description: String               
+    let photoCards: [PhotoCardItem]
 }
 

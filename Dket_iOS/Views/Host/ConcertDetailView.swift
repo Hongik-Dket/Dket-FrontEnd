@@ -149,10 +149,15 @@ struct ConcertDetailView: View {
                             Text("응모 D-\(Date().daysUntil(d.applyPeriod.lowerBound))일")
                                 .font(.headline)
                                 .foregroundColor(.secondary)
+                            Divider()
                         } else {
                             SessionPickerView(detail: d)
                             Divider()
                             SessionStatSection()
+                        }
+                        
+                        if !d.photoCards.isEmpty {
+                            photoCardSection(d.photoCards)
                         }
                     }
                     .padding(.horizontal)
@@ -206,6 +211,44 @@ struct ConcertDetailView: View {
         let today = Calendar.current.startOfDay(for: Date())
         let sessionDay = Calendar.current.startOfDay(for: s.date)
         return today == sessionDay
+    }
+    
+    @ViewBuilder
+    private func photoCardSection(_ photoCards: [PhotoCardItem]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("포토카드")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(photoCards, id: \.photoCardId) { photo in
+                        AsyncImage(url: URL(string: photo.imageUrl)) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(width: 80, height: 100)
+                            case .success(let img):
+                                img
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 80, height: 100)
+                                    .clipped()
+                                    .cornerRadius(8)
+                            case .failure:
+                                Color.gray.opacity(0.2)
+                                    .overlay(Image(systemName: "photo"))
+                                    .frame(width: 80, height: 100)
+                                    .cornerRadius(8)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
     }
 }
 
