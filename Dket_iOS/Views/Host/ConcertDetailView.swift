@@ -137,7 +137,7 @@ struct ConcertDetailView: View {
                     
                     HStack {
                         Spacer()
-                        PosterView(url: d.poster)
+                        PosterView(url: d.poster, status: d.status)
                         Spacer()
                     }
                     

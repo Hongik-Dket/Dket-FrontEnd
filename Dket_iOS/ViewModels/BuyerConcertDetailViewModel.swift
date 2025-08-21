@@ -34,6 +34,8 @@ final class BuyerConcertViewModel: ObservableObject {
     @Published var selectedSessionId: Int64?
     @Published var selectedSession: BuyerSessionDetail?
     
+    @Published var isResaleButtonVisible: Bool = false
+    
     // MARK: - Floating Button
     @Published var floatingButtonTitle: String = ""
     @Published var isFloatingButtonEnabled: Bool = false
@@ -83,6 +85,12 @@ final class BuyerConcertViewModel: ObservableObject {
                 let (concert, sessions) = try await service.fetchDetail(concertId: concertId)
                 await MainActor.run {
                     self.detail = concert
+                    
+                    self.isResaleButtonVisible = concert.status == .applyClosed
+                    || concert.status == .ticketed
+                    || concert.status == .inProgress
+                    || concert.status == .ended
+
                     
                     let updatedSessions = sessions.map { session -> BuyerSessionDetail in
                         var s = session

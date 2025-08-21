@@ -23,7 +23,7 @@ struct BuyerConcertDetailDTO: Decodable {
     let capacity:   Int
     let concertStatus: ConcertStatus
     let description: String
-    let photoCardList: [PhotoCardItemDTO]
+    let photoCardList: [PhotoCardItemDTO]?
     
     let sessionList: [BuyerSessionDetailDTO]
     
@@ -52,7 +52,7 @@ extension BuyerConcertDetailDTO {
             status: concertStatus,
             sessionIds: sessionList.map { $0.sessionId },
             description: description,
-            photoCards: photoCardList.map { $0.toDomain()}
+            photoCards: photoCardList?.map { $0.toDomain()} ?? []
         )
     }
     
