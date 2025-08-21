@@ -45,6 +45,7 @@ struct MypageView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text("Account:")
                                                 .font(.footnote).bold()
+                                                .foregroundColor(.gray)
                                             Text(wallet.walletAddress)
                                                 .font(.caption2)
                                                 .foregroundColor(.gray)
@@ -54,9 +55,10 @@ struct MypageView: View {
                                             HStack(spacing: 4) {
                                                 Text("\(wallet.balance, specifier: "%.4f")")
                                                     .font(.headline)
+                                                    .foregroundColor(.dketBlue)
                                                 Text("SepoliaETH")
                                                     .font(.subheadline)
-                                                    .foregroundColor(.blue)
+                                                    .foregroundColor(.dketBlue)
                                                     .bold()
                                             }
                                         }
