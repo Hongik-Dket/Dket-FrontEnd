@@ -42,6 +42,7 @@ enum Endpoint {
     
     // MARK: - Auth / Wallet
     case connectWallet
+    case userWalletInfo
     
     // MARK: - Computed Path
     var path: String {
@@ -93,6 +94,8 @@ enum Endpoint {
             
         case .connectWallet:
             return "/api/auth/login/metamask/complete"
+        case .userWalletInfo:
+            return "/api/user/wallet"
         }
     }
     
