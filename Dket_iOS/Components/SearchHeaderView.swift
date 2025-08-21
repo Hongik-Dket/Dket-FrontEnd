@@ -10,13 +10,18 @@ import SwiftUI
 struct SearchHeaderView: View {
     var onSearch: () -> Void
     var onMenu: () -> Void
+    var showSearch: Bool = true 
     
     var body: some View {
         HStack {
-            Button(action: onSearch) {
-                Image(systemName: "magnifyingglass")
-                    .font(.title2)
-                    .foregroundColor(.black)
+            if showSearch {
+                Button(action: onSearch) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.title2)
+                        .foregroundColor(.black)
+                }
+            } else {
+                Spacer().frame(width: 24) // 여백 맞추기
             }
             
             Spacer()

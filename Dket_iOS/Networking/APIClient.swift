@@ -162,7 +162,7 @@ extension APIClient {
         json: ConcertCreateRequestDTO,
         banner: Data,
         poster: Data,
-        photocard: Data?
+        photocardList: [Data]
     ) async throws -> U {
         let url = Self.baseURL.appendingPathComponent(endpoint.path)
         var request = URLRequest(url: url)
@@ -183,7 +183,15 @@ extension APIClient {
         body.appendMultiPart(field: "request", filename: "concert.json", mime: "application/json", value: jsonData, boundary: boundary)
         body.appendMultiPart(field: "banner", filename: "banner.jpg", mime: "image/jpeg", value: banner, boundary: boundary)
         body.appendMultiPart(field: "poster", filename: "poster.jpg", mime: "image/jpeg", value: poster, boundary: boundary)
-        body.appendMultiPart(field: "photocardList", filename: "photocard.jpg", mime: "image/jpeg", value: photocard ?? Data(), boundary: boundary)
+        for (index, photoData) in photocardList.enumerated() {
+                body.appendMultiPart(
+                    field: "photocardList", 
+                    filename: "photocard_\(index).jpg",
+                    mime: "image/jpeg",
+                    value: photoData,
+                    boundary: boundary
+                )
+            }
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
         
 #if DEBUG

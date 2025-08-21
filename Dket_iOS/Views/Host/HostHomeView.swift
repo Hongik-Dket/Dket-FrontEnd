@@ -20,7 +20,8 @@ struct HostHomeView: View {
                     VStack(spacing: 30) {
                         SearchHeaderView(
                             onSearch: { /* TODO */ },
-                            onMenu:   { showMypage = true }
+                            onMenu:   { showMypage = true },
+                            showSearch: false
                         )
                         
                         switch vm.state {
