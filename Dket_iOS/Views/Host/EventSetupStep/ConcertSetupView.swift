@@ -17,6 +17,7 @@ struct ConcertSetupView: View {
     @State private var ageFilter: String?
     @State private var location = ""
     @State private var description = ""
+    @State private var isResaleAllowed: Bool? = nil
     
     // STEP 2
     @State private var performanceStart = Date()
@@ -65,7 +66,8 @@ struct ConcertSetupView: View {
                     title: $title,
                     ageFilter: $ageFilter,
                     location: $location,
-                    description: $description
+                    description: $description,
+                    isResaleAllowed: $isResaleAllowed
                 )
                 case .two:
                     SecondStepView(
