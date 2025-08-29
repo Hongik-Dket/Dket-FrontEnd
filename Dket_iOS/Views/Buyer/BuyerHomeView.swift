@@ -15,12 +15,14 @@ struct BuyerHomeView: View {
     @EnvironmentObject private var appState: AppState
     @State private var showMypage = false
     
+    @State private var showSearchView = false
+    
     var body: some View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 30) {
                     SearchHeaderView(
-                        onSearch: { /* TODO */ },
+                        onSearch: { showSearchView = true },
                         onMenu:   { showMypage = true  }
                     )
                     
@@ -104,6 +106,10 @@ struct BuyerHomeView: View {
                 .padding(.bottom, 40)
             }
             .refreshable { await vm.refresh() }
+            
+            .navigationDestination(isPresented: $showSearchView) {
+                BuyerSearchView()
+            }
             
             .task { await vm.onAppear() }
             

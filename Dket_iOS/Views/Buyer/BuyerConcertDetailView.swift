@@ -73,7 +73,7 @@ struct BuyerConcertDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
                         Spacer()
-                        PosterView(url: detail.poster)
+                        PosterView(url: detail.poster, status: detail.status)
                         Spacer()
                     }
                     
@@ -91,6 +91,27 @@ struct BuyerConcertDetailView: View {
                             Divider()
                             BuyerSessionStatSection()
                                 .environmentObject(vm)
+                            
+                            if vm.isResaleButtonVisible {
+                                HStack {
+                                    Button(action: {
+                                        if let url = URL(string: "https://resale.dket.io/concert/\(concertId)") {
+                                            UIApplication.shared.open(url)
+                                        }
+                                    }) {
+                                        Text("리세일 마켓으로 가기 →")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(.dketBlue)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 8)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(Color.dketBlue, lineWidth: 1)
+                                            )
+                                    }
+                                    Spacer()
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal)
@@ -103,6 +124,8 @@ struct BuyerConcertDetailView: View {
             
             VStack {
                 Spacer()
+                
+                
                 if vm.floatingButtonTitle != "" {
                     Button(action: {
                         Task {
