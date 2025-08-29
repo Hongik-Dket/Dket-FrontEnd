@@ -226,7 +226,7 @@ struct ConcertSetupView: View {
             viewModel.applyEnd       = finalApplyEnd
             viewModel.bannerImageData    = bannerImage?.jpegData(compressionQuality: 0.8)
             viewModel.posterImageData    = posterImage?.jpegData(compressionQuality: 0.8)
-            viewModel.photocardImageDatas = photocardImages.compactMap { $0.jpegData(compressionQuality: 0.6) }
+            viewModel.photocardImageDatas = photocardImages.compactMap { $0.jpegData(compressionQuality: 0.4) }
             
             modalStep = 1
             showModal = true
