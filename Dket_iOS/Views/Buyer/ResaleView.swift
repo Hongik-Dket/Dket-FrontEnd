@@ -10,128 +10,170 @@ import SwiftUI
 struct ResaleView: View {
     let ticket: TicketDetail
     
-    @Environment(\.dismiss) private var dismiss
-    @State private var resalePriceText: String = ""
+    @State private var resalePrice: String = ""
+    @State private var showSuccessAlert: Bool = false
     
-    // 정가
-    private var ticketPrice: Int { ticket.price }
-    // 입력받은 판매가
-    private var resalePrice: Int {
-        Int(resalePriceText) ?? 0
+    var ticketPrice: Int { ticket.price }
+    var maxPrice: Int { Int(Double(ticketPrice) * 1.2) }
+    
+    var resalePriceInt: Int? { Int(resalePrice) }
+    
+    var isPriceValid: Bool {
+        guard let resale = resalePriceInt else { return false }
+        return resale >= ticketPrice && resale <= maxPrice
     }
-    // 공연 기여금
-    private var concertFee: Int {
-        max(0, resalePrice - ticketPrice) / 10
+    
+    var contribution: Int {
+        guard let resale = resalePriceInt else { return 0 }
+        return max(0, resale - ticketPrice) / 10
     }
-    // 최종 수익
-    private var finalRevenue: Int {
-        resalePrice - concertFee
+    
+    var finalRevenue: Int {
+        guard let resale = resalePriceInt else { return ticketPrice }
+        return resale - contribution
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                
-                // MARK: 상단 바
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.title3)
-                            .foregroundColor(.black)
-                    }
-                    Spacer()
-                    Text("판매")
-                        .font(.headline)
-                    Spacer()
-                    Image(systemName: "line.3.horizontal")
-                        .font(.title3)
-                        .foregroundColor(.black)
-                }
-                .padding(.horizontal)
-                .padding(.top, 30)
-                
-                // MARK: 티켓 정보
-                GroupBox(label: Text("티켓 정보").bold()) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ResaleInfoRow(label: "공연명", value: ticket.concertTitle)
-                        ResaleInfoRow(label: "공연 일시", value: ticket.startDateFormatted)
-                        ResaleInfoRow(label: "예매자 명", value: ticket.buyerName)
-                        ResaleInfoRow(label: "생년월일", value: ticket.birthDateFormatted)
-                        ResaleInfoRow(label: "티켓 번호", value: ticket.ticketNumber)
-                        ResaleInfoRow(label: "좌석 번호", value: ticket.seatNumber)
-                    }
-                    .padding()
-                }
-                .padding(.horizontal)
-                
-                // MARK: 판매 정보
-                GroupBox(label: Text("판매 정보").bold()) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        ResaleInfoRow(label: "티켓 정가", value: "\(ticketPrice.formattedWithSeparator()) 원")
-                        
-                        HStack {
-                            Text("판매가")
-                                .frame(width: 80, alignment: .leading)
-                            TextField("판매가 입력", text: $resalePriceText)
-                                .keyboardType(.numberPad)
-                                .padding(8)
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(6)
-                        }
-                        
-                        ResaleInfoRow(label: "공연 기여금", value: "-\(concertFee.formattedWithSeparator()) 원")
-                        ResaleInfoRow(label: "최종 수익", value: "\(finalRevenue.formattedWithSeparator()) 원", color: .blue)
-                    }
-                    .padding()
-                }
-                .padding(.horizontal)
-                
-                // MARK: 판매 규정
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("판매 규정")
-                        .font(.headline)
-                        .padding(.bottom, 4)
+        ZStack{
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
                     
-                    Text("• 판매가는 티켓 정가의 최대 120%까지 설정할 수 있습니다.")
-                    Text("• 공연 기여금은 판매가에서 티켓 정가를 뺀 금액의 10%이며, 이는 공연 개최자에게 돌아갑니다.")
-                    Text("• 위 규정은 입장 마감 전까지 적용됩니다.")
-                    Text("• 입장 마감 이후에는 가격 상한 제한이 없으며, 공연 기여금은 판매가의 10%로 책정됩니다.")
+                    // MARK: - Title
+                    HStack {
+                        Text("판매")
+                            .font(.title2.bold())
+                            .padding(.leading)
+                        Spacer()
+                    }
+                    
+                    // MARK: - 티켓 정보
+                    GroupBox(label: Text("티켓 정보").font(.headline)) {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                TextRow(title: "공연명", value: ticket.concertTitle)
+                                TextRow(title: "공연 일시", value: ticket.startDateFormatted)
+                                TextRow(title: "예매자 명", value: ticket.buyerName)
+                                TextRow(title: "생년월일", value: ticket.birthDateFormatted)
+                                TextRow(title: "티켓 번호", value: ticket.ticketNumber)
+                                TextRow(title: "좌석 번호", value: ticket.seatNumber)
+                            }
+                            Spacer()
+                            AsyncImage(url: URL(string: ticket.photoCardUrl)) { image in
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                Color.gray.opacity(0.2)
+                            }
+                            .frame(width: 90, height: 110)
+                            .clipped()
+                            .cornerRadius(8)
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    
+                    // MARK: - 판매 정보
+                    GroupBox(label: Text("판매 정보").font(.headline)) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Text("티켓 정가")
+                                Spacer()
+                                Text("\(ticketPrice.formatted()) 원")
+                            }
+                            .font(.subheadline)
+                            
+                            HStack {
+                                Text("판매가")
+                                Spacer()
+                                TextField("판매가 입력", text: $resalePrice)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(width: 100)
+                                    .textFieldStyle(.roundedBorder)
+                                Text("원")
+                            }
+                            .font(.subheadline)
+                            
+                            HStack {
+                                Text("공연 기여금")
+                                Spacer()
+                                Text("-\(contribution.formatted()) 원")
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            
+                            Divider()
+                            
+                            HStack {
+                                Text("최종 수익")
+                                    .fontWeight(.semibold)
+                                Spacer()
+                                Text("\(finalRevenue.formatted()) 원")
+                                    .foregroundColor(.dketBlue)
+                                    .fontWeight(.bold)
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    
+                    // MARK: - 판매 규정
+                    GroupBox(label: Text("판매 규정").font(.headline)) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            
+                            
+                            Text("• 판매가는 티켓 정가의 최대 120%까지 설정할 수 있습니다.")
+                            Text("• 공연 기여금은 판매가에서 티켓 정가를 뺀 금액의 10%이며, 이는 공연 개최자에게 돌아갑니다.")
+                            Text("• 위 규정은 입장 마감 전까지 적용됩니다.")
+                            Text("• 입장 마감 이후에는 가격 상한 제한이 없으며, 공연 기여금은 판매가의 10%로 책정됩니다.")
+                        }
+                        .font(.footnote)
+                        .foregroundColor(.gray)
+                        .padding(.vertical, 8)
+                    }
+                    
+                    // MARK: - 판매하기 버튼
+                    CircleButton(
+                        title: "판매하기",
+                        action: {
+                            showSuccessAlert = true
+                        },
+                        isDisabled: !isPriceValid
+                    )
+                    .padding(.top)
                 }
-                .font(.system(size: 13))
-                .foregroundColor(.gray)
                 .padding()
-                
-                // MARK: 판매 버튼
-                Button(action: {
-                    // TODO: 판매 요청 API 호출
-                    print("판매하기 클릭: \(resalePrice)원")
-                }) {
-                    Text("판매하기")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(resalePrice > 0 ? Color.dketBlue : Color.gray)
-                        .cornerRadius(10)
-                }
-                .padding()
-                .disabled(resalePrice == 0)
+            }
+            
+            if showSuccessAlert {
+                ResaleSuccessAlert(
+                    onConfirm: {
+                        // ✅ 실제 판매 API 호출 로직 삽입
+                        print("판매 확정: \(resalePriceInt ?? 0)원에 판매")
+                        
+                        // TODO: API 호출 -> 성공 시 뷰 닫기 또는 알림
+                        showSuccessAlert = false
+                    },
+                    onClose: {
+                        showSuccessAlert = false
+                    }
+                )
+                .transition(.opacity)
+                .animation(.easeInOut, value: showSuccessAlert)
             }
         }
     }
 }
 
-struct ResaleInfoRow: View {
-    let label: String
+
+private struct TextRow: View {
+    let title: String
     let value: String
-    var color: Color = .black
     
     var body: some View {
-        HStack {
-            Text(label)
-                .fontWeight(.medium)
+        HStack(alignment: .top) {
+            Text(title)
+                .foregroundColor(.gray)
                 .frame(width: 80, alignment: .leading)
             Text(value)
-                .foregroundColor(color)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
@@ -139,5 +181,27 @@ struct ResaleInfoRow: View {
 extension Int {
     func formattedWithSeparator() -> String {
         NumberFormatter.localizedString(from: NSNumber(value: self), number: .decimal)
+    }
+}
+
+struct ResaleView_Previews: PreviewProvider {
+    static var previews: some View {
+        ResaleView(
+            ticket: TicketDetail(
+                ticketId: 123,
+                concertTitle: "공연이름~~~",
+                concertDateTime: ISO8601DateFormatter().date(from: "2025-03-10T18:00:00") ?? Date(),
+                buyerName: "여희주",
+                birth: ISO8601DateFormatter().date(from: "2003-02-25T00:00:00") ?? Date(),
+                ticketNumber: "T152670849345203",
+                seatNumber: "39",
+                qrCodeUrl: "",
+                photoCardId: 1,
+                nftUrl: "",
+                entered: false,
+                photoCardUrl: "https://via.placeholder.com/100", // 이미지 URL 대체
+                price: 189000
+            )
+        )
     }
 }
