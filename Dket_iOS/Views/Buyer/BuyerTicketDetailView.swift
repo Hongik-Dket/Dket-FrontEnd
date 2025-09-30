@@ -11,6 +11,8 @@ struct BuyerTicketDetailView: View {
     @StateObject private var vm: BuyerTicketDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showPhotoCard = false
+    @State private var showResaleView = false
+    @State private var selectedTicket: TicketDetail? = nil
     
     init(ticketId: Int64) {
         print("🧾 BuyerTicketDetailView INIT with ticketId: \(ticketId)")
@@ -58,9 +60,10 @@ struct BuyerTicketDetailView: View {
                     Spacer()
                     
                     VStack(spacing: 16) {
-                        CircleButton(title: "포토카드 보기") {
-                            showPhotoCard = true
-                        }
+                        CircleButton(title: "판매하기") {
+                                selectedTicket = ticket
+                                showResaleView = true
+                            }
                         
                         CircleButton(title: "NFT 티켓 보러가기") {
                             if let url = URL(string: ticket.nftUrl) {
@@ -93,8 +96,10 @@ struct BuyerTicketDetailView: View {
         .task {
             await vm.fetch()
         }
-        .fullScreenCover(isPresented: $showPhotoCard) {
-            PhotoCardDetailView(ticketId: vm.ticket?.ticketId ?? 0)
+        .fullScreenCover(isPresented: $showResaleView) {
+            if let ticket = selectedTicket {
+                    ResaleView(ticket: ticket)
+                }
         }
     }
 }
