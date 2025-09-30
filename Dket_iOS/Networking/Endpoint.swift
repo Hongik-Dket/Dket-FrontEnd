@@ -40,6 +40,8 @@ enum Endpoint {
     case buyerPhotocardList
     case buyerPhotocardDetail(ticketId: Int64)
     
+    case resaleTickets(sessionId: Int64)
+    
     // MARK: - Auth / Wallet
     case connectWallet
     case userWalletInfo
@@ -92,6 +94,9 @@ enum Endpoint {
         case .buyerPhotocardDetail(let tid):
             return "/api/user/photocards/\(tid)"
             
+        case .resaleTickets:
+            return "/api/resales"
+            
         case .connectWallet:
             return "/api/user/login/metamask/complete"
         case .userWalletInfo:
@@ -105,6 +110,8 @@ enum Endpoint {
             return [URLQueryItem(name: "id", value: "\(id)")]
         case .ticketDetailByNumber(let number):
             return [URLQueryItem(name: "number", value: number)]
+        case .resaleTickets(let sessionId):
+            return [URLQueryItem(name: "sessionId", value: "\(sessionId)")]
         default:
             return nil
         }
