@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ResaleTicketDetail {
+struct ResalePurchase {
     let concertTitle: String
     let location: String
     let date: String

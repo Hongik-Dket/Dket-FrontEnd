@@ -41,6 +41,7 @@ enum Endpoint {
     case buyerPhotocardDetail(ticketId: Int64)
     
     case resaleTickets(sessionId: Int64)
+    case resalePurchase(ticketId: Int64)
     
     // MARK: - Auth / Wallet
     case connectWallet
@@ -96,6 +97,8 @@ enum Endpoint {
             
         case .resaleTickets:
             return "/api/resales"
+        case .resalePurchase(let ticketId):
+            return "/api/resales/\(ticketId)/purchase"
             
         case .connectWallet:
             return "/api/user/login/metamask/complete"
@@ -123,7 +126,8 @@ enum Endpoint {
         case .organizerCreateConcert,
                 .connectWallet,
                 .buyerApply,
-                .buyerTicketPrice:
+                .buyerTicketPrice,
+                .resalePurchase:
             return "POST"
         case .buyerEnter,
                 .ticketEnter:

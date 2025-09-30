@@ -11,7 +11,7 @@ import Combine
 import UIKit
 import BigInt
 
-struct EmptyBody: Encodable {}
+
 
 enum FloatingActionType: String {
     case apply = "티켓 응모하기"
