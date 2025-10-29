@@ -126,3 +126,4 @@ extension Int64 {
         return String(format: "%.4f ETH", eth)
     }
 }
+

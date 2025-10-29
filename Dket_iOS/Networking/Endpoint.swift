@@ -101,7 +101,7 @@ enum Endpoint {
             return "/api/resales/\(ticketId)/purchase"
             
         case .connectWallet:
-            return "/api/user/login/metamask/complete"
+            return "/api/auth/login/metamask/complete"
         case .userWalletInfo:
             return "/api/user/wallet"
         }

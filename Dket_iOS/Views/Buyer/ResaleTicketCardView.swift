@@ -14,7 +14,7 @@ struct ResaleTicketCardView: View {
         HStack(alignment: .top, spacing: 12) {
             Rectangle()
                 .fill(Color.gray.opacity(0.3))
-                .frame(width: 80, height: 100)
+                .frame(width: 105, height: 140)
                 .overlay {
                     if let url = ticket.photoCardURL {
                         AsyncImage(url: url) { image in
@@ -33,7 +33,7 @@ struct ResaleTicketCardView: View {
                     .foregroundColor(.secondary)
                 Text(ticket.isAvailable ? "거래 가능" : "거래 진행 중")
                     .font(.subheadline)
-                    .foregroundColor(ticket.isAvailable ? .blue : .gray)
+                    .foregroundColor(ticket.isAvailable ? .dketBlue : .gray)
             }
 
             Spacer()

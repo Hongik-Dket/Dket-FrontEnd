@@ -9,45 +9,42 @@ import SwiftUI
 
 struct ResaleView: View {
     let ticket: TicketDetail
-    
+
     @State private var resalePrice: String = ""
     @State private var showSuccessAlert: Bool = false
-    
+
     var ticketPrice: Int { ticket.price }
     var maxPrice: Int { Int(Double(ticketPrice) * 1.2) }
-    
+
     var resalePriceInt: Int? { Int(resalePrice) }
-    
+
     var isPriceValid: Bool {
         guard let resale = resalePriceInt else { return false }
         return resale >= ticketPrice && resale <= maxPrice
     }
-    
+
     var contribution: Int {
         guard let resale = resalePriceInt else { return 0 }
         return max(0, resale - ticketPrice) / 10
     }
-    
+
     var finalRevenue: Int {
         guard let resale = resalePriceInt else { return ticketPrice }
         return resale - contribution
     }
-    
+
     var body: some View {
-        ZStack{
+        ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    
-                    // MARK: - Title
-                    HStack {
-                        Text("판매")
-                            .font(.title2.bold())
-                            .padding(.leading)
-                        Spacer()
-                    }
-                    
+
+                    Text("판매")
+                        .font(.title2.bold())
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top)
+
                     // MARK: - 티켓 정보
-                    GroupBox(label: Text("티켓 정보").font(.headline)) {
+                    CustomBox(title: "티켓 정보") {
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 6) {
                                 TextRow(title: "공연명", value: ticket.concertTitle)
@@ -59,7 +56,9 @@ struct ResaleView: View {
                             }
                             Spacer()
                             AsyncImage(url: URL(string: ticket.photoCardUrl)) { image in
-                                image.resizable().aspectRatio(contentMode: .fill)
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
                             } placeholder: {
                                 Color.gray.opacity(0.2)
                             }
@@ -69,9 +68,9 @@ struct ResaleView: View {
                         }
                         .padding(.vertical, 8)
                     }
-                    
+
                     // MARK: - 판매 정보
-                    GroupBox(label: Text("판매 정보").font(.headline)) {
+                    CustomBox(title: "판매 정보") {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
                                 Text("티켓 정가")
@@ -79,7 +78,7 @@ struct ResaleView: View {
                                 Text("\(ticketPrice.formatted()) 원")
                             }
                             .font(.subheadline)
-                            
+
                             HStack {
                                 Text("판매가")
                                 Spacer()
@@ -91,7 +90,7 @@ struct ResaleView: View {
                                 Text("원")
                             }
                             .font(.subheadline)
-                            
+
                             HStack {
                                 Text("공연 기여금")
                                 Spacer()
@@ -99,9 +98,9 @@ struct ResaleView: View {
                             }
                             .font(.subheadline)
                             .foregroundColor(.gray)
-                            
+
                             Divider()
-                            
+
                             HStack {
                                 Text("최종 수익")
                                     .fontWeight(.semibold)
@@ -113,12 +112,10 @@ struct ResaleView: View {
                         }
                         .padding(.vertical, 8)
                     }
-                    
+
                     // MARK: - 판매 규정
-                    GroupBox(label: Text("판매 규정").font(.headline)) {
+                    CustomBox(title: "판매 규정") {
                         VStack(alignment: .leading, spacing: 4) {
-                            
-                            
                             Text("• 판매가는 티켓 정가의 최대 120%까지 설정할 수 있습니다.")
                             Text("• 공연 기여금은 판매가에서 티켓 정가를 뺀 금액의 10%이며, 이는 공연 개최자에게 돌아갑니다.")
                             Text("• 위 규정은 입장 마감 전까지 적용됩니다.")
@@ -128,7 +125,7 @@ struct ResaleView: View {
                         .foregroundColor(.gray)
                         .padding(.vertical, 8)
                     }
-                    
+
                     // MARK: - 판매하기 버튼
                     CircleButton(
                         title: "판매하기",
@@ -141,14 +138,11 @@ struct ResaleView: View {
                 }
                 .padding()
             }
-            
+
             if showSuccessAlert {
                 ResaleSuccessAlert(
                     onConfirm: {
-                        // ✅ 실제 판매 API 호출 로직 삽입
                         print("판매 확정: \(resalePriceInt ?? 0)원에 판매")
-                        
-                        // TODO: API 호출 -> 성공 시 뷰 닫기 또는 알림
                         showSuccessAlert = false
                     },
                     onClose: {
@@ -173,8 +167,9 @@ private struct TextRow: View {
                 .foregroundColor(.gray)
                 .frame(width: 80, alignment: .leading)
             Text(value)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                
         }
+        .font(.system(size: 14))
     }
 }
 
@@ -203,5 +198,27 @@ struct ResaleView_Previews: PreviewProvider {
                 price: 189000
             )
         )
+    }
+}
+
+struct CustomBox<Content: View>: View {
+    let title: String
+    let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.headline)
+                .padding(.bottom, 4)
+
+            content()
+        }
+        .padding()
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+        )
+        .cornerRadius(8)
     }
 }
