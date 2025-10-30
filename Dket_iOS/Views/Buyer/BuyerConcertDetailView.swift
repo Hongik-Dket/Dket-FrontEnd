@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 struct BuyerConcertDetailView: View {
     let concertId: Int64
     @Environment(\.dismiss) private var dismiss
@@ -15,20 +14,23 @@ struct BuyerConcertDetailView: View {
     @StateObject private var vm: BuyerConcertViewModel
     
     @State private var showApplySuccessAlert = false
-    
     @State private var showTicketDetail = false
     @State private var selectedTicketId: Int64?
     
+    // MARK: - Init
     init(concertId: Int64) {
         self.concertId = concertId
         _vm = StateObject(wrappedValue: BuyerConcertViewModel(concertId: concertId))
     }
     
+    // MARK: - Body
     var body: some View {
         Group {
             switch vm.state {
             case .idle, .loading:
-                ProgressView().task { await vm.fetch() }
+                ProgressView()
+                    .task { await vm.fetch() }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .failed(let error):
                 VStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle")
@@ -37,6 +39,7 @@ struct BuyerConcertDetailView: View {
                     Text(error.localizedDescription)
                     Button("다시 시도") { Task { await vm.fetch() } }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .loaded:
                 if let detail = vm.detail {
                     content(detail)
@@ -55,28 +58,23 @@ struct BuyerConcertDetailView: View {
                 }
             }
         }
-        .onAppear {
-            Task {
-                await vm.fetch()
-                await MainActor.run {
-                    vm.updateFloatingButton(for: vm.selectedSession)
-                }
-            }
-        }
-        
+        .task { await vm.onAppear() }
     }
     
+    // MARK: - Content
     @ViewBuilder
-    func content(_ detail: ConcertDetail) -> some View {
+    private func content(_ detail: ConcertDetail) -> some View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    // 포스터
                     HStack {
                         Spacer()
                         PosterView(url: detail.poster, status: detail.status)
                         Spacer()
                     }
                     
+                    // 기본 정보 + 세션 정보
                     VStack(alignment: .leading, spacing: 16) {
                         BasicInfoView(detail: detail)
                         Divider()
@@ -92,25 +90,24 @@ struct BuyerConcertDetailView: View {
                             BuyerSessionStatSection()
                                 .environmentObject(vm)
                             
-                            if vm.isResaleButtonVisible {
-                                HStack {
-                                    Button(action: {
-                                        if let url = URL(string: "https://resale.dket.io/concert/\(concertId)") {
-                                            UIApplication.shared.open(url)
-                                        }
-                                    }) {
-                                        Text("리세일 마켓으로 가기 →")
-                                            .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(.dketBlue)
-                                            .padding(.horizontal, 16)
-                                            .padding(.vertical, 8)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 16)
-                                                    .stroke(Color.dketBlue, lineWidth: 1)
-                                            )
+                            HStack {
+                                Button(action: {
+                                    if vm.isResaleButtonVisible,
+                                       let url = URL(string: "https://resale.dket.io/concert/\(concertId)") {
+                                        UIApplication.shared.open(url)
                                     }
-                                    Spacer()
+                                }) {
+                                    Text("리세일 마켓으로 가기 →")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(vm.isResaleButtonVisible ? .dketBlue : .gray)
+                                        .padding(.leading, 4)
+                                        .padding(.trailing, 0) 
+                                        .padding(.vertical, 8)
+                                        .background(Color.clear)
                                 }
+                                .disabled(!vm.isResaleButtonVisible)
+                                
+                                Spacer()
                             }
                         }
                     }
@@ -120,97 +117,100 @@ struct BuyerConcertDetailView: View {
                 }
                 .padding(.vertical, 12)
             }
-            .refreshable { await vm.refresh() }
+            .refreshable { await vm.fetch() }
             
-            VStack {
-                Spacer()
-                
-                
-                if vm.floatingButtonTitle != "" {
-                    Button(action: {
-                        Task {
-                            print("[DEBUG] floatingAction = \(vm.floatingAction.rawValue)")
-                            switch vm.floatingAction {
-                            case .purchase, .buy:
-                                await vm.preparePurchase()
-                                await vm.fetch()
-                                
-                            case .apply:
-                                let success = await vm.applyToSelectedSession()
-                                if success {
-                                    await MainActor.run {
-                                        showApplySuccessAlert = true
-                                    }
-                                    await vm.fetch()
-                                }
-                            case .view:
-                                if let ticketId = vm.selectedSession?.ticketId {
-                                    print("🎯 ticketId 설정됨: \(ticketId)")
-                                    DispatchQueue.main.async {
-                                        self.selectedTicketId = ticketId
-                                        self.showTicketDetail = true
-                                    }
-                                } else {
-                                    print("❌ 선택된 세션에 ticketId가 없음")
-                                }
-                            case .enter:
-                                if let ticketId = vm.selectedSession?.ticketId {
-                                    print("🎫 공연 입장: ticketId = \(ticketId)")
-                                    DispatchQueue.main.async {
-                                        self.selectedTicketId = ticketId
-                                        self.showTicketDetail = true
-                                    }
-                                } else {
-                                    print("❌ 공연 입장 실패: ticketId 없음")
-                                }
-                                
-                            default:
-                                print("[DEBUG] default case triggered")
-                                break
-                            }
-                        }
-                    }) {
-                        Text(vm.floatingButtonTitle)
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity, maxHeight: 48)
-                            .background(vm.isFloatingButtonEnabled ? Color.dketBlue : Color.gray)
-                            .cornerRadius(24)
-                            .shadow(radius: 4)
-                            .padding(.horizontal)
-                    }
-                    .disabled(!vm.isFloatingButtonEnabled)
-                    .padding(.bottom)
+            // Floating Button (응모/결제/입장 등)
+            floatingButtonSection
+                .fullScreenCover(item: $selectedTicketId) { ticketId in
+                    BuyerTicketDetailView(ticketId: ticketId)
                 }
-            }
-            .fullScreenCover(item: $selectedTicketId) { ticketId in
-                BuyerTicketDetailView(ticketId: ticketId)
+        }
+        .overlay(overlayModals)
+    }
+    
+    // MARK: - Floating Button Section
+    private var floatingButtonSection: some View {
+        VStack {
+            Spacer()
+            if !vm.floatingButtonTitle.isEmpty {
+                Button(action: {
+                    Task {
+                        await handleFloatingAction()
+                    }
+                }) {
+                    Text(vm.floatingButtonTitle)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, maxHeight: 48)
+                        .background(vm.isFloatingButtonEnabled ? Color.dketBlue : Color.gray)
+                        .cornerRadius(24)
+                        .shadow(radius: 4)
+                        .padding(.horizontal)
+                }
+                .disabled(!vm.isFloatingButtonEnabled)
+                .padding(.bottom)
             }
         }
-        .overlay {
-            ZStack {
-                if showApplySuccessAlert {
-                    ApplySuccessModalView {
-                        showApplySuccessAlert = false
-                    }
+    }
+    
+    // MARK: - Floating Action Handler
+    private func handleFloatingAction() async {
+        print("[DEBUG] floatingAction = \(vm.floatingAction.rawValue)")
+        switch vm.floatingAction {
+        case .purchase, .buy:
+            await vm.preparePurchase()
+            await vm.fetch()
+        case .apply:
+            let success = await vm.applyToSelectedSession()
+            if success {
+                await MainActor.run {
+                    showApplySuccessAlert = true
                 }
-                
-                if vm.showBuyConfirmAlert {
-                    BuyConfirmAlertView(
-                        priceEth: vm.ticketPriceEthString,
-                        onConfirm: {
-                            Task {
-                                await vm.confirmPurchase()
-                                await MainActor.run {
-                                    vm.updateFloatingButton(for: vm.selectedSession)
-                                }
+                await vm.fetch()
+            }
+        case .view:
+            if let ticketId = vm.selectedSession?.ticketId {
+                DispatchQueue.main.async {
+                    self.selectedTicketId = ticketId
+                    self.showTicketDetail = true
+                }
+            }
+        case .enter:
+            if let ticketId = vm.selectedSession?.ticketId {
+                DispatchQueue.main.async {
+                    self.selectedTicketId = ticketId
+                    self.showTicketDetail = true
+                }
+            }
+        default:
+            break
+        }
+    }
+    
+    // MARK: - Overlay (모달 등)
+    private var overlayModals: some View {
+        ZStack {
+            if showApplySuccessAlert {
+                ApplySuccessModalView {
+                    showApplySuccessAlert = false
+                }
+            }
+            
+            if vm.showBuyConfirmAlert {
+                BuyConfirmAlertView(
+                    priceEth: vm.ticketPriceEthString,
+                    onConfirm: {
+                        Task {
+                            await vm.confirmPurchase()
+                            await MainActor.run {
+                                vm.updateFloatingButton(for: vm.selectedSession)
                             }
-                        },
-                        onCancel: {
-                            vm.showBuyConfirmAlert = false
                         }
-                    )
-                }
+                    },
+                    onCancel: {
+                        vm.showBuyConfirmAlert = false
+                    }
+                )
             }
         }
     }

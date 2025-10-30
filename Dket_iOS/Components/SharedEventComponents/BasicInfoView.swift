@@ -9,6 +9,7 @@ import SwiftUI
 
 struct BasicInfoView: View {
     let detail: ConcertDetail
+    var showResaleInfo: Bool = false
     
     private var periodText: String {
         let df = DateFormatter.yyyyDMMDdd
@@ -57,6 +58,17 @@ struct BasicInfoView: View {
                 Spacer()
                 Text("\(detail.priceKrw.formatted()) 원").bold()
             }.font(.footnote)
+            
+            if showResaleInfo {
+                            HStack {
+                                Text("리세일")
+                                Spacer()
+                                Text(detail.isResaleAllowed ? "가능" : "불가능")
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(detail.isResaleAllowed ? .green : .red)
+                            }
+                            .font(.footnote)
+                        }
             
             Text(detail.description)
                 .font(.body)

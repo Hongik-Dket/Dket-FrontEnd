@@ -142,7 +142,7 @@ struct ConcertDetailView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 16) {
-                        BasicInfoView(detail: d)
+                        BasicInfoView(detail: d, showResaleInfo: true)
                         Divider()
                         
                         if d.status == .applyNotOpened {

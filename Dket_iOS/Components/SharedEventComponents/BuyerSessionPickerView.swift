@@ -45,6 +45,7 @@ struct BuyerSessionPickerView: View {
                         .opacity(isSelectable ? 1.0 : 0.4)
                     }
                 }
+                .padding(.leading, 5)
                 .padding(.vertical, 4)
             }
         }

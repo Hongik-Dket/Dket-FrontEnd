@@ -25,13 +25,14 @@ struct ConcertDetailDTO: Decodable {
     let sessionIds: [Int64]
     let description: String
     let photoCardList: [PhotoCardItemDTO]
+    let isResaleAllowed: Bool
     
     enum CodingKeys: String, CodingKey {
         case concertId, title, posterUrl, location,
              startDate, endDate, startTime, endTime,
              ageLimit, priceKrw, applyStart, applyEnd,
              capacity, concertStatus, sessionIds,
-             description, photoCardList
+             description, photoCardList, isResaleAllowed
     }
 }
 
@@ -51,7 +52,8 @@ extension ConcertDetailDTO {
               status: concertStatus,
               sessionIds: sessionIds,
               description: description,
-              photoCards: photoCardList.map { $0.toDomain()}
+              photoCards: photoCardList.map { $0.toDomain()},
+              isResaleAllowed: isResaleAllowed
         )
     }
 }
