@@ -9,7 +9,7 @@ import Foundation
 
 protocol ResaleTradeServicing {
     func purchaseResaleTicket(ticketId: Int64) async throws -> ResalePurchase
-    func registerResale(ticketId: Int64, price: Int) async throws -> Bool
+    func registerResale(ticketId: Int64, price: Int) async throws -> ResaleRegisterResponseDTO
 }
 
 final class ResaleTradeService: ResaleTradeServicing {
@@ -28,18 +28,17 @@ final class ResaleTradeService: ResaleTradeServicing {
     }
     
     // MARK: - 내 티켓 리세일 등록
-    func registerResale(ticketId: Int64, price: Int) async throws -> Bool {
+    func registerResale(ticketId: Int64, price: Int) async throws -> ResaleRegisterResponseDTO {
         let endpoint = Endpoint.resaleRegister(ticketId: ticketId, price: price)
-        
         let body = ResaleRegisterRequestDTO(price: price)
         
-        let response: APIResponseWithoutResult = try await APIClient.shared.post(
+        let response: APIResponse<ResaleRegisterResponseDTO> = try await APIClient.shared.post(
             endpoint,
             body: body,
-            as: APIResponseWithoutResult.self
+            as: APIResponse<ResaleRegisterResponseDTO>.self
         )
 
-        return response.isSuccess
+        return response.result
     }
 }
 

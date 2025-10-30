@@ -10,24 +10,24 @@ import SwiftUI
 struct ResaleRegisterView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm: ResaleRegisterViewModel
-
+    
     @State private var showAlertModal = false
-
+    
     init(ticket: TicketDetail) {
         _vm = StateObject(wrappedValue: ResaleRegisterViewModel(ticket: ticket))
     }
-
+    
     var ticketPrice: Int { vm.ticket.price }
     var maxPrice: Int? {
         // entered가 false면 상한 120%, true면 nil
         vm.ticket.entered ? nil : Int(Double(ticketPrice) * 1.2)
     }
-
+    
     var resalePriceInt: Int? { Int(vm.priceText) }
-
+    
     var isPriceValid: Bool {
         guard let resale = resalePriceInt else { return false }
-
+        
         if vm.ticket.entered {
             return resale >= ticketPrice
         } else {
@@ -36,17 +36,17 @@ struct ResaleRegisterView: View {
             return resale >= ticketPrice && resale <= max
         }
     }
-
+    
     var contribution: Int {
         guard let resale = resalePriceInt else { return 0 }
         return max(0, resale - ticketPrice) / 10
     }
-
+    
     var finalRevenue: Int {
         guard let resale = resalePriceInt else { return ticketPrice }
         return resale - contribution
     }
-
+    
     var body: some View {
         ZStack {
             ScrollView {
@@ -55,7 +55,7 @@ struct ResaleRegisterView: View {
                         .font(.title2.bold())
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top)
-
+                    
                     // MARK: - 티켓 정보
                     CustomBox(title: "티켓 정보") {
                         HStack(alignment: .top) {
@@ -79,7 +79,7 @@ struct ResaleRegisterView: View {
                         }
                         .padding(.vertical, 8)
                     }
-
+                    
                     // MARK: - 판매 정보
                     CustomBox(title: "판매 정보") {
                         VStack(alignment: .leading, spacing: 10) {
@@ -89,7 +89,7 @@ struct ResaleRegisterView: View {
                                 Text("\(ticketPrice.formatted()) 원")
                             }
                             .font(.subheadline)
-
+                            
                             HStack {
                                 Text("판매가")
                                 Spacer()
@@ -101,7 +101,7 @@ struct ResaleRegisterView: View {
                                 Text("원")
                             }
                             .font(.subheadline)
-
+                            
                             HStack {
                                 Text("공연 기여금")
                                 Spacer()
@@ -109,9 +109,9 @@ struct ResaleRegisterView: View {
                             }
                             .font(.subheadline)
                             .foregroundColor(.gray)
-
+                            
                             Divider()
-
+                            
                             HStack {
                                 Text("최종 수익")
                                     .fontWeight(.semibold)
@@ -123,7 +123,7 @@ struct ResaleRegisterView: View {
                         }
                         .padding(.vertical, 8)
                     }
-
+                    
                     // MARK: - 판매 규정
                     CustomBox(title: "판매 규정") {
                         VStack(alignment: .leading, spacing: 4) {
@@ -136,7 +136,7 @@ struct ResaleRegisterView: View {
                         .foregroundColor(.gray)
                         .padding(.vertical, 8)
                     }
-
+                    
                     // MARK: - 판매하기 버튼
                     CircleButton(
                         title: "판매하기",
@@ -149,7 +149,7 @@ struct ResaleRegisterView: View {
                 }
                 .padding()
             }
-
+            
             // MARK: - 로딩 상태
             if vm.isLoading {
                 Color.black.opacity(0.3).ignoresSafeArea()
@@ -158,7 +158,7 @@ struct ResaleRegisterView: View {
                     .background(Color.white)
                     .cornerRadius(12)
             }
-
+            
             // MARK: - ResaleSuccessAlert 표시
             if showAlertModal {
                 ResaleSuccessAlert(
@@ -189,10 +189,10 @@ struct ResaleRegisterView: View {
             Text(vm.errorMessage ?? "알 수 없는 오류가 발생했습니다.")
         }
         .onChange(of: vm.shouldTriggerOnChain) { triggered in
-            if triggered {
-                // ✅ 서버 성공 시 온체인 트랜잭션 호출
-                print("온체인 메서드 실행 트리거됨")
-                // TODO: MetaMask 연동 로직 추가
+            if triggered, let tokenId = vm.tokenId {
+                print("🚀 서버 등록 성공 → 온체인 approve 실행 (tokenId: \(tokenId))")
+                // DketNFT.approve(DketResale, tokenId)
+                // TODO: MetaMask / WalletKit 트랜잭션 호출 로직 추가
             }
         }
     }
@@ -208,7 +208,7 @@ private struct TextRow: View {
                 .foregroundColor(.gray)
                 .frame(width: 80, alignment: .leading)
             Text(value)
-                
+            
         }
         .font(.system(size: 14))
     }
@@ -245,13 +245,13 @@ struct ResaleView_Previews: PreviewProvider {
 struct CustomBox<Content: View>: View {
     let title: String
     let content: () -> Content
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.headline)
                 .padding(.bottom, 4)
-
+            
             content()
         }
         .padding()

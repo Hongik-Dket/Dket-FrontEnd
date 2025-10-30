@@ -10,7 +10,7 @@ import SwiftUI
 
 @MainActor
 final class ResaleRegisterViewModel: ObservableObject {
-    // MARK: - Properties
+    // MARK: - Published Properties
     @Published var ticket: TicketDetail
     @Published var priceText: String = ""
     @Published var isLoading: Bool = false
@@ -18,8 +18,10 @@ final class ResaleRegisterViewModel: ObservableObject {
     @Published var showErrorAlert: Bool = false
     @Published var showSuccessAlert: Bool = false
     
-    // 온체인 호출을 위한 신호
+    // 온체인 호출을 위한 신호 & 데이터
     @Published var shouldTriggerOnChain: Bool = false
+    @Published var tokenId: Int64? = nil
+    @Published var resaleId: Int64? = nil
     
     private let service: ResaleTradeServicing
     
@@ -41,14 +43,19 @@ final class ResaleRegisterViewModel: ObservableObject {
         defer { isLoading = false }
         
         do {
-            let success = try await service.registerResale(ticketId: ticket.ticketId, price: price)
-            if success {
-                showSuccessAlert = true
-                shouldTriggerOnChain = true  // 서버 성공 시 온체인 전송을 트리거
-            } else {
-                errorMessage = "티켓 판매 등록에 실패했습니다. 다시 시도해주세요."
-                showErrorAlert = true
-            }
+            // 서버 응답에서 tokenId & resaleId 받기
+            let response = try await service.registerResale(ticketId: ticket.ticketId, price: price)
+            
+            self.resaleId = response.resaleId
+            self.tokenId = response.tokenId
+            
+            print("리세일 등록 성공: resaleId=\(response.resaleId), tokenId=\(response.tokenId)")
+            
+            showSuccessAlert = true
+            
+            // 온체인 approve 실행 트리거
+            shouldTriggerOnChain = true
+            
         } catch {
             errorMessage = mapError(error)
             showErrorAlert = true
