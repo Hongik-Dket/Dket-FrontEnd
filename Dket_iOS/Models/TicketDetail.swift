@@ -21,6 +21,7 @@ struct TicketDetail: Equatable {
     let entered: Bool
     let photoCardUrl: String
     let price: Int
+    let isResaleListed: Bool
     
     var birthDateFormatted: String {
         DateFormatter.yyyyDMMDddHHmm.string(from: birth)

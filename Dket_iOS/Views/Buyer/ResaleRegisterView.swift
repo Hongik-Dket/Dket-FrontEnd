@@ -7,20 +7,34 @@
 
 import SwiftUI
 
-struct ResaleView: View {
-    let ticket: TicketDetail
+struct ResaleRegisterView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var vm: ResaleRegisterViewModel
 
-    @State private var resalePrice: String = ""
-    @State private var showSuccessAlert: Bool = false
+    @State private var showAlertModal = false
 
-    var ticketPrice: Int { ticket.price }
-    var maxPrice: Int { Int(Double(ticketPrice) * 1.2) }
+    init(ticket: TicketDetail) {
+        _vm = StateObject(wrappedValue: ResaleRegisterViewModel(ticket: ticket))
+    }
 
-    var resalePriceInt: Int? { Int(resalePrice) }
+    var ticketPrice: Int { vm.ticket.price }
+    var maxPrice: Int? {
+        // entered가 false면 상한 120%, true면 nil
+        vm.ticket.entered ? nil : Int(Double(ticketPrice) * 1.2)
+    }
+
+    var resalePriceInt: Int? { Int(vm.priceText) }
 
     var isPriceValid: Bool {
         guard let resale = resalePriceInt else { return false }
-        return resale >= ticketPrice && resale <= maxPrice
+
+        if vm.ticket.entered {
+            return resale >= ticketPrice
+        } else {
+            // 아직 입장 전이면 120% 상한 적용
+            guard let max = maxPrice else { return false }
+            return resale >= ticketPrice && resale <= max
+        }
     }
 
     var contribution: Int {
@@ -37,8 +51,7 @@ struct ResaleView: View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-
-                    Text("판매")
+                    Text("판매 등록")
                         .font(.title2.bold())
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top)
@@ -47,18 +60,16 @@ struct ResaleView: View {
                     CustomBox(title: "티켓 정보") {
                         HStack(alignment: .top) {
                             VStack(alignment: .leading, spacing: 6) {
-                                TextRow(title: "공연명", value: ticket.concertTitle)
-                                TextRow(title: "공연 일시", value: ticket.startDateFormatted)
-                                TextRow(title: "예매자 명", value: ticket.buyerName)
-                                TextRow(title: "생년월일", value: ticket.birthDateFormatted)
-                                TextRow(title: "티켓 번호", value: ticket.ticketNumber)
-                                TextRow(title: "좌석 번호", value: ticket.seatNumber)
+                                TextRow(title: "공연명", value: vm.ticket.concertTitle)
+                                TextRow(title: "공연 일시", value: vm.ticket.startDateFormatted)
+                                TextRow(title: "예매자 명", value: vm.ticket.buyerName)
+                                TextRow(title: "생년월일", value: vm.ticket.birthDateFormatted)
+                                TextRow(title: "티켓 번호", value: vm.ticket.ticketNumber)
+                                TextRow(title: "좌석 번호", value: vm.ticket.seatNumber)
                             }
                             Spacer()
-                            AsyncImage(url: URL(string: ticket.photoCardUrl)) { image in
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
+                            AsyncImage(url: URL(string: vm.ticket.photoCardUrl)) { image in
+                                image.resizable().aspectRatio(contentMode: .fill)
                             } placeholder: {
                                 Color.gray.opacity(0.2)
                             }
@@ -82,7 +93,7 @@ struct ResaleView: View {
                             HStack {
                                 Text("판매가")
                                 Spacer()
-                                TextField("판매가 입력", text: $resalePrice)
+                                TextField("판매가 입력", text: $vm.priceText)
                                     .keyboardType(.numberPad)
                                     .multilineTextAlignment(.trailing)
                                     .frame(width: 100)
@@ -130,7 +141,7 @@ struct ResaleView: View {
                     CircleButton(
                         title: "판매하기",
                         action: {
-                            showSuccessAlert = true
+                            showAlertModal = true
                         },
                         isDisabled: !isPriceValid
                     )
@@ -139,23 +150,53 @@ struct ResaleView: View {
                 .padding()
             }
 
-            if showSuccessAlert {
+            // MARK: - 로딩 상태
+            if vm.isLoading {
+                Color.black.opacity(0.3).ignoresSafeArea()
+                ProgressView("등록 중...")
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(12)
+            }
+
+            // MARK: - ResaleSuccessAlert 표시
+            if showAlertModal {
                 ResaleSuccessAlert(
                     onConfirm: {
-                        print("판매 확정: \(resalePriceInt ?? 0)원에 판매")
-                        showSuccessAlert = false
+                        Task {
+                            // Alert의 판매하기 버튼 → 서버 요청
+                            await vm.registerResale()
+                            showAlertModal = false
+                        }
                     },
                     onClose: {
-                        showSuccessAlert = false
+                        showAlertModal = false
                     }
                 )
                 .transition(.opacity)
-                .animation(.easeInOut, value: showSuccessAlert)
+                .animation(.easeInOut, value: showAlertModal)
+            }
+        }
+        // MARK: - Alert 처리
+        .alert("판매 등록 완료", isPresented: $vm.showSuccessAlert) {
+            Button("확인") { dismiss() }
+        } message: {
+            Text("리세일 마켓에 티켓이 등록되었습니다.")
+        }
+        .alert("오류", isPresented: $vm.showErrorAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text(vm.errorMessage ?? "알 수 없는 오류가 발생했습니다.")
+        }
+        .onChange(of: vm.shouldTriggerOnChain) { triggered in
+            if triggered {
+                // ✅ 서버 성공 시 온체인 트랜잭션 호출
+                print("온체인 메서드 실행 트리거됨")
+                // TODO: MetaMask 연동 로직 추가
             }
         }
     }
 }
-
 
 private struct TextRow: View {
     let title: String
@@ -181,7 +222,7 @@ extension Int {
 
 struct ResaleView_Previews: PreviewProvider {
     static var previews: some View {
-        ResaleView(
+        ResaleRegisterView(
             ticket: TicketDetail(
                 ticketId: 123,
                 concertTitle: "공연이름~~~",
@@ -195,7 +236,7 @@ struct ResaleView_Previews: PreviewProvider {
                 nftUrl: "",
                 entered: false,
                 photoCardUrl: "https://via.placeholder.com/100", // 이미지 URL 대체
-                price: 189000
+                price: 189000, isResaleListed: true
             )
         )
     }

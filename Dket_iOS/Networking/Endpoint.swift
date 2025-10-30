@@ -41,6 +41,7 @@ enum Endpoint {
     case buyerPhotocardDetail(ticketId: Int64)
     
     case resaleTickets(sessionId: Int64)
+    case resaleRegister(ticketId: Int64, price: Int)
     case resalePurchase(ticketId: Int64)
     
     // MARK: - Auth / Wallet
@@ -50,7 +51,7 @@ enum Endpoint {
     // MARK: - Computed Path
     var path: String {
         switch self {
-            // Organizer
+        // Organizer
         case .organizerHome: return "/api/organizer/home"
         case .organizerToday: return "/api/organizer/home/today"
         case .organizerClosed: return "/api/organizer/home/closed"
@@ -64,7 +65,7 @@ enum Endpoint {
         case .organizerTicket(let cid, let tid):
             return "/api/organizer/concerts/\(cid)/\(tid)"
             
-            // Buyer
+        // Buyer
         case .buyerHomeMain: return "/api/buyer/home"
         case .buyerHomePopular: return "/api/buyer/home/popular"
         case .buyerHomeApplied: return "/api/buyer/home/applied"
@@ -78,6 +79,7 @@ enum Endpoint {
         case .buyerConcertDetail(let cid):
             return "/api/buyer/concerts/\(cid)"
             
+        // Ticket
         case .ticketDetailById(let id):
             return "/api/tickets"
         case .ticketDetailByNumber(let number):
@@ -95,11 +97,15 @@ enum Endpoint {
         case .buyerPhotocardDetail(let tid):
             return "/api/user/photocards/\(tid)"
             
+        // Resale
         case .resaleTickets:
             return "/api/resales"
+        case .resaleRegister(let ticketId, _):
+            return "/api/resales/\(ticketId)"
         case .resalePurchase(let ticketId):
             return "/api/resales/\(ticketId)/purchase"
             
+        // Wallet
         case .connectWallet:
             return "/api/auth/login/metamask/complete"
         case .userWalletInfo:
@@ -127,7 +133,8 @@ enum Endpoint {
                 .connectWallet,
                 .buyerApply,
                 .buyerTicketPrice,
-                .resalePurchase:
+                .resalePurchase,
+                .resaleRegister:
             return "POST"
         case .buyerEnter,
                 .ticketEnter:

@@ -21,6 +21,7 @@ struct TicketDetailDTO: Decodable {
     let entered: Bool
     let photoCardUrl: String
     let price: Int
+    let isResaleListed: Bool
     
     var domain: TicketDetail {
         TicketDetail(
@@ -36,7 +37,8 @@ struct TicketDetailDTO: Decodable {
             nftUrl: nftUrl,
             entered: entered,
             photoCardUrl: photoCardUrl,
-            price: price
+            price: price,
+            isResaleListed: isResaleListed
         )
     }
 }

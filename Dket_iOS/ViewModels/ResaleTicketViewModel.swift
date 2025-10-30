@@ -21,10 +21,10 @@ final class ResaleTicketViewModel: ObservableObject {
     @Published var didPurchase: Bool = false
     
     // MARK: - Dependencies
-    private let service: ResaleTicketServicing
+    private let service: ResaleTradeServicing
     
     // MARK: - Init
-    init(service: ResaleTicketServicing = ResaleTicketService()) {
+    init(service: ResaleTradeServicing = ResaleTradeService()) {
         self.service = service
     }
     

@@ -98,7 +98,7 @@ struct BuyerTicketDetailView: View {
         }
         .fullScreenCover(isPresented: $showResaleView) {
             if let ticket = selectedTicket {
-                    ResaleView(ticket: ticket)
+                    ResaleRegisterView(ticket: ticket)
                 }
         }
     }
