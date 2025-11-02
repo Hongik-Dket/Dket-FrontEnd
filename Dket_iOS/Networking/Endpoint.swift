@@ -30,12 +30,15 @@ enum Endpoint {
     case buyerTicketPrice(sessionId: Int64)
     case buyerConcertDetail(concertId: Int64)
     
+    // 개최자 티켓
     case ticketDetailById(id: Int64)
     case ticketDetailByNumber(number: String)
-    
-    case buyerTicketList
     case ticketEnter(ticketId: Int64)
+    
+    // 구매자 티켓
+    case buyerTicketList
     case buyerEnter(ticketId: String)
+    case buyerTicketDetail(ticketId: Int64)
     
     case buyerPhotocardList
     case buyerPhotocardDetail(ticketId: Int64)
@@ -79,19 +82,24 @@ enum Endpoint {
         case .buyerConcertDetail(let cid):
             return "/api/buyer/concerts/\(cid)"
             
-        // Ticket
+        // Organizer Ticket
         case .ticketDetailById(let id):
             return "/api/tickets"
         case .ticketDetailByNumber(let number):
             return "/api/tickets"
-        case .buyerTicketList:
-            return "/api/user/tickets"
-            
         case .ticketEnter(let ticketId):
             return "/api/tickets/organizer/\(ticketId)/enter"
+            
+            
+        // Buyer Ticket
+        case .buyerTicketList:
+            return "/api/user/tickets"
         case .buyerEnter(let tid):
             return "/api/buyer/tickets/\(tid)/enter"
+        case .buyerTicketDetail(let ticketId):
+            return "/api/buyer/tickets/\(ticketId)"
             
+        // Buyer PhotoCard
         case .buyerPhotocardList:
             return "/api/user/photocards"
         case .buyerPhotocardDetail(let tid):
