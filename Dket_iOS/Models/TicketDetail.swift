@@ -15,12 +15,12 @@ struct TicketDetail: Equatable {
     let birth: Date
     let ticketNumber: String
     let seatNumber: String
-    let qrCodeUrl: String?
-    let photoCardId: Int64
     let nftUrl: String
     let entered: Bool
     let photoCardUrl: String
     let price: Int
+    let qrCodeUrl: String?
+    let photoCardId: Int64
     let isResaleListed: Bool
     
     var birthDateFormatted: String {

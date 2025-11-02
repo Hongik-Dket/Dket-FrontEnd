@@ -12,10 +12,11 @@ struct BuyerTicketDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showPhotoCard = false
     @State private var showResaleView = false
+    @State private var showEnterView = false
     @State private var selectedTicket: TicketDetail? = nil
     
     init(ticketId: Int64) {
-        print("🧾 BuyerTicketDetailView INIT with ticketId: \(ticketId)")
+        print("BuyerTicketDetailView INIT with ticketId: \(ticketId)")
         _vm = StateObject(wrappedValue: BuyerTicketDetailViewModel(ticketId: ticketId))
     }
     
@@ -61,14 +62,13 @@ struct BuyerTicketDetailView: View {
                     
                     VStack(spacing: 16) {
                         CircleButton(title: "판매하기") {
-                                selectedTicket = ticket
-                                showResaleView = true
-                            }
+                            selectedTicket = ticket
+                            showResaleView = true
+                        }
                         
-                        CircleButton(title: "NFT 티켓 보러가기") {
-                            if let url = URL(string: ticket.nftUrl) {
-                                UIApplication.shared.open(url)
-                            }
+                        CircleButton(title: "입장하기") {
+                            selectedTicket = ticket
+                            showEnterView = true
                         }
                     }
                     .padding(.bottom, 50)
@@ -98,8 +98,13 @@ struct BuyerTicketDetailView: View {
         }
         .fullScreenCover(isPresented: $showResaleView) {
             if let ticket = selectedTicket {
-                    ResaleRegisterView(ticket: ticket)
-                }
+                ResaleRegisterView(ticket: ticket)
+            }
+        }
+        .fullScreenCover(isPresented: $showEnterView) {
+            if let ticket = selectedTicket {
+                //BuyerEnterView(ticket: ticket)
+            }
         }
     }
 }
