@@ -115,7 +115,7 @@ enum Endpoint {
             
         // Wallet
         case .connectWallet:
-            return "/api/auth/login/metamask/complete"
+            return "/api/user/login/metamask/complete"
         case .userWalletInfo:
             return "/api/user/wallet"
         }
