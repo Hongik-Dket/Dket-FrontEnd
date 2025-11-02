@@ -189,10 +189,25 @@ struct ResaleRegisterView: View {
             Text(vm.errorMessage ?? "알 수 없는 오류가 발생했습니다.")
         }
         .onChange(of: vm.shouldTriggerOnChain) { triggered in
-            if triggered, let tokenId = vm.tokenId {
-                print("🚀 서버 등록 성공 → 온체인 approve 실행 (tokenId: \(tokenId))")
-                // DketNFT.approve(DketResale, tokenId)
-                // TODO: MetaMask / WalletKit 트랜잭션 호출 로직 추가
+            if triggered, let tokenId = vm.tokenId,
+               let walletAddress = UserWalletStore.shared.address {
+                Task {
+                    do {
+                        print("서버 등록 성공 → 온체인 approve 실행 (tokenId: \(tokenId))")
+                        try await ApproveNFTService().sendApproveTransaction(tokenId: tokenId, from: walletAddress)
+                        
+                        // MetaMask로 전환
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            if let url = URL(string: "metamask://"), UIApplication.shared.canOpenURL(url) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        
+                        print("온체인 Approve 성공")
+                    } catch {
+                        print("❌ Approve 트랜잭션 실패: \(error.localizedDescription)")
+                    }
+                }
             }
         }
     }
