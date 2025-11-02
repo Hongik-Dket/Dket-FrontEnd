@@ -5,8 +5,8 @@
 //  Created by M-136 on 11/2/25.
 //
 
-import SwiftUI
-
-struct BuyerEnterView: View {
-    
-}
+//import SwiftUI
+//
+//struct BuyerEnterView: View {
+//    
+//}

@@ -20,7 +20,7 @@ struct ResaleRegisterView: View {
     var ticketPrice: Int { vm.ticket.price }
     var maxPrice: Int? {
         // entered가 false면 상한 120%, true면 nil
-        vm.ticket.entered ? nil : Int(Double(ticketPrice) * 1.2)
+        vm.ticket.isEntered ? nil : Int(Double(ticketPrice) * 1.2)
     }
     
     var resalePriceInt: Int? { Int(vm.priceText) }
@@ -28,7 +28,7 @@ struct ResaleRegisterView: View {
     var isPriceValid: Bool {
         guard let resale = resalePriceInt else { return false }
         
-        if vm.ticket.entered {
+        if vm.ticket.isEntered {
             return resale >= ticketPrice
         } else {
             // 아직 입장 전이면 120% 상한 적용
@@ -246,10 +246,8 @@ struct ResaleView_Previews: PreviewProvider {
                 birth: ISO8601DateFormatter().date(from: "2003-02-25T00:00:00") ?? Date(),
                 ticketNumber: "T152670849345203",
                 seatNumber: "39",
-                qrCodeUrl: "",
-                photoCardId: 1,
                 nftUrl: "",
-                entered: false,
+                isEntered: false,
                 photoCardUrl: "https://via.placeholder.com/100", // 이미지 URL 대체
                 price: 189000, isResaleListed: true
             )

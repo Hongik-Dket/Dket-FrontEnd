@@ -45,11 +45,13 @@ struct BuyerTicketDetailView: View {
                     .padding(.horizontal, 50)
                     .padding(.top, 20)
                     
-                    if let qr = ticket.qrCodeUrl, let url = URL(string: qr) {
+                    if let url = URL(string: ticket.photoCardUrl) {
                         AsyncImage(url: url) { image in
                             image.resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 260, height: 260)
+                                .cornerRadius(8)
+                                .shadow(radius: 4)
                                 .padding(.top, 12)
                         } placeholder: {
                             ProgressView()
@@ -65,11 +67,15 @@ struct BuyerTicketDetailView: View {
                             selectedTicket = ticket
                             showResaleView = true
                         }
+                        .disabled(!isSellButtonEnabled)
+                        .opacity(isSellButtonEnabled ? 1 : 0.4)
                         
                         CircleButton(title: "입장하기") {
                             selectedTicket = ticket
                             showEnterView = true
                         }
+                        .disabled(!isEnterButtonEnabled)
+                        .opacity(isEnterButtonEnabled ? 1 : 0.4)
                     }
                     .padding(.bottom, 50)
                 }
@@ -127,4 +133,53 @@ struct TicketInfoRow: View {
     }
 }
 
+extension BuyerTicketDetailView {
+    private var isConcertToday: Bool {
+        guard let ticket = vm.ticket else { return false }
+        let calendar = Calendar.current
+        return calendar.isDateInToday(ticket.concertDateTime)
+    }
+    
+    private var isSellButtonEnabled: Bool {
+        guard let ticket = vm.ticket else { return false }
+        // ① 아직 리세일 등록 안됨
+        if !ticket.isResaleListed { return true }
+        // ② 이미 리세일 중인데 공연 전 → 비활성화
+        if ticket.isResaleListed && !isConcertToday { return false }
+        // ③ 리세일 중인데 공연 당일 → 비활성화
+        if ticket.isResaleListed && isConcertToday { return false }
+        return false
+    }
+    
+    private var isEnterButtonEnabled: Bool {
+        guard let ticket = vm.ticket else { return false }
+        // 리세일 중이고 공연 당일에만 활성화
+        return ticket.isResaleListed && isConcertToday
+    }
+}
 
+
+struct BuyerTicketDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        let vm = BuyerTicketDetailViewModel(ticketId: 100)
+        Task { @MainActor in
+            vm.ticket = TicketDetail(
+                ticketId: 1,
+                concertTitle: "홍익대 축제 공연",
+                concertDateTime: Date().addingTimeInterval(3600 * 5),
+                buyerName: "여희주",
+                birth: DateFormatter.yyyyMMdd.date(from: "2003-02-25") ?? Date(),
+                ticketNumber: "T152670849345203",
+                seatNumber: "A-39",
+                nftUrl: "https://opensea.io/assets/0x123.../1",
+                isEntered: false,
+                photoCardUrl: "https://i.imgur.com/Qb0k5.jpg",
+                price: 100000,
+                isResaleListed: false
+            )
+        }
+
+        return BuyerTicketDetailView(ticketId: 100)
+            .previewDisplayName("🎫 Buyer Ticket Detail Preview")
+    }
+}
