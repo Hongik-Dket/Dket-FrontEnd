@@ -11,6 +11,7 @@ import ReownAppKit
 
 struct MetaMaskLoginView: View {
     @State private var goToRoleSelection = false
+    @State private var goToSignUp = false
     
     var body: some View {
         NavigationStack {
@@ -43,7 +44,7 @@ struct MetaMaskLoginView: View {
                         
                         Spacer()
                         
-                        Text("MetaMask 연결하기")
+                        Text("MetaMask로 로그인하기")
                             .font(.system(size: 16, weight: .bold))
                             .padding(.trailing, 90)
                     }
@@ -53,7 +54,21 @@ struct MetaMaskLoginView: View {
                     .cornerRadius(5)
                     .padding(.horizontal, 30)
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 16)
+                
+                Button {
+                    print("회원가입 버튼 클릭")
+                    goToSignUp = true
+                } label: {
+                    Text("회원가입")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.gray)
+                        .underline()
+                }
+                .padding(.bottom, 80)
+                
+                // MARK: - 네비게이션 이동
+                NavigationLink(destination: SignUpNationalityView(), isActive: $goToSignUp) { EmptyView() }
                 
             }
         }
