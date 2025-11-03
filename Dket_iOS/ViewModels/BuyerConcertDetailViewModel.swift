@@ -11,7 +11,7 @@ import Combine
 import UIKit
 import BigInt
 
-struct EmptyBody: Encodable {}
+
 
 enum FloatingActionType: String {
     case apply = "티켓 응모하기"
@@ -86,11 +86,7 @@ final class BuyerConcertViewModel: ObservableObject {
                 await MainActor.run {
                     self.detail = concert
                     
-                    self.isResaleButtonVisible = concert.status == .applyClosed
-                    || concert.status == .ticketed
-                    || concert.status == .inProgress
-                    || concert.status == .ended
-
+                    self.isResaleButtonVisible = concert.isResaleAllowed
                     
                     let updatedSessions = sessions.map { session -> BuyerSessionDetail in
                         var s = session

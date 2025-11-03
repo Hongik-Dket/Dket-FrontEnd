@@ -30,15 +30,22 @@ enum Endpoint {
     case buyerTicketPrice(sessionId: Int64)
     case buyerConcertDetail(concertId: Int64)
     
+    // 개최자 티켓
     case ticketDetailById(id: Int64)
     case ticketDetailByNumber(number: String)
-    
-    case buyerTicketList
     case ticketEnter(ticketId: Int64)
+    
+    // 구매자 티켓
+    case buyerTicketList
     case buyerEnter(ticketId: String)
+    case buyerTicketDetail(ticketId: Int64)
     
     case buyerPhotocardList
     case buyerPhotocardDetail(ticketId: Int64)
+    
+    case resaleTickets(sessionId: Int64)
+    case resaleRegister(ticketId: Int64, price: Int)
+    case resalePurchase(ticketId: Int64)
     
     // MARK: - Auth / Wallet
     case connectWallet
@@ -47,7 +54,7 @@ enum Endpoint {
     // MARK: - Computed Path
     var path: String {
         switch self {
-            // Organizer
+        // Organizer
         case .organizerHome: return "/api/organizer/home"
         case .organizerToday: return "/api/organizer/home/today"
         case .organizerClosed: return "/api/organizer/home/closed"
@@ -61,7 +68,7 @@ enum Endpoint {
         case .organizerTicket(let cid, let tid):
             return "/api/organizer/concerts/\(cid)/\(tid)"
             
-            // Buyer
+        // Buyer
         case .buyerHomeMain: return "/api/buyer/home"
         case .buyerHomePopular: return "/api/buyer/home/popular"
         case .buyerHomeApplied: return "/api/buyer/home/applied"
@@ -75,25 +82,40 @@ enum Endpoint {
         case .buyerConcertDetail(let cid):
             return "/api/buyer/concerts/\(cid)"
             
+        // Organizer Ticket
         case .ticketDetailById(let id):
             return "/api/tickets"
         case .ticketDetailByNumber(let number):
             return "/api/tickets"
+        case .ticketEnter(let ticketId):
+            return "/api/tickets/organizer/\(ticketId)/enter"
+            
+            
+        // Buyer Ticket
         case .buyerTicketList:
             return "/api/user/tickets"
-            
-        case .ticketEnter(let ticketId):
-                    return "/api/tickets/organizer/\(ticketId)/enter"
         case .buyerEnter(let tid):
             return "/api/buyer/tickets/\(tid)/enter"
+        case .buyerTicketDetail(let ticketId):
+            return "/api/buyer/tickets/\(ticketId)"
             
+        // Buyer PhotoCard
         case .buyerPhotocardList:
             return "/api/user/photocards"
         case .buyerPhotocardDetail(let tid):
             return "/api/user/photocards/\(tid)"
             
+        // Resale
+        case .resaleTickets:
+            return "/api/resales"
+        case .resaleRegister(let ticketId, _):
+            return "/api/resales/\(ticketId)"
+        case .resalePurchase(let ticketId):
+            return "/api/resales/\(ticketId)/purchase"
+            
+        // Wallet
         case .connectWallet:
-            return "/api/auth/login/metamask/complete"
+            return "/api/user/login/metamask/complete"
         case .userWalletInfo:
             return "/api/user/wallet"
         }
@@ -105,6 +127,8 @@ enum Endpoint {
             return [URLQueryItem(name: "id", value: "\(id)")]
         case .ticketDetailByNumber(let number):
             return [URLQueryItem(name: "number", value: number)]
+        case .resaleTickets(let sessionId):
+            return [URLQueryItem(name: "sessionId", value: "\(sessionId)")]
         default:
             return nil
         }
@@ -116,7 +140,9 @@ enum Endpoint {
         case .organizerCreateConcert,
                 .connectWallet,
                 .buyerApply,
-                .buyerTicketPrice:
+                .buyerTicketPrice,
+                .resalePurchase,
+                .resaleRegister:
             return "POST"
         case .buyerEnter,
                 .ticketEnter:

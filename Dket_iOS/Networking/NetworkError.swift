@@ -13,6 +13,7 @@ enum NetworkError: Error {
     case decoding(Error)
     case unknown
     case emptyResult
+    case unauthorized
 }
 
 extension NetworkError: LocalizedError {
@@ -28,6 +29,8 @@ extension NetworkError: LocalizedError {
             return "알 수 없는 네트워크 오류가 발생했습니다."
         case .emptyResult:
             return "응답 데이터가 비어 있습니다."
+        case .unauthorized:
+            return "인증이 필요합니다. 다시 로그인 해주세요."
         }
     }
 }

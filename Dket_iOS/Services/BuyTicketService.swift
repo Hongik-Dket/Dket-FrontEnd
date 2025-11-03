@@ -33,7 +33,7 @@ final class BuyTicketService: BuyTicketServicing {
             throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "ABI 파일을 찾을 수 없습니다"])
         }
         let abi = try String(contentsOf: url)
-        guard let contractAddress = EthereumAddress("0x2ea3dccfc3114f43a0ab126eb24c55cc762a4407") else {
+        guard let contractAddress = EthereumAddress("0x3de27b56e716b618c7354a4f23cf104a8db62330") else {
             throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "잘못된 컨트랙트 주소"])
         }
         

@@ -11,9 +11,12 @@ struct BuyerTicketDetailView: View {
     @StateObject private var vm: BuyerTicketDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showPhotoCard = false
+    @State private var showResaleView = false
+    @State private var showEnterView = false
+    @State private var selectedTicket: TicketDetail? = nil
     
     init(ticketId: Int64) {
-        print("🧾 BuyerTicketDetailView INIT with ticketId: \(ticketId)")
+        print("BuyerTicketDetailView INIT with ticketId: \(ticketId)")
         _vm = StateObject(wrappedValue: BuyerTicketDetailViewModel(ticketId: ticketId))
     }
     
@@ -42,11 +45,13 @@ struct BuyerTicketDetailView: View {
                     .padding(.horizontal, 50)
                     .padding(.top, 20)
                     
-                    if let qr = ticket.qrCodeUrl, let url = URL(string: qr) {
+                    if let url = URL(string: ticket.photoCardUrl) {
                         AsyncImage(url: url) { image in
                             image.resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 260, height: 260)
+                                .cornerRadius(8)
+                                .shadow(radius: 4)
                                 .padding(.top, 12)
                         } placeholder: {
                             ProgressView()
@@ -58,15 +63,19 @@ struct BuyerTicketDetailView: View {
                     Spacer()
                     
                     VStack(spacing: 16) {
-                        CircleButton(title: "포토카드 보기") {
-                            showPhotoCard = true
+                        CircleButton(title: "판매하기") {
+                            selectedTicket = ticket
+                            showResaleView = true
                         }
+                        .disabled(!isSellButtonEnabled)
+                        .opacity(isSellButtonEnabled ? 1 : 0.4)
                         
-                        CircleButton(title: "NFT 티켓 보러가기") {
-                            if let url = URL(string: ticket.nftUrl) {
-                                UIApplication.shared.open(url)
-                            }
+                        CircleButton(title: "입장하기") {
+                            selectedTicket = ticket
+                            showEnterView = true
                         }
+                        .disabled(!isEnterButtonEnabled)
+                        .opacity(isEnterButtonEnabled ? 1 : 0.4)
                     }
                     .padding(.bottom, 50)
                 }
@@ -93,8 +102,15 @@ struct BuyerTicketDetailView: View {
         .task {
             await vm.fetch()
         }
-        .fullScreenCover(isPresented: $showPhotoCard) {
-            PhotoCardDetailView(ticketId: vm.ticket?.ticketId ?? 0)
+        .fullScreenCover(isPresented: $showResaleView) {
+            if let ticket = selectedTicket {
+                ResaleRegisterView(ticket: ticket)
+            }
+        }
+        .fullScreenCover(isPresented: $showEnterView) {
+            if let ticket = selectedTicket {
+                //BuyerEnterView(ticket: ticket)
+            }
         }
     }
 }
@@ -117,4 +133,53 @@ struct TicketInfoRow: View {
     }
 }
 
+extension BuyerTicketDetailView {
+    private var isConcertToday: Bool {
+        guard let ticket = vm.ticket else { return false }
+        let calendar = Calendar.current
+        return calendar.isDateInToday(ticket.concertDateTime)
+    }
+    
+    private var isSellButtonEnabled: Bool {
+        guard let ticket = vm.ticket else { return false }
+        // ① 아직 리세일 등록 안됨
+        if !ticket.isResaleListed { return true }
+        // ② 이미 리세일 중인데 공연 전 → 비활성화
+        if ticket.isResaleListed && !isConcertToday { return false }
+        // ③ 리세일 중인데 공연 당일 → 비활성화
+        if ticket.isResaleListed && isConcertToday { return false }
+        return false
+    }
+    
+    private var isEnterButtonEnabled: Bool {
+        guard let ticket = vm.ticket else { return false }
+        // 리세일 중이고 공연 당일에만 활성화
+        return ticket.isResaleListed && isConcertToday
+    }
+}
 
+
+struct BuyerTicketDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        let vm = BuyerTicketDetailViewModel(ticketId: 100)
+        Task { @MainActor in
+            vm.ticket = TicketDetail(
+                ticketId: 1,
+                concertTitle: "홍익대 축제 공연",
+                concertDateTime: Date().addingTimeInterval(3600 * 5),
+                buyerName: "여희주",
+                birth: DateFormatter.yyyyMMdd.date(from: "2003-02-25") ?? Date(),
+                ticketNumber: "T152670849345203",
+                seatNumber: "A-39",
+                nftUrl: "https://opensea.io/assets/0x123.../1",
+                isEntered: false,
+                photoCardUrl: "https://i.imgur.com/Qb0k5.jpg",
+                price: 100000,
+                isResaleListed: false
+            )
+        }
+
+        return BuyerTicketDetailView(ticketId: 100)
+            .previewDisplayName("🎫 Buyer Ticket Detail Preview")
+    }
+}

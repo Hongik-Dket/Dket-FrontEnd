@@ -22,5 +22,6 @@ struct ConcertDetail {
     let sessionIds: [Int64]
     let description: String               
     let photoCards: [PhotoCardItem]
+    let isResaleAllowed: Bool
 }
 

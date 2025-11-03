@@ -14,3 +14,19 @@ extension Date {
             .day ?? 0
     }
 }
+
+extension Date {
+    func formatted(style: Style = .shortKorean) -> String {
+        let formatter = DateFormatter()
+        switch style {
+        case .shortKorean:
+            formatter.dateFormat = "M월 d일(E)"
+            formatter.locale = Locale(identifier: "ko_KR")
+        }
+        return formatter.string(from: self)
+    }
+
+    enum Style {
+        case shortKorean
+    }
+}

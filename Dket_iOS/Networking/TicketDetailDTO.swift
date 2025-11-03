@@ -15,10 +15,11 @@ struct TicketDetailDTO: Decodable {
     let birth: Date
     let ticketNumber: String
     let seatNumber: String
-    let qrCodeUrl: String
-    let photoCardId: Int64
     let nftUrl: String
-    let entered: Bool
+    let isEntered: Bool
+    let photoCardUrl: String
+    let price: Int
+    let isResaleListed: Bool
     
     var domain: TicketDetail {
         TicketDetail(
@@ -29,10 +30,11 @@ struct TicketDetailDTO: Decodable {
             birth: birth,
             ticketNumber: ticketNumber,
             seatNumber: seatNumber,
-            qrCodeUrl: qrCodeUrl,
-            photoCardId: photoCardId,
             nftUrl: nftUrl,
-            entered: entered
+            isEntered: isEntered,
+            photoCardUrl: photoCardUrl,
+            price: price,
+            isResaleListed: isResaleListed
         )
     }
 }

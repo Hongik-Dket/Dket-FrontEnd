@@ -10,7 +10,6 @@ import Foundation
 @MainActor
 final class BuyerTicketDetailViewModel: ObservableObject {
     @Published var ticket: TicketDetail?
-    
     private let ticketService: TicketServicing
     private let ticketId: Int64
     
@@ -21,8 +20,8 @@ final class BuyerTicketDetailViewModel: ObservableObject {
     
     func fetch() async {
         do {
-            print("👉 fetchTicketById 시작: \(ticketId)")
-            let detail = try await ticketService.fetchTicketById(ticketId)
+            print("구매자 티켓 상세 조회 시작: \(ticketId)")
+            let detail = try await ticketService.fetchBuyerTicketDetail(ticketId)
             self.ticket = detail
             print("✅ 티켓 조회 성공: \(detail)")
         } catch {
