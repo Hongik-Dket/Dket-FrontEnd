@@ -18,6 +18,10 @@ struct ForeignSignUpView: View {
     
     @State private var showBirthPicker = false
     @State private var showExpiryPicker = false
+    @State private var isLoading = false
+    @State private var goToMetaMask = false
+    @State private var showAlert = false
+    @State private var alertMessage = ""
     
     let countries = ["United States", "Canada", "United Kingdom", "Australia", "Japan", "Korea", "Germany", "France", "China", "Singapore"]
     
@@ -29,10 +33,9 @@ struct ForeignSignUpView: View {
         !nationality.isEmpty
     }
     
-    // MARK: - Date Formatters
     private var dateFormatter: DateFormatter {
         let df = DateFormatter()
-        df.dateFormat = "yyyy.MM.dd"
+        df.dateFormat = "yyyy-MM-dd"
         return df
     }
     
@@ -40,6 +43,7 @@ struct ForeignSignUpView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    
                     // MARK: - 로고
                     HStack {
                         Spacer()
@@ -84,18 +88,7 @@ struct ForeignSignUpView: View {
                         Button {
                             withAnimation { showBirthPicker.toggle() }
                         } label: {
-                            HStack {
-                                Text(dateFormatter.string(from: birthDate))
-                                    .foregroundColor(.black)
-                                Spacer()
-                                Image(systemName: showBirthPicker ? "chevron.up" : "chevron.down")
-                                    .foregroundColor(.gray)
-                            }
-                            .padding()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
+                            dateField(title: dateFormatter.string(from: birthDate), isExpanded: showBirthPicker)
                         }
                         
                         if showBirthPicker {
@@ -120,22 +113,10 @@ struct ForeignSignUpView: View {
                         // MARK: - 여권 만료일
                         Text("여권 만료일")
                             .font(.system(size: 14, weight: .bold))
-                        
                         Button {
                             withAnimation { showExpiryPicker.toggle() }
                         } label: {
-                            HStack {
-                                Text(dateFormatter.string(from: passportExpiryDate))
-                                    .foregroundColor(.black)
-                                Spacer()
-                                Image(systemName: showExpiryPicker ? "chevron.up" : "chevron.down")
-                                    .foregroundColor(.gray)
-                            }
-                            .padding()
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
+                            dateField(title: dateFormatter.string(from: passportExpiryDate), isExpanded: showExpiryPicker)
                         }
                         
                         if showExpiryPicker {
@@ -151,24 +132,85 @@ struct ForeignSignUpView: View {
                     
                     // MARK: - 시작하기 버튼
                     Button {
-                        print("회원가입 완료 요청")
+                        Task { await handleSignUp() }
                     } label: {
-                        Text("시작하기")
-                            .font(.system(size: 16, weight: .bold))
-                            .frame(maxWidth: .infinity, minHeight: 48)
-                            .background(isFormComplete ? Color(red: 22/255, green: 29/255, blue: 111/255) : Color.gray.opacity(0.4))
-                            .foregroundColor(.white)
-                            .cornerRadius(6)
-                            .padding(.horizontal, 30)
+                        if isLoading {
+                            ProgressView()
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                        } else {
+                            Text("시작하기")
+                                .font(.system(size: 16, weight: .bold))
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                        }
                     }
-                    .disabled(!isFormComplete)
+                    .background(isFormComplete ? Color(red: 22/255, green: 29/255, blue: 111/255) : Color.gray.opacity(0.4))
+                    .foregroundColor(.white)
+                    .cornerRadius(6)
+                    .padding(.horizontal, 30)
+                    .disabled(!isFormComplete || isLoading)
                     .padding(.bottom, 50)
                 }
                 .navigationBarTitleDisplayMode(.inline)
             }
+            .navigationDestination(isPresented: $goToMetaMask) {
+                MetaMaskConnectView()
+            }
+            .alert("회원가입 실패", isPresented: $showAlert) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text(alertMessage)
+            }
         }
     }
+    
+    // MARK: - 회원가입 처리
+    private func handleSignUp() async {
+        guard isFormComplete, let gender = gender else { return }
+        isLoading = true
+        defer { isLoading = false }
+        
+        let request = PassportSignUpRequestDTO(
+            passportNumber: passportNumber,
+            gender: gender == "남성" ? .male : .female,
+            firstName: englishFirstName,
+            lastName: englishLastName,
+            birthDate: dateFormatter.string(from: birthDate),
+            nationality: nationality,
+            passportExpiry: dateFormatter.string(from: passportExpiryDate)
+        )
+        
+        do {
+            let response = try await SignUpService.shared.signUpForeign(request)
+            if response.isSuccess, let token = response.result?.token {
+                print("회원가입 성공. 토큰: \(token)")
+                TokenManager.saveToken(token)
+                goToMetaMask = true
+            } else {
+                alertMessage = response.message
+                showAlert = true
+            }
+        } catch {
+            alertMessage = error.localizedDescription
+            showAlert = true
+        }
+    }
+    
+    // MARK: - Date Field
+    private func dateField(title: String, isExpanded: Bool) -> some View {
+        HStack {
+            Text(title).foregroundColor(.black)
+            Spacer()
+            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                .foregroundColor(.gray)
+        }
+        .padding()
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+        )
+    }
 }
+
 
 // MARK: - 성별 선택 버튼
 struct GenderButton: View {
@@ -188,7 +230,8 @@ struct GenderButton: View {
     }
 }
 
+// MARK: - Preview
 #Preview {
     ForeignSignUpView()
-        .previewDisplayName("🌍 Foreign Sign Up View - Foldable DatePicker")
+        .previewDisplayName("🌍 Foreign Sign Up (with API)")
 }

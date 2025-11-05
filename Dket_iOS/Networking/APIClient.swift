@@ -246,18 +246,23 @@ private extension Data {
 
 extension APIClient {
     private func authorizedRequest(_ request: inout URLRequest, for endpoint: Endpoint) {
-        print("➡️ 요청 path: \(endpoint.path)")
+        print("요청 path: \(endpoint.path)")
         
-        let nonAuthPaths = ["/api/auth/login", "/api/user/login"]
-        if nonAuthPaths.contains(where: { endpoint.path.hasPrefix($0) }) {
-            print("🚫 Authorization 헤더 제외")
+        // 인증 불필요 API
+        guard endpoint.requiresAuth else {
+            print("[비인증 API] Authorization 헤더 제외")
             return
         }
         
-        if let token = TokenManager.loadToken() {
-            print("🔐 Authorization 헤더 삽입: Bearer \(token)")
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        // 토큰 확인
+        guard let token = TokenManager.loadToken(), !token.isEmpty else {
+            print("[인증필요] 토큰 없음 — Authorization 미삽입")
+            return
         }
+        
+        // 헤더 삽입
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        print("Authorization 헤더 삽입 완료: Bearer \(token.prefix(15))...")
     }
 }
 

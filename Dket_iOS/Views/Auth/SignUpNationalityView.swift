@@ -56,9 +56,9 @@ struct SignUpNationalityView: View {
                 NavigationLink(destination: KoreanSignUpView(), isActive: $goToKoreanSignUp) {
                     EmptyView()
                 }
-//                NavigationLink(destination: ForeignSignUpView(), isActive: $goToForeignSignUp) {
-//                    EmptyView()
-//                }
+                NavigationLink(destination: ForeignSignUpView(), isActive: $goToForeignSignUp) {
+                    EmptyView()
+                }
             }
         }
     }

@@ -21,10 +21,12 @@ struct Dket_iOSApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
-                .onOpenURL { WalletConnectManager.shared.handleDeepLink($0)
+                .onOpenURL {
+                    WalletConnectManager.shared.handleDeepLink($0)
                 }
                 .onAppear {
-                    observeWalletEvents(appState: appState)
+                    // ✅ mode 추가
+                    observeWalletEvents(appState: appState, mode: .login)
                 }
         }
     }

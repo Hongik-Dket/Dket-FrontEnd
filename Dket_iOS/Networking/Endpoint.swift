@@ -48,8 +48,12 @@ enum Endpoint {
     case resalePurchase(ticketId: Int64)
     
     // MARK: - Auth / Wallet
-    case connectWallet
     case userWalletInfo
+    
+    case loginMetaMask                 // 메타마스크 로그인
+    case foreignSignUp                 // 여권 회원가입
+    case koreanSignUp
+    case completeMetaMaskSignUp        // 회원가입 후 메타마스크 연결 완료
     
     // MARK: - Computed Path
     var path: String {
@@ -114,10 +118,14 @@ enum Endpoint {
             return "/api/resales/\(ticketId)/purchase"
             
         // Wallet
-        case .connectWallet:
-            return "/api/user/login/metamask/complete"
         case .userWalletInfo:
             return "/api/user/wallet"
+            
+        case .loginMetaMask: return "/api/auth/login/metamask"
+        case .foreignSignUp: return "/api/auth/signup/passport"
+        case .koreanSignUp: return ""
+        case .completeMetaMaskSignUp: return "/api/user/signup/metamask/complete"
+        
         }
     }
     
@@ -138,17 +146,33 @@ enum Endpoint {
     var method: String {
         switch self {
         case .organizerCreateConcert,
-                .connectWallet,
                 .buyerApply,
                 .buyerTicketPrice,
                 .resalePurchase,
-                .resaleRegister:
+                .resaleRegister,
+                .foreignSignUp,
+                .koreanSignUp,
+                .loginMetaMask,
+                .completeMetaMaskSignUp:
             return "POST"
         case .buyerEnter,
                 .ticketEnter:
             return "PATCH"
         default:
             return "GET"
+        }
+    }
+}
+
+extension Endpoint {
+    /// Authorization 헤더 필요 여부
+    var requiresAuth: Bool {
+        switch self {
+        case .foreignSignUp,
+                .koreanSignUp:
+            return false
+        default: 
+            return true
         }
     }
 }

@@ -1,20 +1,17 @@
 //
-//  MetaMaskLoginView.swift
+//  MetaMaskConnectView.swift
 //  Dket_iOS
 //
-//  Created by 이지우 on 4/14/25.
+//  Created by M-136 on 11/3/25.
 //
 
 import SwiftUI
 import ReownWalletKit
 import ReownAppKit
 
-import SwiftUI
-
-struct MetaMaskLoginView: View {
+struct MetaMaskConnectView: View {
     @EnvironmentObject var appState: AppState
     @State private var isConnecting = false
-    @State private var goToSignUp = false
     @State private var showAlert = false
     @State private var alertMessage = ""
 
@@ -31,9 +28,9 @@ struct MetaMaskLoginView: View {
 
                 Spacer()
 
-                // MARK: - MetaMask 로그인 버튼
+                // MARK: - MetaMask 연결 버튼
                 Button {
-                    print("🦊 MetaMask 로그인 버튼 클릭")
+                    print("🦊 MetaMask 연결 버튼 클릭 (회원가입 후)")
                     connectToWallet()
                 } label: {
                     HStack {
@@ -52,7 +49,7 @@ struct MetaMaskLoginView: View {
 
                         Spacer()
 
-                        Text(isConnecting ? "연결 중..." : "MetaMask로 로그인하기")
+                        Text(isConnecting ? "연결 중..." : "MetaMask로 연결하기")
                             .font(.system(size: 16, weight: .bold))
                             .padding(.trailing, 90)
                     }
@@ -63,21 +60,8 @@ struct MetaMaskLoginView: View {
                     .padding(.horizontal, 30)
                 }
                 .disabled(isConnecting)
-                .padding(.bottom, 16)
-
-                // MARK: - 회원가입 버튼
-                Button {
-                    print("회원가입 버튼 클릭")
-                    goToSignUp = true
-                } label: {
-                    Text("회원가입")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.gray)
-                        .underline()
-                }
                 .padding(.bottom, 80)
 
-                NavigationLink(destination: SignUpNationalityView(), isActive: $goToSignUp) { EmptyView() }
                 NavigationLink(destination: RoleSelectionView(), isActive: $appState.isLoggedIn) { EmptyView() }
             }
             .navigationBarBackButtonHidden(true)
@@ -87,14 +71,14 @@ struct MetaMaskLoginView: View {
                 Text(alertMessage)
             }
             .onAppear {
-                observeWalletEvents(appState: appState, mode: .login)
+                observeWalletEvents(appState: appState, mode: .signupComplete)
             }
         }
     }
 }
 
-// MARK: - 연결 로직
-extension MetaMaskLoginView {
+// MARK: - WalletConnect 연결 로직
+extension MetaMaskConnectView {
     func connectToWallet() {
         Task {
             do {
@@ -133,6 +117,6 @@ extension MetaMaskLoginView {
         for pairing in AppKit.instance.getPairings() {
             try? await AppKit.instance.disconnect(topic: pairing.topic)
         }
-        print("🧹 기존 세션 및 Pairing 정리 완료 (로그인용)")
+        print("🧹 기존 세션 및 Pairing 정리 완료 (회원가입 후 연결용)")
     }
 }
