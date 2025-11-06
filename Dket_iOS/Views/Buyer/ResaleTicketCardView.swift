@@ -7,40 +7,55 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct ResaleTicketCardView: View {
     let ticket: ResaleTicket
-
+    let basePrice: Int = 180000  
+    
+    var priceRatioText: String {
+        guard ticket.status == .available else { return "" }
+        let ratio = Double(ticket.price) / Double(basePrice) * 100
+        return String(format: "(%.0f%%)", ratio)
+    }
+    
+    var statusColor: Color {
+        switch ticket.status {
+        case .available: return Color.dketBlue
+        case .reserved: return .gray
+        case .sold: return .red.opacity(0.6)
+        }
+    }
+    
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 105, height: 140)
-                .overlay {
-                    if let url = ticket.photoCardURL {
-                        AsyncImage(url: url) { image in
-                            image.resizable()
-                        } placeholder: {
-                            ProgressView()
-                        }
-                    }
-                }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(ticket.price.formatted()) 원 (+20%)")
-                    .fontWeight(.bold)
-                Text("좌석 번호: \(ticket.seatNumber)")
+        HStack(spacing: 16) {
+            AsyncImage(url: ticket.photoCardUrl) { image in
+                image.resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Color.gray.opacity(0.2)
+            }
+            .frame(width: 80, height: 100)
+            .cornerRadius(8)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(statusColor, lineWidth: 2))
+            
+            VStack(alignment: .leading, spacing: 6) {
+                Text("좌석번호 \(ticket.seatCode)")
+                    .font(.headline)
+                Text("\(ticket.price.formatted()) 원 \(priceRatioText)")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                Text(ticket.isAvailable ? "거래 가능" : "거래 진행 중")
-                    .font(.subheadline)
-                    .foregroundColor(ticket.isAvailable ? .dketBlue : .gray)
+                Text(ticket.status.rawValue)
+                    .font(.caption)
+                    .padding(4)
+                    .background(statusColor.opacity(0.2))
+                    .cornerRadius(5)
             }
-
             Spacer()
         }
-        .padding()
+        .padding(10)
         .background(Color.white)
         .cornerRadius(10)
-        .shadow(radius: 2)
+        .shadow(radius: 1)
     }
 }

@@ -111,7 +111,7 @@ enum Endpoint {
             
         // Resale
         case .resaleTickets:
-            return "/api/resales"
+                return "/api/resales"
         case .resaleRegister(let ticketId, _):
             return "/api/resales/\(ticketId)"
         case .resalePurchase(let ticketId):
