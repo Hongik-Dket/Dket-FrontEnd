@@ -217,15 +217,16 @@ private struct TextRow: View {
     let title: String
     let value: String
     
+    
     var body: some View {
-        HStack(alignment: .top) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(title)
                 .foregroundColor(.gray)
+                .font(.system(size: 13))
                 .frame(width: 80, alignment: .leading)
             Text(value)
-            
+                .font(.system(size: 13))
         }
-        .font(.system(size: 14))
     }
 }
 

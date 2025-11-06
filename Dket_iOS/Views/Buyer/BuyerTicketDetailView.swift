@@ -128,9 +128,7 @@ struct BuyerTicketDetailView: View {
             await vm.fetch()
         }
         .fullScreenCover(isPresented: $showResaleView) {
-            if let ticket = selectedTicket {
-                ResaleRegisterView(ticket: ticket)
-            }
+            ResaleRegisterView(ticket: selectedTicket ?? vm.ticket!)
         }
         .fullScreenCover(isPresented: $showEnterView) {
             if let ticket = selectedTicket {
