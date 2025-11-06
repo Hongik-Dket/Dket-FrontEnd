@@ -7,13 +7,6 @@
 
 import UIKit
 
-struct ResaleLookUpResponseDTO: Decodable {
-    let isSuccess: Bool
-    let code: String
-    let message: String
-    let result: [ResaleTicketDTO]
-}
-
 struct ResaleCardDto: Decodable {
     let resaleId: Int64
     let ticketId: Int64

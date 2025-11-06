@@ -11,51 +11,56 @@ import SwiftUI
 
 struct ResaleTicketCardView: View {
     let ticket: ResaleTicket
-    let basePrice: Int = 180000  
+    let basePrice: Int
     
-    var priceRatioText: String {
-        guard ticket.status == .available else { return "" }
-        let ratio = Double(ticket.price) / Double(basePrice) * 100
-        return String(format: "(%.0f%%)", ratio)
+    var pricePercent: Int? {
+        guard basePrice > 0 else { return nil }
+        return Int(Double(ticket.price) / Double(basePrice) * 100)
     }
     
     var statusColor: Color {
         switch ticket.status {
-        case .available: return Color.dketBlue
-        case .reserved: return .gray
-        case .sold: return .red.opacity(0.6)
+        case .available: return .green
+        case .reserved:  return .orange
+        case .sold:      return .gray
         }
     }
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             AsyncImage(url: ticket.photoCardUrl) { image in
-                image.resizable()
-                    .aspectRatio(contentMode: .fill)
+                image.resizable().scaledToFill()
             } placeholder: {
                 Color.gray.opacity(0.2)
             }
-            .frame(width: 80, height: 100)
+            .frame(width: 70, height: 90)
             .cornerRadius(8)
-            .overlay(RoundedRectangle(cornerRadius: 8).stroke(statusColor, lineWidth: 2))
+            .clipped()
             
             VStack(alignment: .leading, spacing: 6) {
-                Text("좌석번호 \(ticket.seatCode)")
+                Text("좌석 \(ticket.seatCode)")
                     .font(.headline)
-                Text("\(ticket.price.formatted()) 원 \(priceRatioText)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                Text(ticket.status.rawValue)
-                    .font(.caption)
-                    .padding(4)
-                    .background(statusColor.opacity(0.2))
-                    .cornerRadius(5)
+                HStack {
+                    Text("\(ticket.price.formatted())원")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    if let percent = pricePercent, ticket.status != .sold {
+                        Text("(\(percent)%)")
+                            .font(.footnote)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                Text(ticket.status == .available ? "거래 가능" :
+                     ticket.status == .reserved ? "거래 진행 중" : "판매 완료")
+                .font(.caption)
+                .foregroundColor(statusColor)
             }
             Spacer()
         }
-        .padding(10)
+        .padding()
         .background(Color.white)
-        .cornerRadius(10)
-        .shadow(radius: 1)
+        .cornerRadius(12)
+        .shadow(radius: 2)
     }
 }

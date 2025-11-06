@@ -9,37 +9,41 @@ import SwiftUI
 
 @MainActor
 final class ResaleLookUpViewModel: ObservableObject {
+    // MARK: - Input
+    let service: ResaleServicing
+    
+    // MARK: - Output
     @Published var resaleTickets: [ResaleTicket] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
     
-    @Published var selectedSessionId: Int64? = nil {
-        didSet {
-            Task { await fetchTickets() }
-        }
-    }
-    
-    private let service: ResaleServicing
+    // 선택된 세션 ID
+    @Published var selectedSessionId: Int64? = nil
     
     init(service: ResaleServicing = ResaleService()) {
         self.service = service
     }
     
-    func fetchTickets() async {
-        guard let sessionId = selectedSessionId else { return }
+    // MARK: - 리세일 티켓 조회
+    func fetchResaleTickets(sessionId: Int64) async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
+        
+        print("🟢 [DEBUG] 리세일 조회 시작 (sessionId: \(sessionId))")
         
         do {
-            print("📡 Fetching resale tickets for sessionId=\(sessionId)")
-            let fetched = try await service.fetchResaleTickets(sessionId: sessionId)
-            resaleTickets = fetched
-            print("✅ 리세일 티켓 \(fetched.count)개 로드 완료")
+            let tickets = try await service.fetchResaleTickets(sessionId: sessionId)
+            await MainActor.run {
+                self.resaleTickets = tickets
+                self.selectedSessionId = sessionId
+                print("✅ [DEBUG] 조회 성공 — \(tickets.count)개")
+            }
         } catch {
-            errorMessage = error.localizedDescription
-            print("❌ 리세일 티켓 조회 실패: \(error.localizedDescription)")
+            await MainActor.run {
+                self.errorMessage = error.localizedDescription
+                print("❌ [DEBUG] 리세일 조회 실패: \(error.localizedDescription)")
+            }
         }
-        
-        isLoading = false
     }
 }

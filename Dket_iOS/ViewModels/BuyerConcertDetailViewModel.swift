@@ -33,6 +33,7 @@ final class BuyerConcertViewModel: ObservableObject {
     @Published var sessionList: [BuyerSessionDetail] = []
     @Published var selectedSessionId: Int64?
     @Published var selectedSession: BuyerSessionDetail?
+    @Published var sessions: [BuyerSessionDetail] = []  
     
     @Published var isResaleButtonVisible: Bool = false
     
@@ -75,51 +76,51 @@ final class BuyerConcertViewModel: ObservableObject {
     }
     
     func fetch() {
-        // 이전 fetch 작업이 있다면 취소
-        fetchTask?.cancel()
-        
-        fetchTask = Task {
-            await MainActor.run { self.state = .loading }
+            fetchTask?.cancel()
             
-            do {
-                let (concert, sessions) = try await service.fetchDetail(concertId: concertId)
-                await MainActor.run {
-                    self.detail = concert
-                    
-                    self.isResaleButtonVisible = concert.isResaleAllowed
-                    
-                    let updatedSessions = sessions.map { session -> BuyerSessionDetail in
-                        var s = session
-                        s.remainingTickets = max(concert.capacity - session.paidCount, 0)
-                        return s
-                    }
-                    
-                    self.sessionList = updatedSessions
-                    self.state = .loaded
-                    self.isPurchasing = false
-                    
-                    if let previousId = selectedSessionId,
-                       let previous = updatedSessions.first(where: { $0.id == previousId }) {
-                        selectedSession = previous
-                        updateFloatingButton(for: previous)
-                    } else if let first = updatedSessions.first {
-                        selectedSessionId = first.id
-                        selectedSession = first
-                        updateFloatingButton(for: first)
-                    }
-                }
-            } catch {
-                if let urlError = error as? URLError, urlError.code == .cancelled {
-                    return
-                }
+            fetchTask = Task {
+                await MainActor.run { self.state = .loading }
                 
-                await MainActor.run {
-                    print("[Error] Fetch BuyerConcertDetail failed: \(error)")
-                    self.state = .failed(error)
+                do {
+                    let (concert, sessions) = try await service.fetchDetail(concertId: concertId)
+                    await MainActor.run {
+                        self.detail = concert
+                        self.isResaleButtonVisible = concert.isResaleAllowed
+                        
+                        // 🎯 리세일용 세션 목록 저장
+                        self.sessions = sessions
+                        
+                        // 🎯 기존 로직용 세션 업데이트
+                        let updatedSessions = sessions.map { session -> BuyerSessionDetail in
+                            var s = session
+                            s.remainingTickets = max(concert.capacity - session.paidCount, 0)
+                            return s
+                        }
+                        
+                        self.sessionList = updatedSessions
+                        self.state = .loaded
+                        self.isPurchasing = false
+                        
+                        // ✅ 세션 선택 상태 유지
+                        if let previousId = selectedSessionId,
+                           let previous = updatedSessions.first(where: { $0.id == previousId }) {
+                            selectedSession = previous
+                            updateFloatingButton(for: previous)
+                        } else if let first = updatedSessions.first {
+                            selectedSessionId = first.id
+                            selectedSession = first
+                            updateFloatingButton(for: first)
+                        }
+                    }
+                } catch {
+                    if let urlError = error as? URLError, urlError.code == .cancelled { return }
+                    await MainActor.run {
+                        print("[Error] Fetch BuyerConcertDetail failed: \(error)")
+                        self.state = .failed(error)
+                    }
                 }
             }
         }
-    }
     
     func applyToSelectedSession() async -> Bool {
         guard let concertId = detail?.id,

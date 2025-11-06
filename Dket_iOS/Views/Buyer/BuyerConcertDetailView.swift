@@ -91,21 +91,25 @@ struct BuyerConcertDetailView: View {
                                 .environmentObject(vm)
                             
                             HStack {
-                                Button(action: {
-                                    if vm.isResaleButtonVisible,
-                                       let url = URL(string: "https://resale.dket.io/concert/\(concertId)") {
-                                        UIApplication.shared.open(url)
+                                if vm.isResaleButtonVisible {
+                                    NavigationLink(
+                                        destination: ResaleLookUpView(
+                                            concertId: concertId,
+                                            sessions: vm.sessions,
+                                            basePrice: vm.detail?.priceKrw ?? 0
+                                        )
+                                    ) {
+                                        Text("리세일 티켓 조회 →")
+                                            .font(.system(size: 16, weight: .bold))
+                                            .foregroundColor(.dketBlue)
+                                            .padding(.vertical, 8)
                                     }
-                                }) {
-                                    Text("리세일 마켓으로 가기 →")
+                                } else {
+                                    Text("리세일 티켓 조회 →")
                                         .font(.system(size: 16, weight: .bold))
-                                        .foregroundColor(vm.isResaleButtonVisible ? .dketBlue : .gray)
-                                        .padding(.leading, 4)
-                                        .padding(.trailing, 0) 
+                                        .foregroundColor(.gray)
                                         .padding(.vertical, 8)
-                                        .background(Color.clear)
                                 }
-                                .disabled(!vm.isResaleButtonVisible)
                                 
                                 Spacer()
                             }
