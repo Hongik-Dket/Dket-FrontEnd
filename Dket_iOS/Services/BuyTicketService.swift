@@ -27,7 +27,6 @@ final class BuyTicketService: BuyTicketServicing {
         return BigUInt(result.priceWei)
     }
 
-    // 체인 추가/전환 함수 통합
     private func ensureSepoliaEnvironment() async throws {
         guard let session = AppKit.instance.getSessions().first else { return }
 
@@ -49,7 +48,12 @@ final class BuyTicketService: BuyTicketServicing {
             "rpcUrls": AnyCodable(["https://rpc.sepolia.org"]),
             "blockExplorerUrls": AnyCodable(["https://sepolia.etherscan.io"])
         ]]
-        let addRequest = try Request(topic: session.topic, method: "wallet_addEthereumChain", params: AnyCodable(params), chainId: chain)
+        let addRequest = try Request(
+            topic: session.topic,
+            method: "wallet_addEthereumChain",
+            params: AnyCodable(params),
+            chainId: chain
+        )
         _ = try await Sign.instance.request(params: addRequest)
         print("✅ 세폴리아 체인 추가 완료")
     }
@@ -83,6 +87,19 @@ final class BuyTicketService: BuyTicketServicing {
             throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "Wallet session not found"])
         }
 
+        // ✅ 트랜잭션 완료 시 세션 정리용 defer
+        defer {
+            Task {
+                for session in AppKit.instance.getSessions() {
+                    try? await AppKit.instance.disconnect(topic: session.topic)
+                }
+                for pairing in AppKit.instance.getPairings() {
+                    try? await AppKit.instance.disconnect(topic: pairing.topic)
+                }
+                print("🧹 트랜잭션 이후 세션 초기화 완료 (pending 방지)")
+            }
+        }
+
         try await ensureSepoliaEnvironment()
         let encoded = try await encodeBuyTicketCall(sessionId: sessionId)
         let tx = buildTransactionDict(from: from, to: "0x3de27b56e716b618c7354a4f23cf104a8db62330", value: value, data: encoded)
@@ -90,6 +107,7 @@ final class BuyTicketService: BuyTicketServicing {
         guard let chainId = Blockchain("eip155:11155111") else { return }
         let request = try Request(topic: session.topic, method: "eth_sendTransaction", params: AnyCodable([tx]), chainId: chainId)
         print("🟡 트랜잭션 요청 준비 완료. 사용자 서명 대기 중...")
+
         let result = try await Sign.instance.request(params: request)
         print("🟢 트랜잭션 전송 성공:", result)
     }
