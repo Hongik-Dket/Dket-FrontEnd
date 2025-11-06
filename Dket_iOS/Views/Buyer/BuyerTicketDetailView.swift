@@ -14,6 +14,7 @@ struct BuyerTicketDetailView: View {
     @State private var showResaleView = false
     @State private var showEnterView = false
     @State private var selectedTicket: TicketDetail? = nil
+    @State private var showPhotoFullScreen = false
     
     init(ticketId: Int64) {
         print("BuyerTicketDetailView INIT with ticketId: \(ticketId)")
@@ -46,17 +47,41 @@ struct BuyerTicketDetailView: View {
                     .padding(.top, 20)
                     
                     if let url = URL(string: ticket.photoCardUrl) {
-                        AsyncImage(url: url) { image in
-                            image.resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 260, height: 260)
-                                .cornerRadius(8)
-                                .shadow(radius: 4)
-                                .padding(.top, 12)
-                        } placeholder: {
-                            ProgressView()
-                                .frame(width: 260, height: 260)
-                                .padding(.top, 12)
+                        VStack(spacing: 16) {
+                            AsyncImage(url: url) { image in
+                                image.resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 260, height: 260)
+                                    .cornerRadius(8)
+                                    .shadow(radius: 4)
+                                    .padding(.top, 12)
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(width: 260, height: 260)
+                                    .padding(.top, 12)
+                            }
+                            .onTapGesture {
+                                showPhotoFullScreen = true
+                            }
+                            
+                            // 이미지 바로 아래 NFT 확인하기 버튼
+                            if let nftUrl = URL(string: ticket.nftUrl) {
+                                Button(action: {
+                                    UIApplication.shared.open(nftUrl)
+                                }) {
+                                    Text("NFT 확인하기 →")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(Color.dketBlue)
+                                        .underline()
+                                }
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .padding(.trailing, 25) // 텍스트를 오른쪽 정렬
+                            }
+                        }
+                        .fullScreenCover(isPresented: $showPhotoFullScreen) {
+                            FullScreenPhotoView(imageUrl: ticket.photoCardUrl) {
+                                showPhotoFullScreen = false
+                            }
                         }
                     }
                     
@@ -133,6 +158,42 @@ struct TicketInfoRow: View {
     }
 }
 
+struct FullScreenPhotoView: View {
+    let imageUrl: String
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            AsyncImage(url: URL(string: imageUrl)) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } placeholder: {
+                ProgressView()
+            }
+            
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(Color.black.opacity(0.6))
+                            .clipShape(Circle())
+                    }
+                    .padding(.top, 40)
+                    .padding(.trailing, 20)
+                }
+                Spacer()
+            }
+        }
+    }
+}
+
 extension BuyerTicketDetailView {
     private var isConcertToday: Bool {
         guard let ticket = vm.ticket else { return false }
@@ -178,7 +239,7 @@ struct BuyerTicketDetailView_Previews: PreviewProvider {
                 isResaleListed: false
             )
         }
-
+        
         return BuyerTicketDetailView(ticketId: 100)
             .previewDisplayName("🎫 Buyer Ticket Detail Preview")
     }

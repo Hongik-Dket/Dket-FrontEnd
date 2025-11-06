@@ -16,10 +16,16 @@ struct TicketDetailDTO: Decodable {
     let ticketNumber: String
     let seatNumber: String
     let nftUrl: String
-    let isEntered: Bool
+    let isEntered: Bool         
     let photoCardUrl: String
     let price: Int
     let isResaleListed: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case ticketId, concertTitle, concertDateTime, buyerName, birth,
+             ticketNumber, seatNumber, nftUrl, photoCardUrl, price, isResaleListed
+        case isEntered = "entered"
+    }
     
     var domain: TicketDetail {
         TicketDetail(
