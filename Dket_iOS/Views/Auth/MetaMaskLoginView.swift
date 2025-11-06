@@ -22,16 +22,13 @@ struct MetaMaskLoginView: View {
         NavigationStack {
             VStack {
                 Spacer()
-
                 Image("Dket")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 112.65)
                     .padding(.top, 287)
-
                 Spacer()
 
-                // MARK: - MetaMask 로그인 버튼
                 Button {
                     print("🦊 MetaMask 로그인 버튼 클릭")
                     connectToWallet()
@@ -42,16 +39,13 @@ struct MetaMaskLoginView: View {
                                 .fill(Color.white)
                                 .frame(width: 30, height: 30)
                                 .shadow(radius: 2)
-
                             Image("MetaMaskIcon")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 20, height: 20)
                         }
                         .padding(.leading, 16)
-
                         Spacer()
-
                         Text(isConnecting ? "연결 중..." : "MetaMask로 로그인하기")
                             .font(.system(size: 16, weight: .bold))
                             .padding(.trailing, 90)
@@ -65,7 +59,6 @@ struct MetaMaskLoginView: View {
                 .disabled(isConnecting)
                 .padding(.bottom, 16)
 
-                // MARK: - 회원가입 버튼
                 Button {
                     print("회원가입 버튼 클릭")
                     goToSignUp = true
@@ -86,25 +79,21 @@ struct MetaMaskLoginView: View {
             } message: {
                 Text(alertMessage)
             }
-            .onAppear {
-                observeWalletEvents(appState: appState, mode: .login)
-            }
         }
     }
-}
 
-// MARK: - 연결 로직
-extension MetaMaskLoginView {
     func connectToWallet() {
         Task {
             do {
                 isConnecting = true
                 await resetSession()
 
+                // observe는 버튼 눌렀을 때만 등록
+                observeWalletEvents(appState: appState)
+
                 let uri = try await AppKit.instance.connect(walletUniversalLink: nil)
                 print("📡 WalletConnect URI 생성됨:", uri?.absoluteString ?? "nil")
 
-                // ✅ 인코딩 복원: alphanumerics
                 guard let encoded = uri?.absoluteString.addingPercentEncoding(withAllowedCharacters: .alphanumerics),
                       let url = URL(string: "https://metamask.app.link/wc?uri=" + encoded)
                 else {
@@ -113,10 +102,7 @@ extension MetaMaskLoginView {
                 }
 
                 print("🌐 MetaMask로 이동:", url)
-                DispatchQueue.main.async {
-                    UIApplication.shared.open(url)
-                }
-
+                DispatchQueue.main.async { UIApplication.shared.open(url) }
             } catch {
                 print("❌ MetaMask 연결 실패:", error.localizedDescription)
                 alertMessage = "MetaMask 연결 중 오류가 발생했습니다."
