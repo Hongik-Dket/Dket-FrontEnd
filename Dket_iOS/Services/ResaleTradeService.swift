@@ -9,7 +9,7 @@ import Foundation
 
 protocol ResaleTradeServicing {
     func reserveResaleTicket(resaleId: Int64) async throws -> ResaleTicketInfo
-    func purchaseResaleTicket(ticketId: Int64) async throws -> ResalePurchase
+    func purchaseResaleTicket(resaleId: Int64) async throws -> ResalePurchase 
     func cancelResaleReservation(resaleId: Int64) async throws
     func registerResale(ticketId: Int64, price: Int) async throws -> ResaleRegisterResponseDTO
 }
@@ -28,9 +28,11 @@ final class ResaleTradeService: ResaleTradeServicing {
         return response.result.domain
     }
     
-    // MARK: - 리세일 티켓 구매
-    func purchaseResaleTicket(ticketId: Int64) async throws -> ResalePurchase {
-        let endpoint = Endpoint.resalePurchase(ticketId: ticketId)
+    // MARK: - 리세일 구매 서명 요청
+    func purchaseResaleTicket(resaleId: Int64) async throws -> ResalePurchase {
+        let endpoint = Endpoint.resalePurchase(resaleId: resaleId)   // ✅ resaleId로 수정
+        
+        print("🟢 [DEBUG] 리세일 구매 서명 요청 (resaleId: \(resaleId))")
         
         let response: APIResponse<ResalePurchaseDTO> = try await APIClient.shared.post(
             endpoint,
@@ -38,13 +40,15 @@ final class ResaleTradeService: ResaleTradeServicing {
             as: APIResponse<ResalePurchaseDTO>.self
         )
         
+        print("✅ [DEBUG] 구매 서명 응답 수신 — tokenId=\(response.result.tokenId), expireAt=\(response.result.expireAt)")
+        
         return response.result.domain
     }
     
-    // MARK: - 예약 취소 (페이지 이탈 or 시간 만료)
-        func cancelResaleReservation(resaleId: Int64) async throws {
-            let endpoint = Endpoint.resaleReserve(resaleId: resaleId)
-            try await APIClient.shared.delete(endpoint)
+    // MARK: - 예약 취소
+    func cancelResaleReservation(resaleId: Int64) async throws {
+        let endpoint = Endpoint.resaleReserve(resaleId: resaleId)
+        try await APIClient.shared.delete(endpoint)
     }
     
     // MARK: - 내 티켓 리세일 등록

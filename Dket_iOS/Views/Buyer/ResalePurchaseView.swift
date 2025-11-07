@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ResalePurchaseView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var appState: AppState   // ✅ 환경 객체 주입
     @StateObject private var vm: ResalePurchaseViewModel
 
     init(resaleId: Int64) {
@@ -17,19 +18,19 @@ struct ResalePurchaseView: View {
 
     var body: some View {
         ZStack {
-            Color(uiColor: .systemGroupedBackground)
-                .ignoresSafeArea()
+            Color.white.ignoresSafeArea()
 
             if vm.isLoading {
                 ProgressView("불러오는 중...")
             } else if let info = vm.ticketInfo {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        // MARK: - 티켓 정보 섹션
+                    VStack(alignment: .leading, spacing: 28) {
+                        
+                        // MARK: - 🎫 티켓 정보
                         VStack(alignment: .leading, spacing: 12) {
                             Text("티켓 정보")
-                                .font(.headline)
-                                .bold()
+                                .font(.system(size: 18, weight: .bold))
+                                .padding(.bottom, 2)
 
                             HStack(alignment: .top, spacing: 16) {
                                 VStack(alignment: .leading, spacing: 6) {
@@ -38,27 +39,32 @@ struct ResalePurchaseView: View {
                                     InfoTextRow(label: "공연 일시", value: "\(info.date) \(info.startTime)")
                                     InfoTextRow(label: "좌석 번호", value: info.seatCode)
                                 }
+
                                 Spacer()
+
                                 AsyncImage(url: info.photoCardUrl) { image in
-                                    image.resizable().scaledToFill()
+                                    image.resizable()
+                                        .scaledToFill()
+                                        .frame(width: 83, height: 127)
+                                        .cornerRadius(8)
+                                        .clipped()
                                 } placeholder: {
                                     Color.gray.opacity(0.2)
+                                        .frame(width: 83, height: 127)
+                                        .cornerRadius(8)
                                 }
-                                .frame(width: 100, height: 100)
-                                .cornerRadius(8)
-                                .clipped()
                             }
                             .padding()
                             .background(Color.white)
                             .cornerRadius(10)
-                            .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
+                            .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
                         }
 
-                        // MARK: - 구매 정보 섹션
+                        // MARK: - 💰 구매 정보
                         VStack(alignment: .leading, spacing: 12) {
                             Text("구매 정보")
-                                .font(.headline)
-                                .bold()
+                                .font(.system(size: 18, weight: .bold))
+                                .padding(.bottom, 2)
 
                             VStack(alignment: .leading, spacing: 8) {
                                 InfoTextRow(label: "티켓 정가", value: info.originalPrice.formattedKrw)
@@ -68,14 +74,14 @@ struct ResalePurchaseView: View {
                             .padding()
                             .background(Color.white)
                             .cornerRadius(10)
-                            .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
+                            .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
                         }
 
-                        // MARK: - 구매 규정 섹션
+                        // MARK: - 📜 구매 규정
                         VStack(alignment: .leading, spacing: 8) {
                             Text("구매 규정")
-                                .font(.headline)
-                                .bold()
+                                .font(.system(size: 18, weight: .bold))
+                                .padding(.bottom, 2)
 
                             VStack(alignment: .leading, spacing: 6) {
                                 RuleText("결제는 요청 후 수분 내에 처리됩니다.")
@@ -85,28 +91,35 @@ struct ResalePurchaseView: View {
                             .padding()
                             .background(Color.white)
                             .cornerRadius(10)
-                            .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
+                            .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
                         }
 
-                        Spacer(minLength: 32)
+                        Spacer(minLength: 40)
 
-                        // MARK: - 구매 버튼
+                        // MARK: - 구매하기 버튼
                         Button {
-                            Task { await vm.purchaseTicket() }
+                            Task {
+                                guard let wallet = appState.connectedAddress else {
+                                    vm.errorMessage = "지갑 주소를 불러올 수 없습니다."
+                                    return
+                                }
+                                await vm.purchaseTicket(walletAddress: wallet)
+                            }
                         } label: {
                             Text("구매하기")
                                 .font(.system(size: 17, weight: .bold))
                                 .foregroundColor(.white)
-                                .frame(maxWidth: .infinity, maxHeight: 54)
+                                .frame(maxWidth: .infinity, minHeight: 54)
                                 .background(Color.dketBlue)
-                                .cornerRadius(12)
+                                .cornerRadius(27)
                         }
+                        .padding(.bottom, 40)
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 20)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 24)
                 }
+
             } else if let error = vm.errorMessage {
-                // MARK: - 커스텀 알림창
                 CustomAlertView(message: error) {
                     dismiss()
                 }
@@ -116,10 +129,15 @@ struct ResalePurchaseView: View {
                     .padding()
             }
         }
-        .navigationTitle("리세일 티켓 구매")
+        .navigationTitle("구매")
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await vm.reserveTicket()
+        }
+        .onChange(of: vm.didPurchase) { success in
+            if success {
+                dismiss()   // 🎉 성공 시 공연 상세로 돌아감
+            }
         }
         .onDisappear {
             Task.detached {
@@ -133,23 +151,23 @@ struct ResalePurchaseView: View {
 private struct InfoTextRow: View {
     let label: String
     let value: String
-    var valueColor: Color = .primary
+    var valueColor: Color = .black
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(label)
-                .foregroundColor(.white)
-                .font(.subheadline)
+                .foregroundColor(.gray)
+                .font(.system(size: 14))
                 .frame(width: 80, alignment: .leading)
             Text(value)
-                .font(.subheadline)
+                .font(.system(size: 14))
                 .foregroundColor(valueColor)
             Spacer()
         }
     }
 }
 
-// MARK: - 구매 규정 텍스트 스타일
+// MARK: - 구매 규정
 private struct RuleText: View {
     let text: String
     init(_ text: String) { self.text = text }
@@ -159,7 +177,7 @@ private struct RuleText: View {
             Text("•")
                 .foregroundColor(.gray)
             Text(text)
-                .font(.footnote)
+                .font(.system(size: 13))
                 .foregroundColor(.gray)
             Spacer()
         }
@@ -209,4 +227,3 @@ extension Int64 {
         return String(format: "%.15f ETH", eth)
     }
 }
-

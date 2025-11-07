@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct ResaleLookUpView: View {
     let concertId: Int64
     let sessions: [BuyerSessionDetail]      // 상위 뷰에서 전달받음
@@ -34,9 +32,9 @@ struct ResaleLookUpView: View {
             }
         }
         .onAppear {
-            // 화면 돌아올 때 자동 새로고침
             Task {
                 if let session = selectedSession {
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
                     await vm.fetchResaleTickets(sessionId: session.id)
                 }
             }
@@ -78,7 +76,7 @@ extension ResaleLookUpView {
         }
     }
 
-    // MARK: - 2️⃣ 티켓 리스트 섹션
+    // MARK: - 티켓 리스트 섹션
     private var ticketListSection: some View {
         Group {
             if vm.isLoading {

@@ -15,6 +15,8 @@ final class APIClient {
     private static let baseURL = URL(string: "https://api.dket.kr")!
     private let session = URLSession.shared
     
+    var lastResponseData: Data? = nil
+    
     // MARK: - JSON Decoder 설정
     private static let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -57,6 +59,7 @@ extension APIClient {
         authorizedRequest(&request, for: endpoint)
         
         let (data, response) = try await session.data(for: request)
+        lastResponseData = data
         
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
@@ -110,6 +113,7 @@ extension APIClient {
         request.httpBody = jsonData
         
         let (data, response) = try await session.data(for: request)
+        lastResponseData = data
         
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
@@ -149,6 +153,7 @@ extension APIClient {
         }
         
         let (data, response) = try await session.data(for: request)
+        lastResponseData = data
         
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
@@ -177,6 +182,7 @@ extension APIClient {
         authorizedRequest(&request, for: endpoint)
         
         let (data, response) = try await session.data(for: request)
+        lastResponseData = data
         
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {

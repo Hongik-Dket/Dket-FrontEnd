@@ -107,6 +107,17 @@ final class BuyTicketService: BuyTicketServicing {
         guard let chainId = Blockchain("eip155:11155111") else { return }
         let request = try Request(topic: session.topic, method: "eth_sendTransaction", params: AnyCodable([tx]), chainId: chainId)
         print("🟡 트랜잭션 요청 준비 완료. 사용자 서명 대기 중...")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                if let url = URL(string: "metamask://") {
+                    if UIApplication.shared.canOpenURL(url) {
+                        print("📲 MetaMask로 전환 시도")
+                        UIApplication.shared.open(url)
+                    } else {
+                        print("❌ MetaMask 열기 실패: 앱이 설치되지 않았거나 URL 스킴이 비활성화됨")
+                    }
+                }
+            }
 
         let result = try await Sign.instance.request(params: request)
         print("🟢 트랜잭션 전송 성공:", result)

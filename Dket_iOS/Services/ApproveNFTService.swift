@@ -73,7 +73,7 @@ final class ApproveNFTService: ApproveNFTServicing {
         guard let op = contract.createWriteOperation(
             "approve",
             parameters: [
-                EthereumAddress("0xF73744c62923d1Fb6F86f62F89A755D0dC348D1C")!,  // DketResale 주소
+                EthereumAddress("0x72bC87153fE95AE1673db6A01C91b7471f659728")!,  // DketResale 주소
                 BigUInt(tokenId)
             ]
         ) else {

@@ -45,7 +45,7 @@ enum Endpoint {
     
     case resaleTickets(sessionId: Int64)
     case resaleRegister(ticketId: Int64, price: Int)
-    case resalePurchase(ticketId: Int64)
+    case resalePurchase(resaleId: Int64)
     case resaleReserve(resaleId: Int64) // 리세일 티켓 예약
     
     // MARK: - Auth / Wallet
@@ -112,11 +112,11 @@ enum Endpoint {
             
         // Resale
         case .resaleTickets:
-                return "/api/resales"
+            return "/api/resales"
         case .resaleRegister(let ticketId, _):
             return "/api/resales/\(ticketId)"
-        case .resalePurchase(let ticketId):
-            return "/api/resales/\(ticketId)/purchase"
+        case .resalePurchase(let resaleId):
+            return "/api/resales/\(resaleId)/purchase"
         case .resaleReserve(let resaleId):
             return "/api/resales/\(resaleId)/reserve" // 리세일 티켓 예약
             
