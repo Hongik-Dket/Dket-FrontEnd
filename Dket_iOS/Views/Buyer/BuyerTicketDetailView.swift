@@ -132,7 +132,7 @@ struct BuyerTicketDetailView: View {
         }
         .fullScreenCover(isPresented: $showEnterView) {
             if let ticket = selectedTicket {
-                //BuyerEnterView(ticket: ticket)
+                BuyerEnterCodeView()
             }
         }
     }
@@ -242,3 +242,5 @@ struct BuyerTicketDetailView_Previews: PreviewProvider {
             .previewDisplayName("🎫 Buyer Ticket Detail Preview")
     }
 }
+
+
