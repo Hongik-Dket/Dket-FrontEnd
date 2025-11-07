@@ -12,48 +12,51 @@ struct ConcertDetailDTO: Decodable {
     let title: String
     let posterUrl: URL
     let location: String
-    let startDate: Date
-    let endDate:   Date
+    let startDate: String   // ✅ String으로 변경
+    let endDate:   String   // ✅ String으로 변경
     let startTime: String
     let endTime:   String
     let ageLimit:  AgeLimit
-    let priceKrw:     Int
-    let applyStart: Date
-    let applyEnd:   Date
+    let priceKrw:  Int
+    let applyStart: String  // ✅ String으로 변경
+    let applyEnd:   String  // ✅ String으로 변경
     let capacity:   Int
     let concertStatus: ConcertStatus
     let sessionIds: [Int64]
     let description: String
     let photoCardList: [PhotoCardItemDTO]
     let isResaleAllowed: Bool
-    
-    enum CodingKeys: String, CodingKey {
-        case concertId, title, posterUrl, location,
-             startDate, endDate, startTime, endTime,
-             ageLimit, priceKrw, applyStart, applyEnd,
-             capacity, concertStatus, sessionIds,
-             description, photoCardList, isResaleAllowed
-    }
 }
 
 
 extension ConcertDetailDTO {
     var domain: ConcertDetail {
-        .init(id: concertId,
-              title: title,
-              poster: posterUrl,
-              location: location,
-              period: startDate ... endDate,
-              timeRange: (startTime, endTime),
-              ageLimit: ageLimit,
-              priceKrw: priceKrw,
-              applyPeriod: applyStart ... applyEnd,
-              capacity: capacity,
-              status: concertStatus,
-              sessionIds: sessionIds,
-              description: description,
-              photoCards: photoCardList.map { $0.toDomain()},
-              isResaleAllowed: isResaleAllowed
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let start = formatter.date(from: startDate) ?? .now
+        let end = formatter.date(from: endDate) ?? .now
+        
+        let dateTimeFormatter = DateFormatter()
+        dateTimeFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        let applyStartDate = dateTimeFormatter.date(from: applyStart) ?? .now
+        let applyEndDate = dateTimeFormatter.date(from: applyEnd) ?? .now
+        
+        return ConcertDetail(
+            id: concertId,
+            title: title,
+            poster: posterUrl,
+            location: location,
+            period: start ... end,
+            timeRange: (startTime, endTime),
+            ageLimit: ageLimit,
+            priceKrw: priceKrw,
+            applyPeriod: applyStartDate ... applyEndDate,
+            capacity: capacity,
+            status: concertStatus,
+            sessionIds: sessionIds,
+            description: description,
+            photoCards: photoCardList.map { $0.toDomain() },
+            isResaleAllowed: isResaleAllowed
         )
     }
 }
