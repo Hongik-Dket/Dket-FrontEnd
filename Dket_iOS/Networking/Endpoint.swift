@@ -19,6 +19,8 @@ enum Endpoint {
     case organizerCreateConcert
     case organizerTicket(concertId: Int64, ticketId: String)
     
+    case organizerSessionEnter(concertId: Int64, sessionId: Int64)
+    
     // MARK: - Buyer (구매자)
     case buyerHomeMain
     case buyerHomePopular
@@ -72,6 +74,9 @@ enum Endpoint {
             return "/api/organizer/concerts"
         case .organizerTicket(let cid, let tid):
             return "/api/organizer/concerts/\(cid)/\(tid)"
+            
+        case .organizerSessionEnter(let concertId, let sessionId):
+            return "/api/organizer/concerts/\(concertId)/\(sessionId)/enter"
             
         // Buyer
         case .buyerHomeMain: return "/api/buyer/home"
