@@ -64,10 +64,7 @@ struct MetaMaskLoginView: View {
                     .position(x: geometry.size.width/2, y: 678 + 48/2)
                     
                     // MARK: - 회원가입 버튼
-                    Button {
-                        print("회원가입 버튼 클릭")
-                        goToSignUp = true
-                    } label: {
+                    NavigationLink(destination: SignUpNationalityView(), isActive: $goToSignUp) {
                         Text("회원가입")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.gray)

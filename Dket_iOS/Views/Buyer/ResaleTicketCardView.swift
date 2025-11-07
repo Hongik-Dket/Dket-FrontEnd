@@ -20,8 +20,8 @@ struct ResaleTicketCardView: View {
     
     var statusColor: Color {
         switch ticket.status {
-        case .available: return .green
-        case .reserved:  return .orange
+        case .available: return .dketBlue
+        case .reserved:  return .red
         case .sold:      return .gray
         }
     }

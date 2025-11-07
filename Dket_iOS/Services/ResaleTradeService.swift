@@ -8,11 +8,25 @@
 import Foundation
 
 protocol ResaleTradeServicing {
+    func reserveResaleTicket(resaleId: Int64) async throws -> ResaleTicketInfo
     func purchaseResaleTicket(ticketId: Int64) async throws -> ResalePurchase
+    func cancelResaleReservation(resaleId: Int64) async throws
     func registerResale(ticketId: Int64, price: Int) async throws -> ResaleRegisterResponseDTO
 }
 
 final class ResaleTradeService: ResaleTradeServicing {
+    
+    // MARK: - 예약 (거래대기 상태로 변경)
+    func reserveResaleTicket(resaleId: Int64) async throws -> ResaleTicketInfo {
+        let endpoint = Endpoint.resaleReserve(resaleId: resaleId)
+
+        let response: APIResponse<ResaleTicketInfoDTO> = try await APIClient.shared.patch(
+            endpoint,
+            as: APIResponse<ResaleTicketInfoDTO>.self
+        )
+        
+        return response.result.domain
+    }
     
     // MARK: - 리세일 티켓 구매
     func purchaseResaleTicket(ticketId: Int64) async throws -> ResalePurchase {
@@ -25,6 +39,12 @@ final class ResaleTradeService: ResaleTradeServicing {
         )
         
         return response.result.domain
+    }
+    
+    // MARK: - 예약 취소 (페이지 이탈 or 시간 만료)
+        func cancelResaleReservation(resaleId: Int64) async throws {
+            let endpoint = Endpoint.resaleReserve(resaleId: resaleId)
+            try await APIClient.shared.delete(endpoint)
     }
     
     // MARK: - 내 티켓 리세일 등록

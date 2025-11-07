@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ResaleTicket: Identifiable, Equatable {
+struct ResaleTicket: Identifiable, Equatable, Hashable {
     let id: Int64
     let ticketId: Int64
     let price: Int
