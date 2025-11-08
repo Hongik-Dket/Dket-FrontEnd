@@ -57,7 +57,7 @@ final class ResaleRegisterViewModel: ObservableObject {
             shouldTriggerOnChain = true
             
         } catch {
-            errorMessage = mapError(error)
+            errorMessage = "Approve 트랜잭션 실패: \(error.localizedDescription)"
             showErrorAlert = true
         }
     }

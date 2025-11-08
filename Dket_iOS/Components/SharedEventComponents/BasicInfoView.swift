@@ -65,7 +65,7 @@ struct BasicInfoView: View {
                                 Spacer()
                                 Text(detail.isResaleAllowed ? "가능" : "불가능")
                                     .fontWeight(.semibold)
-                                    .foregroundColor(detail.isResaleAllowed ? .green : .red)
+                                    .foregroundColor(detail.isResaleAllowed ? .dketBlue : .red)
                             }
                             .font(.footnote)
                         }

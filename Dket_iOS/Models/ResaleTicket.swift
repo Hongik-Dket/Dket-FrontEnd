@@ -7,10 +7,11 @@
 
 import Foundation
 
-struct ResaleTicket: Identifiable {
-    let id: Int
+struct ResaleTicket: Identifiable, Equatable, Hashable {
+    let id: Int64
+    let ticketId: Int64
     let price: Int
-    let seatNumber: Int
-    let isAvailable: Bool
-    let photoCardURL: URL?
+    let seatCode: String
+    let status: ResaleStatus
+    let photoCardUrl: URL?
 }

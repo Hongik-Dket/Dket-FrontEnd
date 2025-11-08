@@ -9,25 +9,26 @@ import SwiftUI
 
 @MainActor
 final class ConcertSetupViewModel: ObservableObject {
-    @Published var title          = ""
+    @Published var title = ""
     @Published var ageFilter: AgeLimit?
-    @Published var location       = ""
-    @Published var description    = ""
+    @Published var location = ""
+    @Published var description = ""
     
-    @Published var startDate      = Date()
-    @Published var endDate        = Date()
-    @Published var startTimeText  = "18:00"
-    @Published var endTimeText    = "20:00"
+    @Published var startDate = Date()
+    @Published var endDate = Date()
+    @Published var startTimeText = "18:00"
+    @Published var endTimeText = "20:00"
     
-    @Published var applyStart     = Date()
-    @Published var applyEnd       = Date()
+    @Published var applyStart = Date()
+    @Published var applyEnd = Date()
     
-    @Published var priceKrw:   Int = 0
-    @Published var capacity:   Int = 0
-    @Published var ageLimit:   AgeLimit = .all
+    @Published var price: Int = 0
+    @Published var capacity: Int = 0
+    @Published var ageLimit: AgeLimit = .all
+    @Published var isResaleAllowed: Bool = true
     
-    @Published var bannerImageData:    Data?
-    @Published var posterImageData:    Data?
+    @Published var bannerImageData: Data?
+    @Published var posterImageData: Data?
     @Published var photocardImageDatas: [Data] = []
     
     @Published var state: LoadingState = .idle
@@ -85,33 +86,38 @@ final class ConcertSetupViewModel: ObservableObject {
                 try validate()
                 state = .loading
                 
-                // DTO 구성 (날짜 포맷은 DTO 내부 encode(to:)에서 처리)
+                guard let bannerData = bannerImageData,
+                      let posterData = posterImageData else {
+                    throw ValidationError("이미지를 모두 업로드해주세요.")
+                }
+                
                 let dto = ConcertCreateRequestDTO(
-                    title:       title,
-                    location:    location,
+                    title: title,
+                    ageLimit: ageLimit,
+                    location: location,
                     description: description,
-                    startDate:   startDate,
-                    endDate:     endDate,
-                    startTime:   "\(startTimeText):00",   // “HH:mm:ss”
-                    endTime:     "\(endTimeText):00",
-                    priceKrw:    priceKrw,
-                    capacity:    capacity,
-                    applyStart:  applyStart,
-                    applyEnd:    applyEnd,
-                    ageLimit:    ageLimit
+                    startDate: startDate,
+                    endDate: endDate,
+                    startTime: "\(startTimeText):00",
+                    endTime: "\(endTimeText):00",
+                    priceKrw: price,
+                    capacity: capacity,
+                    applyStart: applyStart,
+                    applyEnd: applyEnd,
+                    isResaleAllowed: isResaleAllowed
                 )
                 
-                // 실제 업로드
                 let response: APIResponse<ConcertCreateResponseDTO> = try await api.upload(
                     .organizerCreateConcert,
                     json: dto,
-                    banner: bannerImageData!,
-                    poster: posterImageData!,
+                    banner: bannerData,
+                    poster: posterData,
                     photocardList: photocardImageDatas
                 )
                 
                 NotificationCenter.default.post(name: .concertCreated, object: nil)
-                state = .loaded        
+                print("공연 생성 완료: \(response.result.concertId)")
+                state = .loaded
                 
             } catch let e as ValidationError {
                 state = .failed(e)
@@ -126,11 +132,14 @@ final class ConcertSetupViewModel: ObservableObject {
     }
 }
 
+
+// MARK: - ValidationError
 private struct ValidationError: LocalizedError {
     let message: String
     init(_ msg: String) { message = msg }
     var errorDescription: String? { message }
 }
+
 
 struct EmptyResultDTO: Decodable {}
 

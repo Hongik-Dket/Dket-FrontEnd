@@ -15,6 +15,8 @@ final class APIClient {
     private static let baseURL = URL(string: "https://api.dket.kr")!
     private let session = URLSession.shared
     
+    var lastResponseData: Data? = nil
+    
     // MARK: - JSON Decoder 설정
     private static let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -28,6 +30,13 @@ final class APIClient {
             throw DecodingError.dataCorruptedError(in: container, debugDescription: "지원하지 않는 날짜 형식: \(str)")
         }
         return d
+    }()
+    
+    private static let encoder: JSONEncoder = {
+        let e = JSONEncoder()
+        e.keyEncodingStrategy = .useDefaultKeys
+        e.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddTHHmmss)
+        return e
     }()
     
 }
@@ -50,6 +59,7 @@ extension APIClient {
         authorizedRequest(&request, for: endpoint)
         
         let (data, response) = try await session.data(for: request)
+        lastResponseData = data
         
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
@@ -103,6 +113,7 @@ extension APIClient {
         request.httpBody = jsonData
         
         let (data, response) = try await session.data(for: request)
+        lastResponseData = data
         
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
@@ -123,8 +134,9 @@ extension APIClient {
 
 // MARK: - PATCH 요청
 extension APIClient {
-    func patch<Resp: Decodable>(
+    func patch<Body: Encodable, Resp: Decodable>(
         _ endpoint: Endpoint,
+        body: Body? = nil,
         as type: Resp.Type = Resp.self
     ) async throws -> Resp {
         let url = Self.baseURL.appendingPathComponent(endpoint.path)
@@ -133,9 +145,15 @@ extension APIClient {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         authorizedRequest(&request, for: endpoint)
         
-        request.httpBody = nil
+        // ✅ body가 있으면 JSON 인코딩
+        if let body = body {
+            request.httpBody = try Self.encoder.encode(body)
+        } else {
+            request.httpBody = nil
+        }
         
         let (data, response) = try await session.data(for: request)
+        lastResponseData = data
         
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
@@ -151,6 +169,36 @@ extension APIClient {
         }
         
         return try Self.decoder.decode(Resp.self, from: data)
+    }
+}
+
+// MARK: - DELETE 요청
+extension APIClient {
+    func delete(_ endpoint: Endpoint) async throws {
+        let url = Self.baseURL.appendingPathComponent(endpoint.path)
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        authorizedRequest(&request, for: endpoint)
+        
+        let (data, response) = try await session.data(for: request)
+        lastResponseData = data
+        
+#if DEBUG
+        if let raw = String(data: data, encoding: .utf8) {
+            print("🔴 [DELETE \(endpoint.path)] Raw-Response ↓↓↓\n\(raw)\n")
+        }
+#endif
+        
+        guard let http = response as? HTTPURLResponse else {
+            throw NetworkError.unknown
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            if let errBody = String(data: data, encoding: .utf8) {
+                print("❌ DELETE 실패 Response Body ↓↓↓\n\(errBody)")
+            }
+            throw NetworkError.status(http.statusCode)
+        }
     }
 }
 
@@ -246,20 +294,32 @@ private extension Data {
 
 extension APIClient {
     private func authorizedRequest(_ request: inout URLRequest, for endpoint: Endpoint) {
-        print("➡️ 요청 path: \(endpoint.path)")
+        print("요청 path: \(endpoint.path)")
         
-        let nonAuthPaths = ["/api/auth/login", "/api/user/login"]
-        if nonAuthPaths.contains(where: { endpoint.path.hasPrefix($0) }) {
-            print("🚫 Authorization 헤더 제외")
+        // 인증 불필요 API
+        guard endpoint.requiresAuth else {
+            print("[비인증 API] Authorization 헤더 제외")
             return
         }
         
-        if let token = TokenManager.loadToken() {
-            print("🔐 Authorization 헤더 삽입: Bearer \(token)")
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        // 토큰 확인
+        guard let token = TokenManager.loadToken(), !token.isEmpty else {
+            print("[인증필요] 토큰 없음 — Authorization 미삽입")
+            return
         }
+        
+        // 헤더 삽입
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        print("Authorization 헤더 삽입 완료: Bearer \(token.prefix(15))...")
     }
 }
 
-
-
+extension APIClient {
+    // body 없는 PATCH용 오버로드
+    func patch<Resp: Decodable>(
+        _ endpoint: Endpoint,
+        as type: Resp.Type = Resp.self
+    ) async throws -> Resp {
+        try await patch(endpoint, body: Optional<EmptyBody>.none, as: type)
+    }
+}

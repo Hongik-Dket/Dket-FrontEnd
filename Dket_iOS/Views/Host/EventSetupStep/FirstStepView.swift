@@ -12,7 +12,7 @@ struct FirstStepView: View {
     @Binding var ageFilter: String?
     @Binding var location: String
     @Binding var description: String
-    @Binding var isResaleAllowed: Bool?
+    @Binding var isResaleAllowed: Bool
     
     @State private var showResaleInfo = false
     
@@ -33,12 +33,11 @@ struct FirstStepView: View {
                             .frame(width: 80, alignment: .leading)
                             .font(.system(size: 16, weight: .bold))
                         HStack(spacing: 12) {
-                            AgeOptionButton(title: "전체",     selected: $ageFilter, value: "전체")
-                            AgeOptionButton(title: "12세 이상", selected: $ageFilter, value: "12세 이상")
-                            AgeOptionButton(title: "15세 이상", selected: $ageFilter, value: "15세 이상")
-                            AgeOptionButton(title: "18세 이상", selected: $ageFilter, value: "18세 이상")
+                            AgeOptionButton(title: "전체", selected: $ageFilter, value: "ALL")
+                            AgeOptionButton(title: "12세 이상", selected: $ageFilter, value: "AGE_12")
+                            AgeOptionButton(title: "15세 이상", selected: $ageFilter, value: "AGE_15")
+                            AgeOptionButton(title: "18세 이상", selected: $ageFilter, value: "AGE_18")
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
                     HStack {
@@ -61,27 +60,28 @@ struct FirstStepView: View {
                             )
                     }
                     
-                    HStack(alignment: .center, spacing: 12) {
-                        HStack(spacing: 4) {
-                            Text("리세일")
-                                .frame(width: 80, alignment: .leading)
-                                .font(.system(size: 16, weight: .bold))
-                            
-                            Button(action: {
-                                showResaleInfo = true
-                            }) {
-                                Image(systemName: "info.circle")
-                                    .foregroundColor(.gray)
-                            }
+                    // 리세일 옵션
+                    HStack(spacing: 12) {
+                        Text("리세일")
+                            .frame(width: 80, alignment: .leading)
+                            .font(.system(size: 16, weight: .bold))
+                        
+                        Button(action: { showResaleInfo = true }) {
+                            Image(systemName: "info.circle")
+                                .foregroundColor(.gray)
                         }
                         
                         HStack(spacing: 12) {
-                            ResaleOptionButton(title: "허용", selected: .constant(isResaleAllowed == true), action: {
-                                isResaleAllowed = true
-                            })
-                            ResaleOptionButton(title: "미허용", selected: .constant(isResaleAllowed == false), action: {
-                                isResaleAllowed = false
-                            })
+                            ResaleOptionButton(
+                                title: "허용",
+                                selected: .constant(isResaleAllowed),
+                                action: { isResaleAllowed = true }
+                            )
+                            ResaleOptionButton(
+                                title: "미허용",
+                                selected: .constant(!isResaleAllowed),
+                                action: { isResaleAllowed = false }
+                            )
                         }
                     }
                 }
@@ -90,18 +90,16 @@ struct FirstStepView: View {
                 .hideKeyboardOnTap()
             }
             
-            // 팝업
+            // 리세일 안내 팝업
             if showResaleInfo {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
                     .onTapGesture { showResaleInfo = false }
                 
-                ResaleInfoPopup {
-                    showResaleInfo = false
-                }
-                .frame(maxWidth: 300)
-                .transition(.scale)
-                .zIndex(1)
+                ResaleInfoPopup { showResaleInfo = false }
+                    .frame(maxWidth: 300)
+                    .transition(.scale)
+                    .zIndex(1)
             }
         }
         .animation(.easeInOut, value: showResaleInfo)

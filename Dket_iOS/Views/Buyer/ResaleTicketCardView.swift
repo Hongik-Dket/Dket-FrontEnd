@@ -9,38 +9,67 @@ import SwiftUI
 
 struct ResaleTicketCardView: View {
     let ticket: ResaleTicket
-
+    let basePrice: Int
+    
+    // MARK: - 가격 퍼센트 계산
+    var pricePercent: Int? {
+        guard basePrice > 0 else { return nil }
+        return Int(round(Double(ticket.price) / Double(basePrice) * 100))
+    }
+    
+    // MARK: - 상태별 색상
+    var statusColor: Color {
+        switch ticket.status {
+        case .available: return Color.dketBlue
+        case .reserved:  return .red
+        case .sold:      return .gray
+        }
+    }
+    
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 105, height: 140)
-                .overlay {
-                    if let url = ticket.photoCardURL {
-                        AsyncImage(url: url) { image in
-                            image.resizable()
-                        } placeholder: {
-                            ProgressView()
-                        }
+        HStack(alignment: .center, spacing: 16) {
+            // MARK: - 포토카드 썸네일
+            AsyncImage(url: ticket.photoCardUrl) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                Color.gray.opacity(0.15)
+            }
+            .frame(width: 90, height: 110)
+            .cornerRadius(10)
+            .clipped()
+            
+            // MARK: - 정보 텍스트
+            VStack(alignment: .leading, spacing: 6) {
+
+                HStack(spacing: 4) {
+                    Text("\(ticket.price.formatted()) 원")
+                        .font(.system(size: 16, weight: .semibold))
+                    
+                    if let percent = pricePercent {
+                        Text("(+\(percent - 100)%)")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
                     }
                 }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(ticket.price.formatted()) 원 (+20%)")
-                    .fontWeight(.bold)
-                Text("좌석 번호: \(ticket.seatNumber)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                Text(ticket.isAvailable ? "거래 가능" : "거래 진행 중")
-                    .font(.subheadline)
-                    .foregroundColor(ticket.isAvailable ? .dketBlue : .gray)
+                
+                // 좌석 정보
+                Text("좌석 번호: \(ticket.seatCode)")
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+                
+                // 거래 상태
+                Text(ticket.status == .available ? "거래 가능" :
+                     ticket.status == .reserved ? "거래 진행 중" : "판매 완료")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(statusColor)
+                .padding(.top, 2)
             }
-
             Spacer()
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, 10)
         .background(Color.white)
-        .cornerRadius(10)
-        .shadow(radius: 2)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 1)
     }
 }

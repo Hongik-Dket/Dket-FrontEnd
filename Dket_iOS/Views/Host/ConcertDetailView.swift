@@ -12,6 +12,8 @@ struct ConcertDetailView: View {
     @State private var showTicketDetail = false
     @State private var showInvalidTicket = false
     
+    @State private var showEntryCodeView = false
+    
     @StateObject private var vm: ConcertDetailViewModel
     
     @MainActor
@@ -32,6 +34,16 @@ struct ConcertDetailView: View {
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.black)
                     }
+                }
+            }
+            .fullScreenCover(isPresented: $showEntryCodeView) {
+                if let session = vm.selectedSession {
+                    EntryCodeView(
+                        concertId: concertId,
+                        sessionId: session.id
+                    )
+                } else {
+                    Text("세션 정보를 불러오지 못했습니다.")
                 }
             }
             .fullScreenCover(isPresented: $showScanner) {
@@ -191,7 +203,7 @@ struct ConcertDetailView: View {
             Spacer()
             HStack {
                 Spacer()
-                Button(action: { showScanner = true }) {
+                Button(action: { showEntryCodeView = true }) {
                     Label("공연 입장 확인하기", systemImage: "ticket.fill")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)

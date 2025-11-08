@@ -17,19 +17,19 @@ struct ConcertSetupView: View {
     @State private var ageFilter: String?
     @State private var location = ""
     @State private var description = ""
-    @State private var isResaleAllowed: Bool? = nil
+    @State private var isResaleAllowed: Bool = false
     
     // STEP 2
     @State private var performanceStart = Date()
     @State private var performanceEnd   = Date()
     @State private var startTime        = Date()
     @State private var endTime          = Date()
-    @State private var priceKrw            = ""
+    @State private var price            = "" //
     @State private var capacity         = ""
-    @State private var enrollStartDate = Date()
-    @State private var enrollStartTime = Date()
-    @State private var enrollEndDate   = Date()
-    @State private var enrollEndTime   = Date()
+    @State private var enrollStartDate  = Date()
+    @State private var enrollStartTime  = Date()
+    @State private var enrollEndDate    = Date()
+    @State private var enrollEndTime    = Date()
     
     // STEP 3
     @State private var bannerImage: UIImage?
@@ -62,20 +62,21 @@ struct ConcertSetupView: View {
             
             Group {
                 switch step {
-                case .one: FirstStepView(
-                    title: $title,
-                    ageFilter: $ageFilter,
-                    location: $location,
-                    description: $description,
-                    isResaleAllowed: $isResaleAllowed
-                )
+                case .one:
+                    FirstStepView(
+                        title: $title,
+                        ageFilter: $ageFilter,
+                        location: $location,
+                        description: $description,
+                        isResaleAllowed: $isResaleAllowed
+                    )
                 case .two:
                     SecondStepView(
                         performanceStart: $performanceStart,
                         performanceEnd:   $performanceEnd,
                         startTime:        $startTime,
                         endTime:          $endTime,
-                        priceKrw:         $priceKrw,
+                        priceKrw:         $price,
                         capacity:         $capacity,
                         enrollStartDate:  $enrollStartDate,
                         enrollStartTime:  $enrollStartTime,
@@ -133,7 +134,6 @@ struct ConcertSetupView: View {
                 viewModel: viewModel
             )
         }
-        
         .onReceive(viewModel.$state) { state in
             if case .loaded = state {
                 modalStep = 1
@@ -144,17 +144,18 @@ struct ConcertSetupView: View {
             Alert(title: Text("입력 오류"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
         }
         .fullScreenCover(isPresented: $showMypage) {
-            MypageView()
-                .environmentObject(appState)
+            MypageView().environmentObject(appState)
         }
     }
     
+    // MARK: - Step 이동
     private func next() {
         switch step {
-        case .one:   step = .two
+        case .one:
+            step = .two
+            
         case .two:
             let calendar = Calendar(identifier: .gregorian)
-            
             guard
                 let finalApplyStart = calendar.date(
                     bySettingHour: calendar.component(.hour, from: enrollStartTime),
@@ -187,7 +188,7 @@ struct ConcertSetupView: View {
             }
             
             if performanceEnd < performanceStart {
-                alertMessage = "공연 종료일은 시작일보다 이후여야 합니다."
+                alertMessage = "공연 종료일은 공연 시작일보다 이후여야 합니다."
                 showingAlert = true
                 return
             }
@@ -195,50 +196,57 @@ struct ConcertSetupView: View {
             
         case .three:
             let calendar = Calendar(identifier: .gregorian)
-            let startDateTime = calendar.date(
-                bySettingHour: calendar.component(.hour, from: enrollStartTime),
-                minute: calendar.component(.minute, from: enrollStartTime),
-                second: 0,
-                of: enrollStartDate
-            )
-            let endDateTime = calendar.date(
-                bySettingHour: calendar.component(.hour, from: enrollEndTime),
-                minute: calendar.component(.minute, from: enrollEndTime),
-                second: 0,
-                of: enrollEndDate
-            )
             
-            guard let finalApplyStart = startDateTime, let finalApplyEnd = endDateTime else {
+            guard
+                let finalApplyStart = calendar.date(
+                    bySettingHour: calendar.component(.hour, from: enrollStartTime),
+                    minute: calendar.component(.minute, from: enrollStartTime),
+                    second: 0,
+                    of: enrollStartDate
+                ),
+                let finalApplyEnd = calendar.date(
+                    bySettingHour: calendar.component(.hour, from: enrollEndTime),
+                    minute: calendar.component(.minute, from: enrollEndTime),
+                    second: 0,
+                    of: enrollEndDate
+                )
+            else {
                 print("⛔️ 응모 시작/종료 시간 결합 실패")
                 return
             }
             
-            viewModel.title          = title
-            viewModel.location       = location
-            viewModel.description    = description
-            viewModel.startDate      = performanceStart
-            viewModel.endDate        = performanceEnd
-            viewModel.startTimeText  = DateFormatter.HHmm.string(from: startTime)
-            viewModel.endTimeText    = DateFormatter.HHmm.string(from: endTime)
-            viewModel.priceKrw       = Int(priceKrw) ?? 0
-            viewModel.capacity       = Int(capacity) ?? 0
-            viewModel.applyStart     = finalApplyStart
-            viewModel.applyEnd       = finalApplyEnd
-            viewModel.bannerImageData    = bannerImage?.jpegData(compressionQuality: 0.8)
-            viewModel.posterImageData    = posterImage?.jpegData(compressionQuality: 0.8)
-            viewModel.photocardImageDatas = photocardImages.compactMap { $0.jpegData(compressionQuality: 0.4) }
+            viewModel.title = title
+            viewModel.location = location
+            viewModel.description = description
+            viewModel.startDate = performanceStart
+            viewModel.endDate = performanceEnd
+            viewModel.startTimeText = DateFormatter.HHmm.string(from: startTime)
+            viewModel.endTimeText = DateFormatter.HHmm.string(from: endTime)
+            viewModel.price = Int(price) ?? 0 
+            viewModel.capacity = Int(capacity) ?? 0
+            viewModel.applyStart = finalApplyStart
+            viewModel.applyEnd = finalApplyEnd
+            viewModel.ageLimit = AgeLimit(rawValue: ageFilter ?? "ALL") ?? .all
+            viewModel.isResaleAllowed = isResaleAllowed
+            viewModel.bannerImageData = bannerImage?.jpegData(compressionQuality: 0.8)
+            viewModel.posterImageData = posterImage?.jpegData(compressionQuality: 0.8)
+            viewModel.photocardImageDatas = photocardImages.compactMap {
+                $0.jpegData(compressionQuality: 0.4)
+            }
             
             modalStep = 1
             showModal = true
         }
     }
+    
     private func back() {
         switch step {
-        case .one:   break
-        case .two:   step = .one
+        case .one: break
+        case .two: step = .one
         case .three: step = .two
         }
     }
+    
     private var isNextEnabled: Bool {
         switch step {
         case .one:
@@ -247,10 +255,10 @@ struct ConcertSetupView: View {
             !location.isEmpty &&
             !description.isEmpty
         case .two:
-            return performanceStart <= performanceEnd
-            && startTime       <= endTime
-            && !priceKrw.isEmpty
-            && !capacity.isEmpty
+            return performanceStart <= performanceEnd &&
+            startTime <= endTime &&
+            !price.isEmpty &&
+            !capacity.isEmpty
         case .three:
             return bannerImage != nil && posterImage != nil
         }
