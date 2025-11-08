@@ -132,7 +132,7 @@ struct BuyerTicketDetailView: View {
         }
         .fullScreenCover(isPresented: $showEnterView) {
             if let ticket = selectedTicket {
-                BuyerEnterCodeView()
+                BuyerEnterCodeView(ticketId: ticket.ticketId)
             }
         }
     }

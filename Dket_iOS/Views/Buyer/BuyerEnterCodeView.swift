@@ -6,11 +6,15 @@
 //
 
 import SwiftUI
+import LocalAuthentication
 
 struct BuyerEnterCodeView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var codeDigits: [String] = Array(repeating: "", count: 4)
     @FocusState private var focusedField: Int?
+    @State private var codeDigits: [String] = Array(repeating: "", count: 4)
+    @StateObject private var viewModel = BuyerEnterCodeViewModel()
+    
+    let ticketId: Int64
     
     var body: some View {
         GeometryReader { geometry in
@@ -21,6 +25,7 @@ struct BuyerEnterCodeView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
+                    
                     // MARK: - 상단 닫기 버튼
                     HStack {
                         Spacer()
@@ -95,6 +100,7 @@ struct BuyerEnterCodeView: View {
                     
                     // MARK: - 하단 버튼
                     VStack(spacing: 14) {
+                        // 돌아가기 버튼
                         Button(action: { dismiss() }) {
                             Text("돌아가기")
                                 .font(.system(size: 16, weight: .bold))
@@ -105,29 +111,52 @@ struct BuyerEnterCodeView: View {
                                 .shadow(radius: 4)
                         }
                         
+                        // 입장하기 버튼
                         Button(action: {
                             let code = codeDigits.joined()
-                            print("입장 코드 입력됨: \(code)")
-                            // TODO: 서버 검증 로직 추가 예정
+                            Task {
+                                await viewModel.verifyEntryCode(ticketId: ticketId, entryCode: code)
+                            }
                         }) {
-                            Text("입장하기")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: 360, maxHeight: 48)
-                                .background(isCodeComplete ? Color.dketBlue : Color.gray.opacity(0.5))
-                                .cornerRadius(24)
-                                .shadow(radius: 4)
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .frame(maxWidth: 360, maxHeight: 48)
+                            } else {
+                                Text("입장하기")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: 360, maxHeight: 48)
+                                    .background(isCodeComplete ? Color.dketBlue : Color.gray.opacity(0.5))
+                                    .cornerRadius(24)
+                                    .shadow(radius: 4)
+                            }
                         }
-                        .disabled(!isCodeComplete)
+                        .disabled(!isCodeComplete || viewModel.isLoading)
                     }
                     .padding(.bottom, geometry.safeAreaInsets.bottom + 30)
                 }
             }
             .onAppear { focusedField = 0 }
             .ignoresSafeArea(edges: .all)
+            // MARK: - FaceID 성공 알림
+            .alert("Face ID 인증 성공", isPresented: $viewModel.showSuccessAlert) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text("입장 인증이 완료되었습니다.")
+            }
+            // MARK: - 에러 알림
+            .alert("오류", isPresented: Binding<Bool>(
+                get: { viewModel.errorMessage != nil },
+                set: { _ in viewModel.errorMessage = nil }
+            )) {
+                Button("확인", role: .cancel) { }
+            } message: {
+                Text(viewModel.errorMessage ?? "알 수 없는 오류가 발생했습니다.")
+            }
         }
     }
     
+    // MARK: - Helper
     private var isCodeComplete: Bool {
         codeDigits.allSatisfy { $0.count == 1 }
     }
@@ -152,7 +181,7 @@ struct OneDigitField: UIViewRepresentable {
         textField.layer.shadowRadius = 2
         textField.delegate = context.coordinator
         
-        // ✅ 명시적 크기 고정 (UI 늘어남 방지)
+        // 명시적 크기 고정 (UI 늘어남 방지)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.widthAnchor.constraint(equalToConstant: 55).isActive = true
         textField.heightAnchor.constraint(equalToConstant: 55).isActive = true
@@ -181,17 +210,17 @@ struct OneDigitField: UIViewRepresentable {
         }
         
         func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-            // ✅ 백스페이스 입력
+            // 백스페이스 입력
             if string.isEmpty {
                 parent.text = ""
                 parent.onDeleteBackward()
                 return false
             }
             
-            // ✅ 숫자만 허용
+            // 숫자만 허용
             guard string.rangeOfCharacter(from: .decimalDigits) != nil else { return false }
             
-            // ✅ 입력값 업데이트 및 다음칸 이동
+            // 입력값 업데이트 및 다음칸 이동
             parent.text = String(string.prefix(1))
             parent.onInput(parent.text)
             return false
@@ -200,5 +229,5 @@ struct OneDigitField: UIViewRepresentable {
 }
 
 #Preview {
-    BuyerEnterCodeView()
+    BuyerEnterCodeView(ticketId: 1)
 }

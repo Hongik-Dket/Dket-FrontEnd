@@ -42,6 +42,9 @@ enum Endpoint {
     case buyerEnter(ticketId: String)
     case buyerTicketDetail(ticketId: Int64)
     
+    // 임시
+    case buyerEnterPrepare(ticketId: Int64, entryCode: String)
+    
     case buyerPhotocardList
     case buyerPhotocardDetail(ticketId: Int64)
     
@@ -91,6 +94,12 @@ enum Endpoint {
             return "/api/buyer/concerts/\(sid)/price"
         case .buyerConcertDetail(let cid):
             return "/api/buyer/concerts/\(cid)"
+            
+        // 임시
+        case .buyerEnterPrepare(let ticketId, _):
+                    return "/api/buyer/tickets/\(ticketId)/enter/prepare"
+            
+            
             
         // Organizer Ticket
         case .ticketDetailById(let id):
@@ -145,6 +154,10 @@ enum Endpoint {
             return [URLQueryItem(name: "number", value: number)]
         case .resaleTickets(let sessionId):
             return [URLQueryItem(name: "sessionId", value: "\(sessionId)")]
+        
+        // 임시
+        case .buyerEnterPrepare(_, let entryCode):
+            return [URLQueryItem(name: "entryCode", value: entryCode)]
         default:
             return nil
         }
