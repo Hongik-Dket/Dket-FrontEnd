@@ -95,6 +95,7 @@ struct BuyerConcertDetailView: View {
                                     NavigationLink(
                                         destination: ResaleLookUpView(
                                             concertId: concertId,
+                                            concertTitle: detail.title,
                                             sessions: vm.sessions,
                                             basePrice: vm.detail?.priceKrw ?? 0
                                         )

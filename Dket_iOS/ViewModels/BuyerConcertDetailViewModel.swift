@@ -101,7 +101,6 @@ final class BuyerConcertViewModel: ObservableObject {
                         self.state = .loaded
                         self.isPurchasing = false
                         
-                        // ✅ 세션 선택 상태 유지
                         if let previousId = selectedSessionId,
                            let previous = updatedSessions.first(where: { $0.id == previousId }) {
                             selectedSession = previous

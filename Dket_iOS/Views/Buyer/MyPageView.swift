@@ -130,3 +130,14 @@ struct MypageView: View {
         }
     }
 }
+
+struct MypageView_Previews: PreviewProvider {
+    static var previews: some View {
+        let appState = AppState()
+        appState.userRole = .buyer   
+        
+        return MypageView()
+            .environmentObject(appState)
+            .previewDisplayName("MyPage View (Buyer Mode)")
+    }
+}

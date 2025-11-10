@@ -12,15 +12,16 @@ struct ResaleRegisterView: View {
     @StateObject private var vm: ResaleRegisterViewModel
     @State private var keyboardHeight: CGFloat = 0
     @State private var showAlertModal = false
-
+    @State private var showMenu = false 
+    
     init(ticket: TicketDetail) {
         _vm = StateObject(wrappedValue: ResaleRegisterViewModel(ticket: ticket))
     }
-
+    
     var ticketPrice: Int { vm.ticket.price }
     var maxPrice: Int? { vm.ticket.isEntered ? nil : Int(Double(ticketPrice) * 1.2) }
     var resalePriceInt: Int? { Int(vm.priceText) }
-
+    
     var isPriceValid: Bool {
         guard let resale = resalePriceInt else { return false }
         if vm.ticket.isEntered {
@@ -30,52 +31,33 @@ struct ResaleRegisterView: View {
             return resale >= ticketPrice && resale <= max
         }
     }
-
+    
     var isAboveMaxPrice: Bool {
         guard let resale = resalePriceInt, let max = maxPrice else { return false }
         return resale > max
     }
-
+    
     var contribution: Int {
         guard let resale = resalePriceInt else { return 0 }
         return max(0, resale - ticketPrice) / 10
     }
-
+    
     var finalRevenue: Int {
         guard let resale = resalePriceInt else { return ticketPrice }
         return resale - contribution
     }
-
+    
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.black)
-                }
-
-                Spacer()
-
-                Text("판매")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.black)
-
-                Spacer()
-
-                Button(action: { print("메뉴 버튼 눌림") }) {
-                    Image(systemName: "line.horizontal.3")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.black)
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 8)
-            .background(Color.white)
-            .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
-
-            ZStack {
+        ZStack {
+            VStack(spacing: 0) {
+                BackHeaderView(
+                    title: "판매",
+                    useLogo: false,
+                    onBack: { dismiss() },
+                    onMenu: { showMenu.toggle() }
+                )
+                .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
+                
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         // MARK: - 티켓 정보
@@ -101,7 +83,7 @@ struct ResaleRegisterView: View {
                             }
                             .padding(.vertical, 8)
                         }
-
+                        
                         // MARK: - 판매 정보
                         CustomBox(title: "판매 정보") {
                             VStack(alignment: .leading, spacing: 10) {
@@ -111,11 +93,11 @@ struct ResaleRegisterView: View {
                                     Text("\(ticketPrice.formatted()) 원")
                                 }
                                 .font(.subheadline)
-
+                                
                                 HStack(spacing: 8) {
                                     Text("판매가")
                                     Spacer()
-
+                                    
                                     TextField("판매가 입력", text: $vm.priceText)
                                         .keyboardType(.numberPad)
                                         .multilineTextAlignment(.trailing)
@@ -128,17 +110,17 @@ struct ResaleRegisterView: View {
                                                 .stroke(isAboveMaxPrice ? Color.red : Color.gray.opacity(0.3), lineWidth: 1)
                                         )
                                         .foregroundColor(isAboveMaxPrice ? .red : .primary)
-
+                                    
                                     Text("원")
                                 }
                                 .font(.subheadline)
-
+                                
                                 if isAboveMaxPrice {
                                     Text("판매가는 정가의 120%를 초과할 수 없습니다.")
                                         .font(.footnote)
                                         .foregroundColor(.red)
                                 }
-
+                                
                                 HStack {
                                     Text("공연 기여금")
                                     Spacer()
@@ -146,9 +128,9 @@ struct ResaleRegisterView: View {
                                 }
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
-
+                                
                                 Divider()
-
+                                
                                 HStack {
                                     Text("최종 수익")
                                         .fontWeight(.semibold)
@@ -160,7 +142,7 @@ struct ResaleRegisterView: View {
                             }
                             .padding(.vertical, 8)
                         }
-
+                        
                         // MARK: - 판매 규정
                         CustomBox(title: "판매 규정") {
                             VStack(alignment: .leading, spacing: 4) {
@@ -173,7 +155,7 @@ struct ResaleRegisterView: View {
                             .foregroundColor(.gray)
                             .padding(.vertical, 8)
                         }
-
+                        
                         // MARK: - 판매하기 버튼
                         CircleButton(
                             title: "판매하기",
@@ -190,30 +172,46 @@ struct ResaleRegisterView: View {
                     TapGesture().onEnded { hideKeyboard() }
                         .exclusively(before: DragGesture().onChanged { _ in hideKeyboard() })
                 )
-
-                // MARK: - 로딩 상태
-                if vm.isLoading {
-                    Color.black.opacity(0.3).ignoresSafeArea()
-                    ProgressView("등록 중...")
-                        .padding()
+            }
+            
+            if vm.isLoading {
+                Color.black.opacity(0.3).ignoresSafeArea()
+                ProgressView("등록 중...")
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(12)
+            }
+            
+            if showAlertModal {
+                ResaleSuccessAlert(
+                    onConfirm: {
+                        Task {
+                            await vm.registerResale()
+                            showAlertModal = false
+                        }
+                    },
+                    onClose: { showAlertModal = false }
+                )
+                .transition(.opacity)
+                .animation(.easeInOut, value: showAlertModal)
+            }
+            
+            if showMenu {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture { withAnimation(.easeInOut) { showMenu = false } }
+                
+                VStack {
+                    Spacer()
+                    MypageView()
+                        .frame(maxWidth: .infinity)
                         .background(Color.white)
-                        .cornerRadius(12)
+                        .cornerRadius(20)
+                        .shadow(radius: 8)
+                        .transition(.move(edge: .bottom))
+                        .animation(.spring(), value: showMenu)
                 }
-
-                // MARK: - ResaleSuccessAlert 표시
-                if showAlertModal {
-                    ResaleSuccessAlert(
-                        onConfirm: {
-                            Task {
-                                await vm.registerResale()
-                                showAlertModal = false
-                            }
-                        },
-                        onClose: { showAlertModal = false }
-                    )
-                    .transition(.opacity)
-                    .animation(.easeInOut, value: showAlertModal)
-                }
+                .ignoresSafeArea()
             }
         }
         .onAppear { setupKeyboardObservers() }

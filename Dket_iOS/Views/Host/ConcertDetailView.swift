@@ -183,15 +183,6 @@ struct ConcertDetailView: View {
             if d.status == .inProgress {
                 FloatingEnterButton()
             }
-            
-            if d.status == .ended {
-                Color.black.opacity(0.4).ignoresSafeArea()
-                Image("EndedEvent")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 200, height: 200)
-                    .opacity(0.9)
-            }
         }
         .environmentObject(vm)
     }

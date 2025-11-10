@@ -9,23 +9,41 @@ import SwiftUI
 
 struct ResaleLookUpView: View {
     let concertId: Int64
-    let sessions: [BuyerSessionDetail]      // 상위 뷰에서 전달받음
-    let basePrice: Int                      // 공연의 정가 (퍼센트 계산용)
+    let concertTitle: String       
+    let sessions: [BuyerSessionDetail]
+    let basePrice: Int
     
     @StateObject private var vm = ResaleLookUpViewModel()
     @State private var selectedSession: BuyerSessionDetail? = nil
     @State private var selectedTicket: ResaleTicket? = nil
-
+    
+    @Environment(\.dismiss) private var dismiss
+    @State private var showMyPage = false
+    
     var body: some View {
-        VStack(spacing: 0) {
-            sessionPickerSection
-            Divider().padding(.vertical, 8)
-            ticketListSection
+        ZStack {
+            VStack(spacing: 0) {
+                
+                BackHeaderView(
+                    title: concertTitle,
+                    useLogo: false,
+                    onBack: { dismiss() },
+                    onMenu: { showMyPage = true }
+                )
+                
+                VStack(spacing: 0) {
+                    sessionPickerSection
+                    Divider().padding(.vertical, 8)
+                    ticketListSection
+                }
+            }
+            .ignoresSafeArea(edges: .top)
+            
+            .fullScreenCover(isPresented: $showMyPage) {
+                MypageView()
+            }
         }
-        .navigationTitle("리세일 티켓 조회")
-        .navigationBarTitleDisplayMode(.inline)
         .task {
-            // 첫 세션 자동 조회
             if let first = sessions.first {
                 selectedSession = first
                 await vm.fetchResaleTickets(sessionId: first.id)
@@ -41,7 +59,6 @@ struct ResaleLookUpView: View {
         }
     }
 }
-
 extension ResaleLookUpView {
     // MARK: - 1️⃣ 날짜 선택 드롭다운
     private var sessionPickerSection: some View {
