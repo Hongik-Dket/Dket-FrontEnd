@@ -30,10 +30,18 @@ struct BuyerTicketDetailView: View {
             
             if let ticket = vm.ticket {
                 VStack(spacing: 12) {
-                    Text(ticket.concertTitle)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(Color.dketBlue)
-                        .padding(.top, 120)
+                    Button(action: {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            dismiss()
+                        }
+                    }) {
+                        Text(ticket.concertTitle)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(Color.dketBlue)
+                            .underline()
+                            .padding(.top, 120)
+                    }
+                    .buttonStyle(.plain)
                     
                     VStack(alignment: .leading, spacing: 10) {
                         TicketInfoRow(label: "공연 일시", value: ticket.startDateFormatted)
@@ -64,7 +72,6 @@ struct BuyerTicketDetailView: View {
                                 showPhotoFullScreen = true
                             }
                             
-                            // 이미지 바로 아래 NFT 확인하기 버튼
                             if let nftUrl = URL(string: ticket.nftUrl) {
                                 Button(action: {
                                     UIApplication.shared.open(nftUrl)
@@ -75,7 +82,7 @@ struct BuyerTicketDetailView: View {
                                         .underline()
                                 }
                                 .frame(maxWidth: .infinity, alignment: .trailing)
-                                .padding(.trailing, 25) // 텍스트를 오른쪽 정렬
+                                .padding(.trailing, 25)
                             }
                         }
                         .fullScreenCover(isPresented: $showPhotoFullScreen) {
@@ -105,6 +112,7 @@ struct BuyerTicketDetailView: View {
                     .padding(.bottom, 50)
                 }
                 
+                // 상단 닫기(X) 버튼
                 VStack {
                     HStack {
                         Spacer()
