@@ -76,7 +76,7 @@ struct BuyerConcertDetailView: View {
                     
                     // 기본 정보 + 세션 정보
                     VStack(alignment: .leading, spacing: 16) {
-                        BasicInfoView(detail: detail)
+                        BasicInfoView(detail: detail, showResaleInfo: true)
                         Divider()
                         
                         if detail.status == .applyNotOpened {

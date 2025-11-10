@@ -268,7 +268,7 @@ final class BuyerConcertViewModel: ObservableObject {
             
         case .inProgress:
             if session.ticketId != nil {
-                floatingButtonTitle = "공연 입장하기"
+                floatingButtonTitle = "티켓 조회하기"
                 isFloatingButtonEnabled = true
                 floatingAction = .enter
             } else if session.buyable {
