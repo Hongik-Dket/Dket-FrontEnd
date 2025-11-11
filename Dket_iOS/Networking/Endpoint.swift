@@ -21,6 +21,11 @@ enum Endpoint {
     
     case organizerSessionEnter(concertId: Int64, sessionId: Int64)
     
+    // 개최자 티켓
+    case ticketDetailById(id: Int64)
+    case ticketDetailByNumber(number: String)
+    case ticketEnter(ticketId: Int64)
+    
     // MARK: - Buyer (구매자)
     case buyerHomeMain
     case buyerHomePopular
@@ -28,14 +33,12 @@ enum Endpoint {
     case buyerHomePurchased
     case buyerHomeEntire
     
+    // 공연 검색
+    case buyerHomeSearch(keyword: String)
+    
     case buyerApply(concertId: Int64, sessionId: Int64)
     case buyerTicketPrice(sessionId: Int64)
     case buyerConcertDetail(concertId: Int64)
-    
-    // 개최자 티켓
-    case ticketDetailById(id: Int64)
-    case ticketDetailByNumber(number: String)
-    case ticketEnter(ticketId: Int64)
     
     // 구매자 티켓
     case buyerTicketList
@@ -87,6 +90,9 @@ enum Endpoint {
         case .buyerHomeApplied: return "/api/buyer/home/applied"
         case .buyerHomePurchased: return "/api/buyer/home/purchased"
         case .buyerHomeEntire: return "/api/buyer/home/entire"
+            
+        case .buyerHomeSearch:
+            return "/api/buyer/home/search"
             
         case .buyerApply(let cid, let sid):
             return "/api/buyer/concerts/\(cid)/sessions/\(sid)/apply"
@@ -154,6 +160,10 @@ enum Endpoint {
             return [URLQueryItem(name: "number", value: number)]
         case .resaleTickets(let sessionId):
             return [URLQueryItem(name: "sessionId", value: "\(sessionId)")]
+            
+        // 공연 검색
+        case .buyerHomeSearch(let keyword):
+            return [URLQueryItem(name: "keyword", value: keyword)]
         
         // 임시
         case .buyerEnterPrepare(_, let entryCode):
