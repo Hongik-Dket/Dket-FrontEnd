@@ -49,7 +49,10 @@ struct BuyerSearchView: View {
                 } else {
                     LazyVStack(alignment: .leading, spacing: 16) {
                         ForEach(vm.results) { concert in
-                            SearchResultRow(concert: concert)
+                            NavigationLink(destination: BuyerConcertDetailView(concertId: concert.concertId)) {
+                                SearchResultRow(concert: concert)
+                            }
+                            .buttonStyle(.plain) 
                         }
                     }
                     .padding(.horizontal)
@@ -61,7 +64,6 @@ struct BuyerSearchView: View {
         }
         .navigationBarBackButtonHidden()
         .onChange(of: vm.query) { _ in
-            // 실시간 검색을 원하지 않으면 이 부분은 주석처리해도 됨
             Task { await vm.search() }
         }
     }
