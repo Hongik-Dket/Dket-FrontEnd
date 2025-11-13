@@ -40,7 +40,13 @@ struct ConcertDetailView: View {
                 if let session = vm.selectedSession {
                     EntryCodeView(
                         concertId: concertId,
-                        sessionId: session.id
+                        sessionId: session.id,
+                        onVerifyTap: {
+                            showEntryCodeView = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                showScanner = true
+                            }
+                        }
                     )
                 } else {
                     Text("세션 정보를 불러오지 못했습니다.")

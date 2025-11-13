@@ -21,7 +21,13 @@ final class PhotoCardService: PhotoCardServicing {
     
     func fetchPhotoCardList() async throws -> [PhotoCardItem] {
         let endpoint = Endpoint.buyerPhotocardList
-        let dto = try await APIClient.request(endpoint: endpoint) as PhotoCardListResponseDTO
+        let dto = try await APIClient.shared.get(endpoint, as: PhotoCardListResponseDTO.self)
+
+        print("✅ 포토카드 수: \(dto.result.count)")
+        for card in dto.result {
+            print("- \(card.photoCardId) / \(card.imageUrl)")
+        }
+
         return dto.result.map { $0.toDomain() }
     }
 }

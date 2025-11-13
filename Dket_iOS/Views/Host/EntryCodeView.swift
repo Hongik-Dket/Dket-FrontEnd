@@ -14,12 +14,20 @@ struct EntryCodeView: View {
     let concertId: Int64
     let sessionId: Int64
     let isPreview: Bool
+    var onVerifyTap: (() -> Void)? = nil
     
-    init(concertId: Int64, sessionId: Int64, isPreview: Bool = false, viewModel: EntryCodeViewModel? = nil) {
+    init(
+        concertId: Int64,
+        sessionId: Int64,
+        isPreview: Bool = false,
+        viewModel: EntryCodeViewModel? = nil,
+        onVerifyTap: (() -> Void)? = nil
+    ) {
         _viewModel = StateObject(wrappedValue: viewModel ?? EntryCodeViewModel())
         self.concertId = concertId
         self.sessionId = sessionId
         self.isPreview = isPreview
+        self.onVerifyTap = onVerifyTap
     }
     
     var body: some View {
@@ -91,7 +99,7 @@ struct EntryCodeView: View {
                     
                     // 버튼
                     Button {
-                        // QR 인식 이동 로직
+                        onVerifyTap?()
                     } label: {
                         Text("티켓 검증하기")
                             .font(.system(size: 16, weight: .bold))

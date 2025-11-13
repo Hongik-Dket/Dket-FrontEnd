@@ -21,11 +21,15 @@ final class PhotoCardListViewModel: ObservableObject {
 
     func fetchCards() async {
         isLoading = true
+        errorMessage = nil
+        
         do {
             cards = try await service.fetchPhotoCardList()
         } catch {
             errorMessage = "포토카드를 불러오지 못했습니다."
+            print("[PhotoCardListViewModel] fetchCards error: \(error.localizedDescription)")
         }
+        
         isLoading = false
     }
 }
