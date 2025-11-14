@@ -46,7 +46,7 @@ final class ApproveNFTService: ApproveNFTServicing {
         print("🟩 [DEBUG] ABI 문자열 앞부분:\n\(abiString.prefix(100))")
 
         // 3️⃣ 컨트랙트 주소 유효성 확인
-        guard let contractAddress = EthereumAddress("0x3de27b56e716b618c7354a4f23cf104a8db62330") else {
+        guard let contractAddress = EthereumAddress("0x4A1818381B361b0d0C6db04745E824D6EEd7B56E") else {
             print("❌ [ERROR] 잘못된 컨트랙트 주소")
             throw NSError(domain: "ApproveNFT", code: 0,
                           userInfo: [NSLocalizedDescriptionKey: "잘못된 컨트랙트 주소"])
@@ -73,7 +73,7 @@ final class ApproveNFTService: ApproveNFTServicing {
         guard let op = contract.createWriteOperation(
             "approve",
             parameters: [
-                EthereumAddress("0x72bC87153fE95AE1673db6A01C91b7471f659728")!,  // DketResale 주소
+                EthereumAddress("0x1C5dB92Cf1e1417b8c981911d095365b784Fe87F")!,  // DketResale 주소
                 BigUInt(tokenId)
             ]
         ) else {
@@ -112,7 +112,7 @@ final class ApproveNFTService: ApproveNFTServicing {
         print("Step 2: 트랜잭션 구성")
         let tx = buildTransactionDict(
             from: from,
-            to: "0x3de27b56e716b618c7354a4f23cf104a8db62330", // DketNFT 컨트랙트 주소
+            to: "0x4A1818381B361b0d0C6db04745E824D6EEd7B56E", // DketNFT 컨트랙트 주소
             data: encoded
         )
         print("트랜잭션 내용:\n\(tx)")

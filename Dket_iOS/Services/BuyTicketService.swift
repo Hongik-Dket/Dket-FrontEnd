@@ -63,7 +63,7 @@ final class BuyTicketService: BuyTicketServicing {
             throw NSError(domain: "BuyTicket", code: 0, userInfo: [NSLocalizedDescriptionKey: "ABI 파일을 찾을 수 없습니다"])
         }
         let abi = try String(contentsOf: url)
-        let contractAddress = EthereumAddress("0x3de27b56e716b618c7354a4f23cf104a8db62330")!
+        let contractAddress = EthereumAddress("0x4A1818381B361b0d0C6db04745E824D6EEd7B56E")!
         let rpcURL = URL(string: "https://eth-sepolia.g.alchemy.com/v2/CiydLLNTXgdxp4WB5-3J33i_8pxyLPwU")!
         let provider = try await Web3HttpProvider(url: rpcURL, network: .Custom(networkID: 11155111))
         let web3 = Web3(provider: provider)
@@ -102,7 +102,7 @@ final class BuyTicketService: BuyTicketServicing {
 
         try await ensureSepoliaEnvironment()
         let encoded = try await encodeBuyTicketCall(sessionId: sessionId)
-        let tx = buildTransactionDict(from: from, to: "0x3de27b56e716b618c7354a4f23cf104a8db62330", value: value, data: encoded)
+        let tx = buildTransactionDict(from: from, to: "0x4A1818381B361b0d0C6db04745E824D6EEd7B56E", value: value, data: encoded)
 
         guard let chainId = Blockchain("eip155:11155111") else { return }
         let request = try Request(topic: session.topic, method: "eth_sendTransaction", params: AnyCodable([tx]), chainId: chainId)

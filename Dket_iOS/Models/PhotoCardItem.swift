@@ -9,4 +9,5 @@ struct PhotoCardItem: Identifiable {
     var id: Int64 { photoCardId }
     let photoCardId: Int64
     let imageUrl: String
+    let ticketId: Int64   
 }

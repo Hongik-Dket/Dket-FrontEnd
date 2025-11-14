@@ -30,7 +30,7 @@ final class ResaleTradeService: ResaleTradeServicing {
     
     // MARK: - 리세일 구매 서명 요청
     func purchaseResaleTicket(resaleId: Int64) async throws -> ResalePurchase {
-        let endpoint = Endpoint.resalePurchase(resaleId: resaleId)   // ✅ resaleId로 수정
+        let endpoint = Endpoint.resalePurchase(resaleId: resaleId)  
         
         print("🟢 [DEBUG] 리세일 구매 서명 요청 (resaleId: \(resaleId))")
         
