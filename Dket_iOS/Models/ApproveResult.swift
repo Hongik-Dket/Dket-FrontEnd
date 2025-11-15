@@ -7,7 +7,9 @@
 
 import BigInt
 
-struct PriceWeiResult: Decodable {
+struct ApprovalResultDTO: Decodable {
     let sessionId: Int64
     let priceWei: UInt64
+    let challengeId: String?
+    let challenge: String?
 }

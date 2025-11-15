@@ -48,6 +48,9 @@ final class BuyerConcertViewModel: ObservableObject {
     @Published var ticketPriceEthString: String = ""
     @Published var showBuyConfirmAlert: Bool = false
     
+    @Published var currentChallenge: String?
+    @Published var currentChallengeId: String?
+    
     private let service: BuyerConcertServicing
     private let applyService: BuyerApplyServicing
     private let buyTicketService: BuyTicketServicing
@@ -295,24 +298,23 @@ final class BuyerConcertViewModel: ObservableObject {
     
     func preparePurchase() async {
         guard let sessionId = selectedSession?.id else {
-            print("❌ 세션 ID 없음")
+            print("세션 ID 없음")
             return
         }
         
         do {
-            let priceWei = try await buyTicketService.getPriceWei(for: sessionId)
-            let priceEth: String = {
-                let ethDouble = Double(priceWei) / pow(10.0, 18.0)
-                return String(format: "%.4f", ethDouble)
-            }()
+            let approval = try await buyTicketService.getApprovalInfo(for: sessionId)
+            let priceWei = BigUInt(approval.priceWei)
             
             await MainActor.run {
                 self.ticketPriceWei = priceWei
-                self.ticketPriceEthString = priceEth
+                self.ticketPriceEthString = String(format: "%.4f", Double(priceWei) / pow(10.0, 18.0))
+                self.currentChallenge = approval.challenge
+                self.currentChallengeId = approval.challengeId
                 self.showBuyConfirmAlert = true
             }
         } catch {
-            print("❌ 가격 조회 실패: \(error)")
+            print("가격/Challenge 조회 실패: \(error)")
         }
     }
     
@@ -320,55 +322,111 @@ final class BuyerConcertViewModel: ObservableObject {
         guard let sessionId = selectedSession?.id,
               let walletAddress = UserWalletStore.shared.address,
               let priceWei = ticketPriceWei else {
-            print("❌ 정보 부족")
+            print("❌ 결제 정보 부족")
             return
         }
-        
+
         guard !isPurchasing else {
             print("⚠️ 결제 중이므로 무시됨")
             return
         }
-        
+
         await MainActor.run {
-            self.isPurchasing = true
-            self.isFloatingButtonEnabled = false
-            self.floatingButtonTitle = "결제 진행 중..."
+            isPurchasing = true
+            isFloatingButtonEnabled = false
+            floatingButtonTitle = "결제 진행 중..."
         }
-        
+
+        defer {
+            Task { @MainActor in
+                isPurchasing = false
+                if let selected = selectedSession {
+                    updateFloatingButton(for: selected)
+                } else {
+                    updateFloatingButton(for: nil)
+                }
+            }
+        }
+
         do {
+            var proofResponse: WinProofResponseDTO?
+            
+            // ✅ 1. Face ID 서명 및 Proof 전송 (당첨자 결제)
+            if let challenge = currentChallenge, let challengeId = currentChallengeId {
+                print("🧠 Face ID 서명 시작: \(challenge)")
+
+                // ① Face ID로 challenge 서명
+                let signatureData = try await BiometricKeyManager.shared.sign(challenge: challenge)
+                let signatureHex = signatureData.toHexString()
+                print("✅ Face ID 서명(hex): \(signatureHex)")
+
+                // ② Secure Enclave 공개키 가져오기
+                let privateKey = try BiometricKeyManager.shared.loadOrCreateKeyPair()
+                let pubKeyData = try BiometricKeyManager.shared.getPublicKeyData(from: privateKey)
+                guard let compressedKey = BiometricKeyManager.shared.compressPublicKey(pubKeyData) else {
+                    throw NSError(domain: "FaceID", code: -99,
+                                  userInfo: [NSLocalizedDescriptionKey: "공개키 압축 실패"])
+                }
+                let publicKeyHex = compressedKey.toHexString()
+                print("🔑 공개키(hex): \(publicKeyHex)")
+
+                // ③ 서버로 증명 전송
+                proofResponse = try await ProofService.shared.submitWinProof(
+                    sessionId: sessionId,
+                    challengeId: challengeId,
+                    signature: signatureHex,
+                    publicKey: publicKeyHex
+                )
+
+                print("🧾 Proof 전송 성공 — proof 개수: \(proofResponse?.proof.count ?? 0)")
+                print("🪪 Nullifier: \(proofResponse?.nullifier ?? "없음")")
+            } else {
+                print("⚡ 선착순 결제 — Proof 및 Face ID 생략")
+            }
+
+            // ✅ 2. proof/nullifier 설정
+            let proof = proofResponse?.proof ?? Array(repeating: "0x0", count: 24)
+            let nullifier = proofResponse?.nullifier ?? "0x" + String(repeating: "0", count: 64)
+
+            print("📦 최종 전송 Proof[0]: \(proof.first ?? "없음")")
+            print("📦 Nullifier: \(nullifier)")
+
+            // ✅ 3. MetaMask 트랜잭션 실행 (Face ID 성공 후에만 실행)
             try await buyTicketService.sendBuyTicketTransaction(
                 sessionId: sessionId,
                 from: walletAddress,
-                value: priceWei
+                value: priceWei,
+                proof: proof,
+                nullifier: nullifier
             )
-            
+
+            // ✅ 4. MetaMask로 자동 전환
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                let url = URL(string: "metamask://")!
-                let canOpen = UIApplication.shared.canOpenURL(url)
-                print("🔍 canOpenURL: \(canOpen)")
-                if canOpen {
+                if let url = URL(string: "metamask://"),
+                   UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url)
                     print("📲 MetaMask로 전환 시도")
                 } else {
-                    print("❌ MetaMask 딥링크 실패 — 앱 미설치 or Info.plist 누락")
+                    print("❌ MetaMask 딥링크 실패 — 앱 미설치 or Info.plist 미등록")
                 }
             }
-            
-            print("✅ 결제 완료")
+
+            print("🟢 온체인 결제 트랜잭션 전송 완료")
+
+            // ✅ 5. 구매 성공 후 UI 상태 갱신
             showBuyConfirmAlert = false
             await fetch()
-            
+
         } catch {
             print("❌ 결제 실패: \(error)")
         }
+
         await MainActor.run {
-            self.isPurchasing = false
-            if let sessionId = self.selectedSessionId,
-               let updatedSession = self.sessionList.first(where: { $0.id == sessionId }) {
-                self.selectedSession = updatedSession
-                self.updateFloatingButton(for: updatedSession)
+            isPurchasing = false
+            if let selected = selectedSession {
+                updateFloatingButton(for: selected)
             } else {
-                self.updateFloatingButton(for: nil)
+                updateFloatingButton(for: nil)
             }
         }
     }

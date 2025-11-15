@@ -11,12 +11,20 @@ import Foundation
 final class APIClient {
     static let shared = APIClient()
     private init() {}
-    
+
     private static let baseURL = URL(string: "https://api.dket.kr")!
-    private let session = URLSession.shared
-    
+
+    // 4분 타임아웃 설정
+    private let session: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 240    // 요청 타임아웃 (초)
+        config.timeoutIntervalForResource = 300   // 전체 리소스 타임아웃 (초)
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
+        return URLSession(configuration: config)
+    }()
+
     var lastResponseData: Data? = nil
-    
+
     // MARK: - JSON Decoder 설정
     private static let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -31,14 +39,13 @@ final class APIClient {
         }
         return d
     }()
-    
+
     private static let encoder: JSONEncoder = {
         let e = JSONEncoder()
         e.keyEncodingStrategy = .useDefaultKeys
         e.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddTHHmmss)
         return e
     }()
-    
 }
 
 // MARK: - GET 요청
@@ -81,7 +88,7 @@ extension APIClient {
         let wrapper = try await get(endpoint, as: APIResponse<T>.self)
         return wrapper.result
     }
-    
+
     static func request<T: Decodable>(endpoint: Endpoint) async throws -> T {
         try await shared.getDecoded(endpoint)
     }

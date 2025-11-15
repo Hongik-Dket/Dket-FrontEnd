@@ -56,6 +56,10 @@ enum Endpoint {
     case resalePurchase(resaleId: Int64)
     case resaleReserve(resaleId: Int64) // 리세일 티켓 예약
     
+    // MARK: - Proof (증명 관련)
+        case proofsWin
+        
+    
     // MARK: - Auth / Wallet
     case userWalletInfo
     
@@ -140,6 +144,9 @@ enum Endpoint {
         case .resaleReserve(let resaleId):
             return "/api/resales/\(resaleId)/reserve" // 리세일 티켓 예약
             
+        case .proofsWin:
+            return "/api/proofs/win"
+            
         // Wallet
         case .userWalletInfo:
             return "/api/user/wallet"
@@ -184,7 +191,8 @@ enum Endpoint {
                 .foreignSignUp,
                 .koreanSignUp,
                 .loginMetaMask,
-                .completeMetaMaskSignUp:
+                .completeMetaMaskSignUp,
+                .proofsWin:
             return "POST"
         case .buyerEnter,
                 .ticketEnter,

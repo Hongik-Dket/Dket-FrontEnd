@@ -452,6 +452,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Dket-iOS-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "공연 입장 확인을 위해 카메라로 QR 코드를 스캔합니다.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "티켓 결제 및 본인 인증을 위해 Face ID를 사용합니다.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "이 앱은 동일 네트워크 내 서버와 통신하기 위해 로컬 네트워크에 접근합니다.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -495,6 +496,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Dket-iOS-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "공연 입장 확인을 위해 카메라로 QR 코드를 스캔합니다.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "티켓 결제 및 본인 인증을 위해 Face ID를 사용합니다.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "이 앱은 동일 네트워크 내 서버와 통신하기 위해 로컬 네트워크에 접근합니다.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
