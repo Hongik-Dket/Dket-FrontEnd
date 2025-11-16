@@ -51,7 +51,8 @@ enum Endpoint {
     case buyerPhotocardDetail(ticketId: Int64)
     
     case resaleTickets(sessionId: Int64)
-    case resaleRegister(ticketId: Int64, price: Int)
+    case resaleRegister(ticketId: Int64)
+    case resaleSign(ticketId: Int64)
     case resalePurchase(resaleId: Int64)
     case resaleReserve(resaleId: Int64) // 리세일 티켓 예약
     
@@ -134,8 +135,10 @@ enum Endpoint {
         // Resale
         case .resaleTickets:
             return "/api/resales"
-        case .resaleRegister(let ticketId, _):
+        case .resaleRegister(let ticketId):
             return "/api/resales/\(ticketId)"
+        case .resaleSign(let ticketId):
+            return "/api/resales/\(ticketId)/sign"
         case .resalePurchase(let resaleId):
             return "/api/resales/\(resaleId)/purchase"
         case .resaleReserve(let resaleId):
@@ -198,6 +201,7 @@ enum Endpoint {
             return "POST"
         case .buyerEnter,
                 .ticketEnter,
+                .resaleSign,
                 .resaleReserve:
             return "PATCH"
         default:

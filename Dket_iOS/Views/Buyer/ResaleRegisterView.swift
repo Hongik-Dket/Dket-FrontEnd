@@ -182,6 +182,15 @@ struct ResaleRegisterView: View {
                     .cornerRadius(12)
             }
             
+            if vm.isProcessingProof {
+                ProofProgressAlertView(
+                    title: "티켓 소유 인증 절차를 진행 중입니다.",
+                    message: "완료까지 약 1분 정도 소요됩니다."
+                )
+                    .transition(.opacity)
+                    .animation(.easeInOut, value: vm.isProcessingProof)
+            }
+            
             if showAlertModal {
                 ResaleSuccessAlert(
                     onConfirm: {
