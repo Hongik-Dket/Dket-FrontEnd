@@ -30,27 +30,22 @@ struct ResaleSuccessAlert: View {
                 }
                 .padding(.trailing, 4)
 
-                VStack(spacing: 10) {
+                VStack(spacing: 12) {
                     Group {
-                        (Text("최종 판매 요청 후에는 ")
-                            + Text("취소가 불가능합니다.")
-                                .foregroundColor(.dketBlue)
-                                .fontWeight(.bold))
+                        (Text("지금 판매를 진행하면 즉시 거래가 체결되며,\n이후 ")
+                        + Text("취소는 불가능합니다.")
+                            .foregroundColor(.dketBlue)
+                            .fontWeight(.bold))
 
-                        (Text("구매자가 있을 경우 입력하신 금액으로 ")
-                            + Text("즉시 자동 거래")
-                                .foregroundColor(.dketBlue)
-                                .fontWeight(.bold)
-                            + Text("되며,\n별도의 승인 절차는 없습니다."))
-
-                        (Text("거래된 티켓은 ")
-                            + Text("더 이상 조회할 수 없습니다.")
-                                .foregroundColor(.dketBlue)
-                                .fontWeight(.bold))
+                        (Text("구매자가 있을 경우 ")
+                        + Text("바로 정산이 진행")
+                            .foregroundColor(.dketBlue)
+                            .fontWeight(.bold)
+                        + Text("되니\n판매가를 다시 한 번 확인해주세요."))
                     }
                     .font(.system(size: 15))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(4)
+                    .lineSpacing(5)
                 }
                 .padding(.horizontal, 24)
 
@@ -65,11 +60,21 @@ struct ResaleSuccessAlert: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 4)
             }
-            .padding(.vertical, 28)
+            .padding(.vertical, 40)
             .frame(maxWidth: 310)
             .background(Color.white)
             .cornerRadius(15)
             .shadow(radius: 8)
         }
+    }
+}
+
+struct ResaleSuccessAlert_Previews: PreviewProvider {
+    static var previews: some View {
+        ResaleSuccessAlert(
+            onConfirm: { print("판매하기 버튼 클릭") },
+            onClose: { print("닫기 버튼 클릭") }
+        )
+        .preferredColorScheme(.light)
     }
 }

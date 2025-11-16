@@ -318,7 +318,10 @@ final class BuyerConcertViewModel: ObservableObject {
         }
     }
     
-    func confirmPurchase() async {
+    func confirmPurchase(
+        showProofProcessing: @escaping () async -> Void = {},
+        hideProofProcessing: @escaping () async -> Void = {}
+    ) async {
         guard let sessionId = selectedSession?.id,
               let walletAddress = UserWalletStore.shared.address,
               let priceWei = ticketPriceWei else {
@@ -337,40 +340,24 @@ final class BuyerConcertViewModel: ObservableObject {
             floatingButtonTitle = "결제 진행 중..."
         }
 
-        defer {
-            Task { @MainActor in
-                isPurchasing = false
-                if let selected = selectedSession {
-                    updateFloatingButton(for: selected)
-                } else {
-                    updateFloatingButton(for: nil)
-                }
-            }
-        }
-
         do {
             var proofResponse: WinProofResponseDTO?
-            
-            // ✅ 1. Face ID 서명 및 Proof 전송 (당첨자 결제)
-            if let challenge = currentChallenge, let challengeId = currentChallengeId {
-                print("🧠 Face ID 서명 시작: \(challenge)")
 
-                // ① Face ID로 challenge 서명
+            if let challenge = currentChallenge, let challengeId = currentChallengeId {
+                print("Face ID 서명 시작: \(challenge)")
+
                 let signatureData = try await BiometricKeyManager.shared.sign(challenge: challenge)
                 let signatureHex = signatureData.toHexString()
-                print("✅ Face ID 서명(hex): \(signatureHex)")
+                print("Face ID 서명(hex): \(signatureHex)")
 
-                // ② Secure Enclave 공개키 가져오기
                 let privateKey = try BiometricKeyManager.shared.loadOrCreateKeyPair()
                 let pubKeyData = try BiometricKeyManager.shared.getPublicKeyData(from: privateKey)
-                guard let compressedKey = BiometricKeyManager.shared.compressPublicKey(pubKeyData) else {
-                    throw NSError(domain: "FaceID", code: -99,
-                                  userInfo: [NSLocalizedDescriptionKey: "공개키 압축 실패"])
-                }
+                let compressedKey = BiometricKeyManager.shared.compressPublicKey(pubKeyData)!
                 let publicKeyHex = compressedKey.toHexString()
-                print("🔑 공개키(hex): \(publicKeyHex)")
 
-                // ③ 서버로 증명 전송
+                // 서버 요청 시작 → 팝업 표시
+                await showProofProcessing()
+
                 proofResponse = try await ProofService.shared.submitWinProof(
                     sessionId: sessionId,
                     challengeId: challengeId,
@@ -378,20 +365,15 @@ final class BuyerConcertViewModel: ObservableObject {
                     publicKey: publicKeyHex
                 )
 
-                print("🧾 Proof 전송 성공 — proof 개수: \(proofResponse?.proof.count ?? 0)")
-                print("🪪 Nullifier: \(proofResponse?.nullifier ?? "없음")")
+                // 서버 응답 완료 → 팝업 닫기
+                await hideProofProcessing()
             } else {
-                print("⚡ 선착순 결제 — Proof 및 Face ID 생략")
+                print("선착순 결제 — Proof 및 Face ID 생략")
             }
 
-            // ✅ 2. proof/nullifier 설정
             let proof = proofResponse?.proof ?? Array(repeating: "0x0", count: 24)
             let nullifier = proofResponse?.nullifier ?? "0x" + String(repeating: "0", count: 64)
 
-            print("📦 최종 전송 Proof[0]: \(proof.first ?? "없음")")
-            print("📦 Nullifier: \(nullifier)")
-
-            // ✅ 3. MetaMask 트랜잭션 실행 (Face ID 성공 후에만 실행)
             try await buyTicketService.sendBuyTicketTransaction(
                 sessionId: sessionId,
                 from: walletAddress,
@@ -400,24 +382,19 @@ final class BuyerConcertViewModel: ObservableObject {
                 nullifier: nullifier
             )
 
-            // ✅ 4. MetaMask로 자동 전환
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                if let url = URL(string: "metamask://"),
-                   UIApplication.shared.canOpenURL(url) {
+                if let url = URL(string: "metamask://"), UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url)
-                    print("📲 MetaMask로 전환 시도")
-                } else {
-                    print("❌ MetaMask 딥링크 실패 — 앱 미설치 or Info.plist 미등록")
                 }
             }
 
             print("🟢 온체인 결제 트랜잭션 전송 완료")
 
-            // ✅ 5. 구매 성공 후 UI 상태 갱신
             showBuyConfirmAlert = false
             await fetch()
 
         } catch {
+            await hideProofProcessing()
             print("❌ 결제 실패: \(error)")
         }
 

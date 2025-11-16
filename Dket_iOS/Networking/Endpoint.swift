@@ -45,8 +45,7 @@ enum Endpoint {
     case buyerEnter(ticketId: String)
     case buyerTicketDetail(ticketId: Int64)
     
-    // 임시
-    case buyerEnterPrepare(ticketId: Int64, entryCode: String)
+    case userPassportInfo
     
     case buyerPhotocardList
     case buyerPhotocardDetail(ticketId: Int64)
@@ -57,8 +56,9 @@ enum Endpoint {
     case resaleReserve(resaleId: Int64) // 리세일 티켓 예약
     
     // MARK: - Proof (증명 관련)
-        case proofsWin
-        
+    case proofsWin
+    case proofsOwnChallenge(ticketId: Int64)
+    case proofsOwn
     
     // MARK: - Auth / Wallet
     case userWalletInfo
@@ -105,11 +105,6 @@ enum Endpoint {
         case .buyerConcertDetail(let cid):
             return "/api/buyer/concerts/\(cid)"
             
-        // 임시
-        case .buyerEnterPrepare(let ticketId, _):
-                    return "/api/buyer/tickets/\(ticketId)/enter/prepare"
-            
-            
             
         // Organizer Ticket
         case .ticketDetailById(let id):
@@ -119,7 +114,6 @@ enum Endpoint {
         case .ticketEnter(let ticketId):
             return "/api/tickets/organizer/\(ticketId)/enter"
             
-            
         // Buyer Ticket
         case .buyerTicketList:
             return "/api/user/tickets"
@@ -127,6 +121,9 @@ enum Endpoint {
             return "/api/buyer/tickets/\(tid)/enter"
         case .buyerTicketDetail(let ticketId):
             return "/api/buyer/tickets/\(ticketId)"
+            
+        case .userPassportInfo:
+            return "/api/user/passport"
             
         // Buyer PhotoCard
         case .buyerPhotocardList:
@@ -146,6 +143,10 @@ enum Endpoint {
             
         case .proofsWin:
             return "/api/proofs/win"
+        case .proofsOwnChallenge(let ticketId):
+            return "/api/proofs/own/challenge"
+        case .proofsOwn:
+            return "/api/proofs/own"
             
         // Wallet
         case .userWalletInfo:
@@ -171,16 +172,16 @@ enum Endpoint {
         // 공연 검색
         case .buyerHomeSearch(let keyword):
             return [URLQueryItem(name: "keyword", value: keyword)]
+            
+        case .proofsOwnChallenge(let ticketId):
+            return [URLQueryItem(name: "ticketId", value: "\(ticketId)")]
         
-        // 임시
-        case .buyerEnterPrepare(_, let entryCode):
-            return [URLQueryItem(name: "entryCode", value: entryCode)]
         default:
             return nil
         }
     }
     
-    // MARK: - Method 설정 
+    // MARK: - Method 설정
     var method: String {
         switch self {
         case .organizerCreateConcert,
@@ -192,7 +193,8 @@ enum Endpoint {
                 .koreanSignUp,
                 .loginMetaMask,
                 .completeMetaMaskSignUp,
-                .proofsWin:
+                .proofsWin,
+                .proofsOwn:
             return "POST"
         case .buyerEnter,
                 .ticketEnter,
@@ -211,7 +213,7 @@ extension Endpoint {
         case .foreignSignUp,
                 .koreanSignUp:
             return false
-        default: 
+        default:
             return true
         }
     }

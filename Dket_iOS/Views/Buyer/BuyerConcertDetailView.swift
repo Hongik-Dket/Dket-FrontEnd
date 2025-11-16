@@ -14,6 +14,7 @@ struct BuyerConcertDetailView: View {
     @StateObject private var vm: BuyerConcertViewModel
     
     @State private var showApplySuccessAlert = false
+    @State private var showProofProcessingAlert = false
     @State private var showTicketDetail = false
     @State private var selectedTicketId: Int64?
     
@@ -206,7 +207,11 @@ struct BuyerConcertDetailView: View {
                     priceEth: vm.ticketPriceEthString,
                     onConfirm: {
                         Task {
-                            await vm.confirmPurchase()
+                            await vm.confirmPurchase(showProofProcessing: {
+                                await MainActor.run { showProofProcessingAlert = true }
+                            }, hideProofProcessing: {
+                                await MainActor.run { showProofProcessingAlert = false }
+                            })
                             await MainActor.run {
                                 vm.updateFloatingButton(for: vm.selectedSession)
                             }
@@ -215,6 +220,13 @@ struct BuyerConcertDetailView: View {
                     onCancel: {
                         vm.showBuyConfirmAlert = false
                     }
+                )
+            }
+
+            if showProofProcessingAlert {
+                ProofProgressAlertView(
+                    title: "티켓 결제 인증 절차를 진행 중입니다.",
+                    message: "완료까지 약 1분 정도 소요됩니다."
                 )
             }
         }
@@ -261,3 +273,4 @@ private struct BuyerSessionStatSection: View {
 extension Int64: Identifiable {
     public var id: Int64 { self }
 }
+

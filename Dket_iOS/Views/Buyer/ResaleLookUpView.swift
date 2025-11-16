@@ -9,28 +9,27 @@ import SwiftUI
 
 struct ResaleLookUpView: View {
     let concertId: Int64
-    let concertTitle: String       
+    let concertTitle: String
     let sessions: [BuyerSessionDetail]
     let basePrice: Int
-    
+
     @StateObject private var vm = ResaleLookUpViewModel()
     @State private var selectedSession: BuyerSessionDetail? = nil
     @State private var selectedTicket: ResaleTicket? = nil
-    
+
     @Environment(\.dismiss) private var dismiss
     @State private var showMyPage = false
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                
                 BackHeaderView(
                     title: concertTitle,
                     useLogo: false,
                     onBack: { dismiss() },
                     onMenu: { showMyPage = true }
                 )
-                
+
                 VStack(spacing: 0) {
                     sessionPickerSection
                     Divider().padding(.vertical, 8)
@@ -38,11 +37,12 @@ struct ResaleLookUpView: View {
                 }
             }
             .ignoresSafeArea(edges: .top)
-            
-            .fullScreenCover(isPresented: $showMyPage) {
-                MypageView()
-            }
         }
+
+        .fullScreenCover(isPresented: $showMyPage) {
+            MypageView()
+        }
+
         .task {
             if let first = sessions.first {
                 selectedSession = first
@@ -59,8 +59,9 @@ struct ResaleLookUpView: View {
         }
     }
 }
+
 extension ResaleLookUpView {
-    // MARK: - 1️⃣ 날짜 선택 드롭다운
+    // MARK: - 날짜 선택 드롭다운
     private var sessionPickerSection: some View {
         Menu {
             ForEach(sessions, id: \.id) { session in
