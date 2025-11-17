@@ -17,13 +17,22 @@ struct BuyerTicketDetailView: View {
     @State private var showQRView = false
     @State private var qrCodeUrl: String? = nil
     @State private var identityType: String? = nil
-
+    
     // 새 상태
     @State private var isOwnershipProofProcessing = false
     @State private var showOwnershipProofFailedAlert = false
-
+    
+    let sessionId: Int64?    // ✅ optional로 변경
+    
+    // MARK: - 일반 조회용 (sessionId 없음)
     init(ticketId: Int64) {
-        print("BuyerTicketDetailView INIT with ticketId: \(ticketId)")
+        self.sessionId = nil
+        _vm = StateObject(wrappedValue: BuyerTicketDetailViewModel(ticketId: ticketId))
+    }
+    
+    // MARK: - 입장 인증용 (sessionId 있음)
+    init(ticketId: Int64, sessionId: Int64) {
+        self.sessionId = sessionId
         _vm = StateObject(wrappedValue: BuyerTicketDetailViewModel(ticketId: ticketId))
     }
 
@@ -195,7 +204,7 @@ struct BuyerTicketDetailView: View {
 
             // ③ 서버로 증명 전송
             let proofResponse = try await ProofService.shared.submitOwnProof(
-                sessionId: nil,
+                sessionId: sessionId,
                 challengeId: challenge.challengeId,
                 signature: signatureHex,
                 publicKey: compressedKey.toHexString()
@@ -205,13 +214,48 @@ struct BuyerTicketDetailView: View {
             await MainActor.run {
                 isOwnershipProofProcessing = false
                 qrCodeUrl = proofResponse.qrCodeUrl
+                identityType = proofResponse.identityType
                 showQRView = true
             }
 
         } catch {
-            print("❌ 소유 인증 실패: \(error.localizedDescription)")
+            print("❌ 소유 증명 실패: \(error)")
+
             await MainActor.run {
                 isOwnershipProofProcessing = false
+            }
+
+            // ✅ 서버 오류 처리
+            if let apiError = error as? APIErrorResponse {
+                let code = apiError.code
+
+                // 조작/유효하지 않은 티켓 관련 에러
+                if code.hasPrefix("ZKP_4002") ||
+                   code.hasPrefix("ZKP_4003") ||
+                   code.hasPrefix("ZKP_4004") ||
+                   code.hasPrefix("OWN_4002") ||
+                   code.hasPrefix("OWN_4003") ||
+                   code.hasPrefix("SIG_") {
+                    await MainActor.run {
+                        showOwnershipProofFailedAlert = true
+                    }
+                    return
+                }
+
+                // 서버측 에러 (500번대 or 기타 예외)
+                if code.hasPrefix("COMMON_500") ||
+                   code.hasPrefix("ZKP_500") ||
+                   code.hasPrefix("IMAGE_500") ||
+                   code.hasPrefix("BLOCKCHAIN_500") {
+                    await MainActor.run {
+                        NavigationUtil.presentFullScreen(PassportErrorView())
+                    }
+                    return
+                }
+            }
+
+            // 예외 케이스 — 네트워크 실패 등
+            await MainActor.run {
                 showOwnershipProofFailedAlert = true
             }
         }
@@ -293,34 +337,19 @@ extension BuyerTicketDetailView {
     private var isEnterButtonEnabled: Bool {
         guard let ticket = vm.ticket else { return false }
         // 리세일 중이고 공연 당일에만 활성화
-        return ticket.isResaleListed && isConcertToday
+        return !ticket.isEntered && isConcertToday
     }
 }
 
 
-struct BuyerTicketDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        let vm = BuyerTicketDetailViewModel(ticketId: 100)
-        Task { @MainActor in
-            vm.ticket = TicketDetail(
-                ticketId: 1,
-                concertTitle: "홍익대 축제 공연",
-                concertDateTime: Date().addingTimeInterval(3600 * 5),
-                buyerName: "여희주",
-                birth: DateFormatter.yyyyMMdd.date(from: "2003-02-25") ?? Date(),
-                ticketNumber: "T152670849345203",
-                seatNumber: "A-39",
-                nftUrl: "https://opensea.io/assets/0x123.../1",
-                isEntered: false,
-                photoCardUrl: "https://i.imgur.com/Qb0k5.jpg",
-                price: 100000,
-                isResaleListed: false
-            )
-        }
-        
-        return BuyerTicketDetailView(ticketId: 100)
-            .previewDisplayName("🎫 Buyer Ticket Detail Preview")
+
+
+enum NavigationUtil {
+    static func presentFullScreen<Content: View>(_ view: Content) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else { return }
+        let hosting = UIHostingController(rootView: view)
+        hosting.modalPresentationStyle = .fullScreen
+        window.rootViewController?.present(hosting, animated: true)
     }
 }
-
-

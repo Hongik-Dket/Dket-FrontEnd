@@ -30,7 +30,7 @@ struct BuyerConcertDetailView: View {
             switch vm.state {
             case .idle, .loading:
                 ProgressView()
-                    .task { await vm.fetch() }
+                    .task { await vm.onAppear() }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .failed(let error):
                 VStack(spacing: 8) {
@@ -59,7 +59,6 @@ struct BuyerConcertDetailView: View {
                 }
             }
         }
-        .task { await vm.onAppear() }
     }
     
     // MARK: - Content
@@ -128,7 +127,9 @@ struct BuyerConcertDetailView: View {
             // Floating Button (응모/결제/입장 등)
             floatingButtonSection
                 .fullScreenCover(item: $selectedTicketId) { ticketId in
-                    BuyerTicketDetailView(ticketId: ticketId)
+                    if let session = vm.selectedSession {
+                        BuyerTicketDetailView(ticketId: ticketId, sessionId: session.id)
+                    }
                 }
         }
         .overlay(overlayModals)

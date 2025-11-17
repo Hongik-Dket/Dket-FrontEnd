@@ -18,6 +18,8 @@ enum Endpoint {
     case organizerSession(concertId: Int64, sessionId: Int64)
     case organizerCreateConcert
     case organizerTicket(concertId: Int64, ticketId: String)
+    case organizerTicketVerify
+    case organizerEnterTicket(ticketId: Int64)
     
     case organizerSessionEnter(concertId: Int64, sessionId: Int64)
     
@@ -85,6 +87,11 @@ enum Endpoint {
             return "/api/organizer/concerts"
         case .organizerTicket(let cid, let tid):
             return "/api/organizer/concerts/\(cid)/\(tid)"
+        case .organizerTicketVerify:
+            return "/api/organizer/tickets/verify"
+        case .organizerEnterTicket(let ticketId):
+            return "/api/organizer/tickets/\(ticketId)/enter"
+            
             
         case .organizerSessionEnter(let concertId, let sessionId):
             return "/api/organizer/concerts/\(concertId)/\(sessionId)/enter"
@@ -111,9 +118,11 @@ enum Endpoint {
         case .ticketDetailById(let id):
             return "/api/tickets"
         case .ticketDetailByNumber(let number):
-            return "/api/tickets"
+            // ✅ 변경됨: 기존 "/api/tickets" → "/api/organizer/tickets"
+            return "/api/organizer/tickets"
         case .ticketEnter(let ticketId):
             return "/api/tickets/organizer/\(ticketId)/enter"
+            
             
         // Buyer Ticket
         case .buyerTicketList:
@@ -168,7 +177,8 @@ enum Endpoint {
         case .ticketDetailById(let id):
             return [URLQueryItem(name: "id", value: "\(id)")]
         case .ticketDetailByNumber(let number):
-            return [URLQueryItem(name: "number", value: number)]
+            // ✅ 변경됨: "number" → "ticketNumber"
+            return [URLQueryItem(name: "ticketNumber", value: number)]
         case .resaleTickets(let sessionId):
             return [URLQueryItem(name: "sessionId", value: "\(sessionId)")]
             
@@ -197,12 +207,14 @@ enum Endpoint {
                 .loginMetaMask,
                 .completeMetaMaskSignUp,
                 .proofsWin,
-                .proofsOwn:
+                .proofsOwn,
+                .organizerTicketVerify:
             return "POST"
         case .buyerEnter,
                 .ticketEnter,
                 .resaleSign,
-                .resaleReserve:
+                .resaleReserve,
+                .organizerEnterTicket:
             return "PATCH"
         default:
             return "GET"

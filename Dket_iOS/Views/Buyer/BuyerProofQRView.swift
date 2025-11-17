@@ -122,7 +122,7 @@ struct BuyerProofQRView: View {
         }
 
         // 여권정보 표시 모달
-        .sheet(isPresented: $showPassportSheet) {
+        .fullScreenCover(isPresented: $showPassportSheet) {
             if let info = passportInfo {
                 PassportInfoView(info: info)
             } else {

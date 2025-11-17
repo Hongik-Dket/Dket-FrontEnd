@@ -7,21 +7,21 @@
 
 import SwiftUI
 
-
 struct ResalePurchaseView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var appState: AppState
     @StateObject private var vm: ResalePurchaseViewModel
     @State private var showMyPage = false
-    
+
     init(resaleId: Int64) {
         _vm = StateObject(wrappedValue: ResalePurchaseViewModel(resaleId: resaleId))
     }
-    
+
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
-            
+
+            // ✅ 메인 콘텐츠
             VStack(spacing: 0) {
                 BackHeaderView(
                     title: "구매",
@@ -29,106 +29,14 @@ struct ResalePurchaseView: View {
                     onBack: { dismiss() },
                     onMenu: { showMyPage = true }
                 )
-                
+
                 ScrollView {
                     if vm.isLoading {
                         ProgressView("불러오는 중...")
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding(.top, 50)
                     } else if let info = vm.ticketInfo {
-                        VStack(alignment: .leading, spacing: 28) {
-                            
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("티켓 정보")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .padding(.bottom, 2)
-                                
-                                HStack(alignment: .top, spacing: 16) {
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        InfoTextRow(label: "공연명", value: info.concertTitle)
-                                        InfoTextRow(label: "공연 장소", value: info.location)
-                                        InfoTextRow(label: "공연 일시", value: "\(info.date) \(info.startTime)")
-                                        InfoTextRow(label: "좌석 번호", value: info.seatCode)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    AsyncImage(url: info.photoCardUrl) { image in
-                                        image.resizable()
-                                            .scaledToFill()
-                                            .frame(width: 83, height: 127)
-                                            .cornerRadius(8)
-                                            .clipped()
-                                    } placeholder: {
-                                        Color.gray.opacity(0.2)
-                                            .frame(width: 83, height: 127)
-                                            .cornerRadius(8)
-                                    }
-                                }
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("구매 정보")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .padding(.bottom, 2)
-                                
-                                VStack(alignment: .leading, spacing: 8) {
-                                    InfoTextRow(label: "티켓 정가", value: info.originalPrice.formattedKrw)
-                                    InfoTextRow(label: "구매가", value: info.priceKrw.formattedKrw)
-                                    InfoTextRow(label: "결제 금액", value: info.priceWei.formattedEth, valueColor: .dketBlue)
-                                }
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("구매 규정")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .padding(.bottom, 2)
-                                
-                                VStack(alignment: .leading, spacing: 6) {
-                                    RuleText("결제는 요청 후 수분 내에 처리됩니다.")
-                                    RuleText("구매 요청 후 취소는 불가능합니다.")
-                                    RuleText("거래된 티켓은 MY 티켓 및 MY 포토카드에 자동으로 등록됩니다.")
-                                }
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
-                            }
-                            
-                            Spacer(minLength: 40)
-                            
-                            // MARK: - 구매하기 버튼
-                            Button {
-                                Task {
-                                    guard let wallet = appState.connectedAddress else {
-                                        vm.errorMessage = "지갑 주소를 불러올 수 없습니다."
-                                        return
-                                    }
-                                    await vm.purchaseTicket(walletAddress: wallet)
-                                }
-                            } label: {
-                                Text("구매하기")
-                                    .font(.system(size: 17, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity, minHeight: 54)
-                                    .background(Color.dketBlue)
-                                    .cornerRadius(27)
-                            }
-                            .padding(.bottom, 40)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 24)
-                    } else if let error = vm.errorMessage {
-                        CustomAlertView(message: error) {
-                            dismiss()
-                        }
+                        content(info)
                     } else {
                         Text("티켓 정보를 불러올 수 없습니다.")
                             .foregroundColor(.gray)
@@ -136,11 +44,19 @@ struct ResalePurchaseView: View {
                     }
                 }
             }
-            
-            .fullScreenCover(isPresented: $showMyPage) {
-                MypageView()
+            .navigationBarHidden(true) 
+
+            // ✅ AlertView를 오버레이로 표시 (항상 맨 위)
+            if let error = vm.errorMessage {
+                CustomAlertView(message: error) {
+                    dismiss()
+                }
+                .transition(.opacity.combined(with: .scale))
+                .animation(.easeInOut, value: vm.errorMessage)
+                .zIndex(2)
             }
         }
+        // MARK: - 생명주기
         .task {
             await vm.reserveTicket()
         }
@@ -154,6 +70,106 @@ struct ResalePurchaseView: View {
                 await vm.cancelReservation()
             }
         }
+        .fullScreenCover(isPresented: $showMyPage) {
+            MypageView()
+        }
+    }
+
+    // MARK: - 메인 콘텐츠 구성
+    @ViewBuilder
+    private func content(_ info: ResaleTicketInfo) -> some View {
+        VStack(alignment: .leading, spacing: 28) {
+            // MARK: - 티켓 정보
+            VStack(alignment: .leading, spacing: 12) {
+                Text("티켓 정보")
+                    .font(.system(size: 18, weight: .bold))
+                    .padding(.bottom, 2)
+
+                HStack(alignment: .top, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        InfoTextRow(label: "공연명", value: info.concertTitle)
+                        InfoTextRow(label: "공연 장소", value: info.location)
+                        InfoTextRow(label: "공연 일시", value: "\(info.date) \(info.startTime)")
+                        InfoTextRow(label: "좌석 번호", value: info.seatCode)
+                    }
+
+                    Spacer()
+
+                    AsyncImage(url: info.photoCardUrl) { image in
+                        image.resizable()
+                            .scaledToFill()
+                            .frame(width: 83, height: 127)
+                            .cornerRadius(8)
+                            .clipped()
+                    } placeholder: {
+                        Color.gray.opacity(0.2)
+                            .frame(width: 83, height: 127)
+                            .cornerRadius(8)
+                    }
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
+            }
+
+            // MARK: - 구매 정보
+            VStack(alignment: .leading, spacing: 12) {
+                Text("구매 정보")
+                    .font(.system(size: 18, weight: .bold))
+                    .padding(.bottom, 2)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    InfoTextRow(label: "티켓 정가", value: info.originalPrice.formattedKrw)
+                    InfoTextRow(label: "구매가", value: info.priceKrw.formattedKrw)
+                    InfoTextRow(label: "결제 금액", value: info.priceWei.formattedEth, valueColor: .dketBlue)
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
+            }
+
+            // MARK: - 구매 규정
+            VStack(alignment: .leading, spacing: 8) {
+                Text("구매 규정")
+                    .font(.system(size: 18, weight: .bold))
+                    .padding(.bottom, 2)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    RuleText("결제는 요청 후 수분 내에 처리됩니다.")
+                    RuleText("구매 요청 후 취소는 불가능합니다.")
+                    RuleText("거래된 티켓은 MY 티켓 및 MY 포토카드에 자동으로 등록됩니다.")
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: .black.opacity(0.05), radius: 2, y: 1)
+            }
+
+            Spacer(minLength: 40)
+
+            // MARK: - 구매 버튼
+            Button {
+                Task {
+                    guard let wallet = appState.connectedAddress else {
+                        vm.errorMessage = "지갑 주소를 불러올 수 없습니다."
+                        return
+                    }
+                    await vm.purchaseTicket(walletAddress: wallet)
+                }
+            } label: {
+                Text("구매하기")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity, minHeight: 54)
+                    .background(Color.dketBlue)
+                    .cornerRadius(27)
+            }
+            .padding(.bottom, 40)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 24)
     }
 }
 

@@ -87,7 +87,23 @@ struct OrganizerTicketNumberCheckView: View {
                                 isSearching = true
                                 let result = try await ticketService.fetchTicketByNumber(ticketNumber)
                                 await MainActor.run {
-                                    selectedTicket = result
+                                    // 서버에서 받은 ticketId와 identityType 이용
+                                    // verifyProof 로직과 동일하게 화면 전환
+                                    let ticket = TicketDetail(
+                                        ticketId: result.ticketId,
+                                        concertTitle: "",
+                                        concertDateTime: Date(),
+                                        buyerName: "",
+                                        birth: Date(),
+                                        ticketNumber: ticketNumber,
+                                        seatNumber: "",
+                                        nftUrl: "",
+                                        isEntered: false,
+                                        photoCardUrl: "",
+                                        price: 0,
+                                        isResaleListed: false
+                                    )
+                                    selectedTicket = ticket
                                 }
                             } catch {
                                 await MainActor.run {
@@ -138,10 +154,15 @@ struct OrganizerTicketNumberCheckView: View {
                 set: { if !$0 { selectedTicket = nil } }
             )) {
                 if let ticket = selectedTicket {
-                    OrganizerTicketDetailView(ticket: ticket) {
-                        selectedTicket = nil
-                        onDismiss()
-                    }
+                    OrganizerOfflineVerifyView(
+                        ticketId: ticket.ticketId,
+                        onFinish: {
+                            dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                onDismiss() // ✅ showScanner 대신 상위 클로저 실행
+                            }
+                        }
+                    )
                 }
             }
             .alert(isPresented: $showErrorAlert) {

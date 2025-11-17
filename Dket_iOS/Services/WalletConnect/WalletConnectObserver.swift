@@ -25,6 +25,7 @@ func observeWalletEvents(appState: AppState) {
             print("💬 연결된 주소: \(address)")
             
             UserWalletStore.shared.saveAddress(address)
+            UserDefaults.standard.set(address, forKey: "userWalletAddress") 
             DispatchQueue.main.async {
                 appState.connectedAddress = address
             }

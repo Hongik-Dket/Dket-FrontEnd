@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import ReownAppKit
 
 @MainActor
 final class ResaleRegisterViewModel: ObservableObject {
@@ -93,6 +94,9 @@ final class ResaleRegisterViewModel: ObservableObject {
                 // ⑤ 실제 Approve 실행 → MetaMask로 전환
                 let tokenId = response.tokenId
                 if let walletAddress = UserDefaults.standard.string(forKey: "userWalletAddress") {
+                    print("✅ Wallet Address 불러오기 성공: \(walletAddress)")
+                    print("✅ 현재 WalletConnect 세션:", AppKit.instance.getSessions())
+                    
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         Task {
                             do {
@@ -109,6 +113,8 @@ final class ResaleRegisterViewModel: ObservableObject {
                             }
                         }
                     }
+                } else {
+                    print("❌ Wallet Address 없음 — UserDefaults에 저장되지 않음")
                 }
 
             } catch {

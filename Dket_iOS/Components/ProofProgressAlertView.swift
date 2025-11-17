@@ -6,32 +6,45 @@
 //
 import SwiftUI
 
+// ✅ 검증 중 알림창
 struct ProofProgressAlertView: View {
     let title: String
-    let message: String    
-    
+    let message: String
+
     var body: some View {
         ZStack {
+            // 반투명 배경
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 20) {
-                Text(":D")
-                    .font(.system(size: 70, weight: .bold))
-                    .foregroundColor(.dketBlue)
-                    .padding(.top, 8)
-                
-                VStack(spacing: 6) {
+                // 로고 or 아이콘
+                Image("DketEmpty")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 55, height: 75)
+                    .padding(.top, 10)
+
+                // 텍스트
+                VStack(spacing: 8) {
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(.black)
+
                     Text(message)
                         .font(.system(size: 15))
                         .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
                 }
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 8)
+
+                // ✅ 진행 상태 표시 (로딩 인디케이터)
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: Color.dketBlue))
+                    .scaleEffect(1.2)
+                    .padding(.top, 6)
             }
-            .padding(.vertical, 28)
+            .padding(.vertical, 24)
             .frame(maxWidth: 300)
             .background(Color.white)
             .cornerRadius(20)
@@ -40,6 +53,7 @@ struct ProofProgressAlertView: View {
     }
 }
 
+// ✅ 검증 실패 알림창
 struct ProofFailedAlertView: View {
     let title: String
     let message: String
@@ -49,47 +63,57 @@ struct ProofFailedAlertView: View {
 
     var body: some View {
         ZStack {
+            // 배경 반투명 오버레이
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
+                // 상단 닫기 버튼
                 HStack {
                     Spacer()
                     Button(action: onClose) {
                         Image(systemName: "xmark")
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.gray)
-                            .font(.system(size: 14, weight: .semibold))
                             .padding(8)
+                            .background(Color.white)
+                            .clipShape(Circle())
                     }
+                    .padding(.trailing, 4)
                 }
-                .padding(.trailing, 4)
 
-                Text(":D")
-                    .font(.system(size: 70, weight: .bold))
-                    .foregroundColor(.dketBlue)
-                    .padding(.top, -8)
+                // 로고 or 아이콘
+                Image("DketEmpty")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 55, height: 75)
+                    .padding(.top, -10)
 
+                // 텍스트
                 VStack(spacing: 6) {
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(.black)
                     Text(message)
                         .font(.system(size: 15))
                         .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
                 }
-                .multilineTextAlignment(.center)
 
+                // 재시도 버튼
                 Button(action: onRetry) {
                     Text(retryButtonTitle)
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, minHeight: 48)
+                        .frame(maxWidth: .infinity, minHeight: 40)
                         .background(Color.dketBlue)
-                        .cornerRadius(8)
+                        .foregroundColor(.white)
+                        .cornerRadius(5)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 6)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
             }
-            .padding(.vertical, 28)
+            .padding(.vertical, 16)
             .frame(maxWidth: 300)
             .background(Color.white)
             .cornerRadius(20)

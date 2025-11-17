@@ -49,7 +49,7 @@ final class BuyResaleWithSigService: BuyResaleWithSigServicing {
         let provider = try await Web3HttpProvider(url: rpcURL, network: .Custom(networkID: 11155111))
         let web3 = Web3(provider: provider)
         
-        guard let contractAddress = EthereumAddress("0x1C5dB92Cf1e1417b8c981911d095365b784Fe87F"),
+        guard let contractAddress = EthereumAddress("0xa90ba6b8333111CE444Fcd0A227E269D2811cc36"),
               let contract = web3.contract(abiString, at: contractAddress, abiVersion: 2)
         else {
             throw NSError(domain: "BuyResaleWithSig", code: 0,
@@ -83,7 +83,7 @@ final class BuyResaleWithSigService: BuyResaleWithSigServicing {
     ) -> [String: AnyCodable] {
         [
             "from": AnyCodable(from),
-            "to": AnyCodable("0x1C5dB92Cf1e1417b8c981911d095365b784Fe87F"),
+            "to": AnyCodable("0xa90ba6b8333111CE444Fcd0A227E269D2811cc36"),
             "data": AnyCodable("0x" + data.toHexString()),
             "value": AnyCodable(priceWei > 0 ? "0x" + String(priceWei, radix: 16) : "0x0"),
             "chainId": AnyCodable("0x" + String(11155111, radix: 16))

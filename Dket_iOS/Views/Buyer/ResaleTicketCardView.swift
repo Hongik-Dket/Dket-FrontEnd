@@ -40,15 +40,17 @@ struct ResaleTicketCardView: View {
             
             // MARK: - 정보 텍스트
             VStack(alignment: .leading, spacing: 6) {
-
+                
                 HStack(spacing: 4) {
                     Text("\(ticket.price.formatted()) 원")
                         .font(.system(size: 16, weight: .semibold))
                     
                     if let percent = pricePercent {
-                        Text("(+\(percent - 100)%)")
+                        let diff = percent - 100
+                        let sign = diff > 0 ? "+" : "" // 양수만 + 표시
+                        Text("(\(sign)\(diff)%)")
                             .font(.system(size: 14))
-                            .foregroundColor(.gray)
+                            .foregroundColor(diff > 0 ? .dketBlue : .red)
                     }
                 }
                 
@@ -59,7 +61,7 @@ struct ResaleTicketCardView: View {
                 
                 // 거래 상태
                 Text(ticket.status == .available ? "거래 가능" :
-                     ticket.status == .reserved ? "거래 진행 중" : "판매 완료")
+                        ticket.status == .reserved ? "거래 진행 중" : "판매 완료")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(statusColor)
                 .padding(.top, 2)

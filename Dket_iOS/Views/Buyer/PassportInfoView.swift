@@ -13,18 +13,17 @@ struct PassportInfoView: View {
 
     var body: some View {
         ZStack {
+            // 배경 이미지
             Image("TicketDetail")
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
 
-            VStack(spacing: 12) {
-                Text("여권 정보 조회")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.dketBlue)
-                    .padding(.top, 80)
+            VStack {
+                Spacer()
 
-                VStack(alignment: .leading, spacing: 10) {
+                // 본문 정보 영역
+                VStack(alignment: .center, spacing: 12) {
                     TicketInfoRow(label: "여권 번호", value: info.passportNumber)
                     TicketInfoRow(label: "성별", value: info.gender)
                     TicketInfoRow(label: "영문 성", value: info.lastName)
@@ -33,12 +32,20 @@ struct PassportInfoView: View {
                     TicketInfoRow(label: "국적", value: info.nationality)
                     TicketInfoRow(label: "여권 만료일", value: info.passportExpiry)
                 }
-                .padding(.horizontal, 50)
-                .padding(.top, 20)
+                .font(.system(size: 16, weight: .medium))
+                .frame(maxWidth: .infinity)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 24)
+                .background(Color.white.opacity(0.8))
+                .cornerRadius(16)
+                .shadow(radius: 5)
+                .padding(.horizontal, 32)
 
                 Spacer()
             }
 
+            // 닫기 버튼 (우상단)
             VStack {
                 HStack {
                     Spacer()
@@ -82,3 +89,5 @@ struct PassportErrorView: View {
         }
     }
 }
+
+

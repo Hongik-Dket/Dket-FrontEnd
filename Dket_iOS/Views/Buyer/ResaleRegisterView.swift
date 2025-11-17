@@ -24,11 +24,12 @@ struct ResaleRegisterView: View {
     
     var isPriceValid: Bool {
         guard let resale = resalePriceInt else { return false }
-        if vm.ticket.isEntered {
-            return resale >= ticketPrice
+        if resale <= 0 { return false }  // 0원 이하 방지
+
+        if let max = maxPrice {
+            return resale <= max // 상한만 제한, 정가 이하도 허용
         } else {
-            guard let max = maxPrice else { return false }
-            return resale >= ticketPrice && resale <= max
+            return true // 입장 후에는 가격 제한 없음
         }
     }
     
