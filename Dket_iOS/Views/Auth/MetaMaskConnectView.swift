@@ -151,7 +151,7 @@ func observeWalletEventsForSignUp(appState: AppState) {
                             appState.isLoggedIn = true
                         }
                     } else {
-                        print("⚠️ 회원가입용 지갑 연결 실패: \(response.message ?? "Unknown")")
+                        print("⚠️ 회원가입용 지갑 연결 실패: \(response.message)")
                     }
                 } catch {
                     print("❌ MetaMask 회원가입 처리 중 오류:", error.localizedDescription)

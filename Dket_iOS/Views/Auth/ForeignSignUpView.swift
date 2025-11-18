@@ -23,8 +23,14 @@ struct ForeignSignUpView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     
-    let countries = ["United States", "Canada", "United Kingdom", "Australia", "Japan", "Korea", "Germany", "France", "China", "Singapore"]
-    
+    // ✅ 전세계 국가 목록 생성 (ISO 코드 기반)
+    private var allCountries: [String] {
+        Locale.isoRegionCodes
+            .compactMap { Locale.current.localizedString(forRegionCode: $0) } // 코드 → 이름 변환
+            .filter { !$0.localizedCaseInsensitiveContains("Korea") } // 한국 제거
+            .sorted(by: { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }) // 알파벳순 정렬
+    }
+
     var isFormComplete: Bool {
         !passportNumber.isEmpty &&
         gender != nil &&
@@ -73,12 +79,12 @@ struct ForeignSignUpView: View {
                         // MARK: - 영문 이름
                         Text("영문 성")
                             .font(.system(size: 14, weight: .bold))
-                        TextField("예: KIM", text: $englishLastName)
+                        TextField("예: YEO", text: $englishLastName)
                             .textFieldStyle(.roundedBorder)
                         
                         Text("영문 이름")
                             .font(.system(size: 14, weight: .bold))
-                        TextField("예: JI WOO", text: $englishFirstName)
+                        TextField("예: HEEJU", text: $englishFirstName)
                             .textFieldStyle(.roundedBorder)
                         
                         // MARK: - 생년월일
@@ -103,7 +109,7 @@ struct ForeignSignUpView: View {
                             .font(.system(size: 14, weight: .bold))
                         Picker("국가 선택", selection: $nationality) {
                             Text("국가 선택").tag("")
-                            ForEach(countries, id: \.self) { country in
+                            ForEach(allCountries, id: \.self) { country in
                                 Text(country).tag(country)
                             }
                         }
@@ -162,6 +168,7 @@ struct ForeignSignUpView: View {
             }
         }
     }
+
     
     // MARK: - 회원가입 처리
     private func handleSignUp() async {

@@ -33,7 +33,7 @@ final class BuyerConcertViewModel: ObservableObject {
     @Published var sessionList: [BuyerSessionDetail] = []
     @Published var selectedSessionId: Int64?
     @Published var selectedSession: BuyerSessionDetail?
-    @Published var sessions: [BuyerSessionDetail] = []  
+    @Published var sessions: [BuyerSessionDetail] = []
     
     @Published var isResaleButtonVisible: Bool = false
     
@@ -47,6 +47,9 @@ final class BuyerConcertViewModel: ObservableObject {
     @Published var ticketPriceWei: BigUInt?
     @Published var ticketPriceEthString: String = ""
     @Published var showBuyConfirmAlert: Bool = false
+    
+    @Published var currentChallenge: String?
+    @Published var currentChallengeId: String?
     
     private let service: BuyerConcertServicing
     private let applyService: BuyerApplyServicing
@@ -76,51 +79,50 @@ final class BuyerConcertViewModel: ObservableObject {
     }
     
     func fetch() {
-            fetchTask?.cancel()
+        fetchTask?.cancel()
+        
+        fetchTask = Task {
+            await MainActor.run { self.state = .loading }
             
-            fetchTask = Task {
-                await MainActor.run { self.state = .loading }
-                
-                do {
-                    let (concert, sessions) = try await service.fetchDetail(concertId: concertId)
-                    await MainActor.run {
-                        self.detail = concert
-                        self.isResaleButtonVisible = concert.isResaleAllowed
-                        
-                        // 🎯 리세일용 세션 목록 저장
-                        self.sessions = sessions
-                        
-                        // 🎯 기존 로직용 세션 업데이트
-                        let updatedSessions = sessions.map { session -> BuyerSessionDetail in
-                            var s = session
-                            s.remainingTickets = max(concert.capacity - session.paidCount, 0)
-                            return s
-                        }
-                        
-                        self.sessionList = updatedSessions
-                        self.state = .loaded
-                        self.isPurchasing = false
-                        
-                        // ✅ 세션 선택 상태 유지
-                        if let previousId = selectedSessionId,
-                           let previous = updatedSessions.first(where: { $0.id == previousId }) {
-                            selectedSession = previous
-                            updateFloatingButton(for: previous)
-                        } else if let first = updatedSessions.first {
-                            selectedSessionId = first.id
-                            selectedSession = first
-                            updateFloatingButton(for: first)
-                        }
+            do {
+                let (concert, sessions) = try await service.fetchDetail(concertId: concertId)
+                await MainActor.run {
+                    self.detail = concert
+                    self.isResaleButtonVisible = concert.isResaleAllowed
+                    
+                    // 🎯 리세일용 세션 목록 저장
+                    self.sessions = sessions
+                    
+                    // 🎯 기존 로직용 세션 업데이트
+                    let updatedSessions = sessions.map { session -> BuyerSessionDetail in
+                        var s = session
+                        s.remainingTickets = max(concert.capacity - session.paidCount, 0)
+                        return s
                     }
-                } catch {
-                    if let urlError = error as? URLError, urlError.code == .cancelled { return }
-                    await MainActor.run {
-                        print("[Error] Fetch BuyerConcertDetail failed: \(error)")
-                        self.state = .failed(error)
+                    
+                    self.sessionList = updatedSessions
+                    self.state = .loaded
+                    self.isPurchasing = false
+                    
+                    if let previousId = selectedSessionId,
+                       let previous = updatedSessions.first(where: { $0.id == previousId }) {
+                        selectedSession = previous
+                        updateFloatingButton(for: previous)
+                    } else if let first = updatedSessions.first {
+                        selectedSessionId = first.id
+                        selectedSession = first
+                        updateFloatingButton(for: first)
                     }
+                }
+            } catch {
+                if let urlError = error as? URLError, urlError.code == .cancelled { return }
+                await MainActor.run {
+                    print("[Error] Fetch BuyerConcertDetail failed: \(error)")
+                    self.state = .failed(error)
                 }
             }
         }
+    }
     
     func applyToSelectedSession() async -> Bool {
         guard let concertId = detail?.id,
@@ -208,6 +210,8 @@ final class BuyerConcertViewModel: ObservableObject {
             return
         }
         
+        let isToday = Calendar.current.isDateInToday(session.date)
+        
         switch concert.status {
         case .applyNotOpened:
             floatingButtonTitle = "티켓 응모하기"
@@ -246,30 +250,31 @@ final class BuyerConcertViewModel: ObservableObject {
             
         case .ticketed:
             if session.applyStatus == .paid {
-                floatingButtonTitle = "티켓 조회하기"
+                if isToday {
+                    floatingButtonTitle = "공연 입장하기"
+                    floatingAction = .enter
+                } else {
+                    floatingButtonTitle = "티켓 조회하기"
+                    floatingAction = .view
+                }
                 isFloatingButtonEnabled = true
-                floatingAction = .view
-            } else if session.applyStatus == .canceled && session.buyable {
+            }
+            // ✅ 선착순 구매 (응모 상태 무관)
+            else if session.buyable {
                 floatingButtonTitle = "티켓 구매하기"
                 isFloatingButtonEnabled = true
                 floatingAction = .buy
-            } else if session.applyStatus == nil && session.buyable {
+            }
+            // ✅ 매진된 경우
+            else {
                 floatingButtonTitle = "티켓 구매하기"
-                isFloatingButtonEnabled = true
-                floatingAction = .buy
-            } else if session.buyable == false {
-                floatingButtonTitle = "티켓 구매하기"
-                isFloatingButtonEnabled = false
-                floatingAction = .none
-            } else {
-                floatingButtonTitle = ""
                 isFloatingButtonEnabled = false
                 floatingAction = .none
             }
             
         case .inProgress:
             if session.ticketId != nil {
-                floatingButtonTitle = "공연 입장하기"
+                floatingButtonTitle = "티켓 조회하기"
                 isFloatingButtonEnabled = true
                 floatingAction = .enter
             } else if session.buyable {
@@ -296,32 +301,34 @@ final class BuyerConcertViewModel: ObservableObject {
     
     func preparePurchase() async {
         guard let sessionId = selectedSession?.id else {
-            print("❌ 세션 ID 없음")
+            print("세션 ID 없음")
             return
         }
         
         do {
-            let priceWei = try await buyTicketService.getPriceWei(for: sessionId)
-            let priceEth: String = {
-                let ethDouble = Double(priceWei) / pow(10.0, 18.0)
-                return String(format: "%.4f", ethDouble)
-            }()
+            let approval = try await buyTicketService.getApprovalInfo(for: sessionId)
+            let priceWei = BigUInt(approval.priceWei)
             
             await MainActor.run {
                 self.ticketPriceWei = priceWei
-                self.ticketPriceEthString = priceEth
+                self.ticketPriceEthString = String(format: "%.4f", Double(priceWei) / pow(10.0, 18.0))
+                self.currentChallenge = approval.challenge
+                self.currentChallengeId = approval.challengeId
                 self.showBuyConfirmAlert = true
             }
         } catch {
-            print("❌ 가격 조회 실패: \(error)")
+            print("가격/Challenge 조회 실패: \(error)")
         }
     }
     
-    func confirmPurchase() async {
+    func confirmPurchase(
+        showProofProcessing: @escaping () async -> Void = {},
+        hideProofProcessing: @escaping () async -> Void = {}
+    ) async {
         guard let sessionId = selectedSession?.id,
               let walletAddress = UserWalletStore.shared.address,
               let priceWei = ticketPriceWei else {
-            print("❌ 정보 부족")
+            print("❌ 결제 정보 부족")
             return
         }
         
@@ -331,45 +338,82 @@ final class BuyerConcertViewModel: ObservableObject {
         }
         
         await MainActor.run {
-            self.isPurchasing = true
-            self.isFloatingButtonEnabled = false
-            self.floatingButtonTitle = "결제 진행 중..."
+            isPurchasing = true
+            isFloatingButtonEnabled = false
+            floatingButtonTitle = "결제 진행 중..."
         }
         
         do {
+            var proof: [String]
+            var nullifier: String
+            
+            // ✅ (1) 응모 결제: Face ID → 서버(/api/proofs/win)로 전송
+            if let challenge = currentChallenge, let challengeId = currentChallengeId {
+                print("🎯 Face ID 기반 결제 시작: \(challenge)")
+                
+                let signatureData = try await BiometricKeyManager.shared.sign(challenge: challenge)
+                let signatureHex = signatureData.toHexString()
+                
+                let privateKey = try BiometricKeyManager.shared.loadOrCreateKeyPair()
+                let pubKeyData = try BiometricKeyManager.shared.getPublicKeyData(from: privateKey)
+                let compressedKey = BiometricKeyManager.shared.compressPublicKey(pubKeyData)!
+                let publicKeyHex = compressedKey.toHexString()
+                
+                // 서버 요청 시작 → Proof 생성
+                await showProofProcessing()
+                let response = try await ProofService.shared.submitWinProof(
+                    sessionId: sessionId,
+                    challengeId: challengeId,
+                    signature: signatureHex,
+                    publicKey: publicKeyHex
+                )
+                await hideProofProcessing()
+                
+                proof = response.proof
+                nullifier = response.nullifier
+                
+            // ✅ (2) 선착순 결제: 서버(/api/proofs/win) 호출 없이 바로 온체인
+            } else {
+                print("⚡ 선착순 결제 — Proof 및 Face ID 인증 생략, 온체인 직접 호출")
+                
+                proof = Array(
+                    repeating: "0x0000000000000000000000000000000000000000000000000000000000000000",
+                    count: 24
+                )
+                nullifier = "0x0000000000000000000000000000000000000000000000000000000000000000"
+            }
+            
+            // ✅ 온체인 트랜잭션 실행
             try await buyTicketService.sendBuyTicketTransaction(
                 sessionId: sessionId,
                 from: walletAddress,
-                value: priceWei
+                value: priceWei,
+                proof: proof,
+                nullifier: nullifier
             )
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                let url = URL(string: "metamask://")!
-                let canOpen = UIApplication.shared.canOpenURL(url)
-                print("🔍 canOpenURL: \(canOpen)")
-                if canOpen {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                if let url = URL(string: "metamask://"), UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url)
-                    print("📲 MetaMask로 전환 시도")
-                } else {
-                    print("❌ MetaMask 딥링크 실패 — 앱 미설치 or Info.plist 누락")
                 }
             }
             
-            print("✅ 결제 완료")
+            print("🟢 온체인 결제 트랜잭션 전송 완료")
+            
             showBuyConfirmAlert = false
             await fetch()
             
         } catch {
+            await hideProofProcessing()
             print("❌ 결제 실패: \(error)")
         }
+        
         await MainActor.run {
-            self.isPurchasing = false
-            if let sessionId = self.selectedSessionId,
-               let updatedSession = self.sessionList.first(where: { $0.id == sessionId }) {
-                self.selectedSession = updatedSession
-                self.updateFloatingButton(for: updatedSession)
+            isPurchasing = false
+            if let selected = selectedSession {
+                updateFloatingButton(for: selected)
             } else {
-                self.updateFloatingButton(for: nil)
+                updateFloatingButton(for: nil)
             }
         }
     }

@@ -9,23 +9,43 @@ import SwiftUI
 
 struct ResaleLookUpView: View {
     let concertId: Int64
-    let sessions: [BuyerSessionDetail]      // 상위 뷰에서 전달받음
-    let basePrice: Int                      // 공연의 정가 (퍼센트 계산용)
-    
+    let concertTitle: String
+    let sessions: [BuyerSessionDetail]
+    let basePrice: Int
+
     @StateObject private var vm = ResaleLookUpViewModel()
     @State private var selectedSession: BuyerSessionDetail? = nil
     @State private var selectedTicket: ResaleTicket? = nil
 
+    @Environment(\.dismiss) private var dismiss
+    @State private var showMyPage = false
+
     var body: some View {
-        VStack(spacing: 0) {
-            sessionPickerSection
-            Divider().padding(.vertical, 8)
-            ticketListSection
+        ZStack {
+            Color.white.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                BackHeaderView(
+                    title: concertTitle,
+                    useLogo: false,
+                    onBack: { dismiss() },
+                    onMenu: { showMyPage = true }
+                )
+                .background(Color.white)
+                .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
+
+                VStack(spacing: 0) {
+                    sessionPickerSection
+                    Divider().padding(.vertical, 8)
+                    ticketListSection
+                }
+            }
         }
-        .navigationTitle("리세일 티켓 조회")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
+        .fullScreenCover(isPresented: $showMyPage) {
+            MypageView()
+        }
         .task {
-            // 첫 세션 자동 조회
             if let first = sessions.first {
                 selectedSession = first
                 await vm.fetchResaleTickets(sessionId: first.id)
@@ -43,7 +63,7 @@ struct ResaleLookUpView: View {
 }
 
 extension ResaleLookUpView {
-    // MARK: - 1️⃣ 날짜 선택 드롭다운
+    // MARK: - 날짜 선택 드롭다운
     private var sessionPickerSection: some View {
         Menu {
             ForEach(sessions, id: \.id) { session in
@@ -144,5 +164,16 @@ extension ResaleLookUpView {
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - SafeAreaInset Helper
+extension UIApplication {
+    static var safeAreaTop: CGFloat {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            return 0
+        }
+        return window.safeAreaInsets.top
     }
 }

@@ -3,19 +3,16 @@ import SwiftUI
 struct ConcertDetailView: View {
     private let concertId: Int64
     @Environment(\.dismiss) private var dismiss
-    
+
+    // MARK: 상태 변수
     @State private var showScanner = false
     @State private var showTicketNumberEntry = false
-    @State private var showVerifyAlert = false
-    @State private var verifyTitle = ""
-    @State private var verifyMessage = ""
     @State private var showTicketDetail = false
     @State private var showInvalidTicket = false
-    
-    @State private var showEntryCodeView = false
-    
+    @State private var showProgressAlert = false
+
     @StateObject private var vm: ConcertDetailViewModel
-    
+
     @MainActor
     init(concertId: Int64) {
         self.concertId = concertId
@@ -23,91 +20,89 @@ struct ConcertDetailView: View {
     }
     
     var body: some View {
-        bodyView
-            .navigationTitle("공연 상세")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.black)
-                    }
-                }
-            }
-            .fullScreenCover(isPresented: $showEntryCodeView) {
-                if let session = vm.selectedSession {
-                    EntryCodeView(
-                        concertId: concertId,
-                        sessionId: session.id
-                    )
-                } else {
-                    Text("세션 정보를 불러오지 못했습니다.")
-                }
-            }
-            .fullScreenCover(isPresented: $showScanner) {
-                QRScannerContainerView(
-                    onScan: { code in
-                        showScanner = false
-                        vm.verifyTicket(with: code)
-                    },
-                    onManualTap: {
-                        showScanner = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            showTicketNumberEntry = true
-                        }
-                    }
+        ZStack {
+            bodyView
+            
+            if showProgressAlert {
+                ProofProgressAlertView(
+                    title: "티켓 검증 인증을 진행 중입니다.",
+                    message: "완료까지 약 1분 정도 소요됩니다."
                 )
             }
-            .fullScreenCover(isPresented: $showTicketDetail) {
-                if let ticket = vm.verifiedTicket {
-                    OrganizerTicketDetailView(ticket: ticket) {
-                        showTicketDetail = false
-                        vm.verifiedTicket = nil
-                    }
-                }
-            }
-            .fullScreenCover(isPresented: $showTicketNumberEntry) {
-                OrganizerTicketNumberCheckView {
-                    showTicketNumberEntry = false
+        }
+        // ✅ 상태 변화 감지 (검증중 / 성공 / 실패)
+        .onChange(of: vm.verificationState) { handleVerificationStateChange($0) }
+        
+        // ✅ QR 스캐너
+        .fullScreenCover(isPresented: $showScanner) {
+            QRScannerContainerView(
+                onScan: { code in
+                    showScanner = false
+                    vm.verifyTicket(with: code)
+                },
+                onManualTap: {
+                    showScanner = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        showScanner = true
+                        showTicketNumberEntry = true
                     }
                 }
-            }
-            .onChange(of: vm.verificationState) { state in
-                switch state {
-                case .idle, .verifying:
-                    break
-                case .success(let message):
-                    verifyTitle = "입장 확인 완료"
-                    verifyMessage = message
-                    showVerifyAlert = true
-                case .failure(let error):
-                    verifyTitle = "티켓 검증 실패"
-                    verifyMessage = error
-                    showVerifyAlert = true
+            )
+        }
+        
+        // ✅ 티켓 결과 (국내/외국인 분기)
+        .fullScreenCover(isPresented: $showTicketDetail) {
+            if let ticket = vm.verifiedTicket {
+                if vm.identityType == "PASSPORT" {
+                    OrganizerOfflineVerifyView(ticketId: ticket.ticketId) {
+                        showTicketDetail = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            showScanner = true
+                        }
+                    }
+                } else {
+                    OrganizerTicketVerifiedView(showScanner: $showScanner) // ✅ 바인딩 연결
                 }
             }
-            .onChange(of: vm.verifiedTicket) { ticket in
-                if ticket != nil {
-                    showTicketDetail = true
+        }
+        
+        // ✅ QR 수동입력
+        .fullScreenCover(isPresented: $showTicketNumberEntry) {
+            OrganizerTicketNumberCheckView {
+                showTicketNumberEntry = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showScanner = true
                 }
             }
-            .alert(verifyTitle, isPresented: $showVerifyAlert) {
-                Button("확인", role: .cancel) {}
-            } message: {
-                Text(verifyMessage)
-            }
+        }
+
+        // ✅ 검증 실패 (QR 이상)
+        .fullScreenCover(isPresented: $showInvalidTicket) {
+            InvalidTicketView()
+        }
     }
-    
+
+    // MARK: - 검증 상태 변경 처리
+    private func handleVerificationStateChange(_ state: ConcertDetailViewModel.VerificationState) {
+        switch state {
+        case .verifying:
+            showProgressAlert = true
+        case .success:
+            showProgressAlert = false
+            showTicketDetail = true
+        case .failure:
+            showProgressAlert = false
+            showInvalidTicket = true
+        default:
+            break
+        }
+    }
+
+    // MARK: - 본문
     @ViewBuilder
     private var bodyView: some View {
         switch vm.state {
         case .idle, .loading:
             ProgressView().task { vm.onAppear() }
-            
         case .failed(let error):
             VStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
@@ -116,47 +111,30 @@ struct ConcertDetailView: View {
                 Text(error.localizedDescription)
                 Button("다시 시도") { vm.onAppear() }
             }
-            
         case .loaded:
             if let detail = vm.detail {
                 content(detail)
             }
         }
     }
-    
-    // MARK: - 티켓 검증 상태 처리
-    private func handleVerificationState(_ state: ConcertDetailViewModel.VerificationState) {
-        switch state {
-        case .idle, .verifying:
-            break
-        case .success(let message):
-            verifyTitle = "입장 확인 완료"
-            verifyMessage = message
-            showVerifyAlert = true
-        case .failure(let error):
-            verifyTitle = "입장 확인 실패"
-            verifyMessage = error
-            showVerifyAlert = true
-        }
-    }
-    
-    // MARK: - 메인 콘텐츠
+
+    // MARK: - 공연 상세 본문
     @ViewBuilder
     func content(_ d: ConcertDetail) -> some View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    
+                    // 포스터
                     HStack {
                         Spacer()
                         PosterView(url: d.poster, status: d.status)
                         Spacer()
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 16) {
                         BasicInfoView(detail: d, showResaleInfo: true)
                         Divider()
-                        
+
                         if d.status == .applyNotOpened {
                             Text("응모 D-\(Date().daysUntil(d.applyPeriod.lowerBound))일")
                                 .font(.headline)
@@ -167,43 +145,34 @@ struct ConcertDetailView: View {
                             Divider()
                             SessionStatSection()
                         }
-                        
+
                         if !d.photoCards.isEmpty {
                             photoCardSection(d.photoCards)
                         }
                     }
                     .padding(.horizontal)
-                    
+
                     Spacer(minLength: 80)
                 }
                 .padding(.vertical, 12)
             }
             .refreshable { await vm.refresh() }
-            
+
             if d.status == .inProgress {
                 FloatingEnterButton()
-            }
-            
-            if d.status == .ended {
-                Color.black.opacity(0.4).ignoresSafeArea()
-                Image("EndedEvent")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 200, height: 200)
-                    .opacity(0.9)
             }
         }
         .environmentObject(vm)
     }
-    
-    // MARK: - 입장 확인 플로팅 버튼
+
+    // MARK: - 입장 버튼
     @ViewBuilder
     private func FloatingEnterButton() -> some View {
         VStack {
             Spacer()
             HStack {
                 Spacer()
-                Button(action: { showEntryCodeView = true }) {
+                Button(action: { showScanner = true }) {
                     Label("공연 입장 확인하기", systemImage: "ticket.fill")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)
@@ -217,24 +186,25 @@ struct ConcertDetailView: View {
             .padding()
         }
     }
-    
+
     private var isTodaySession: Bool {
         guard let s = vm.selectedSession else { return false }
         let today = Calendar.current.startOfDay(for: Date())
         let sessionDay = Calendar.current.startOfDay(for: s.date)
         return today == sessionDay
     }
-    
+
+    // MARK: - 포토카드 섹션
     @ViewBuilder
-    private func photoCardSection(_ photoCards: [PhotoCardItem]) -> some View {
+    private func photoCardSection(_ photoCards: [PhotoCardInfo]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("포토카드")
                 .font(.headline)
                 .padding(.horizontal)
-            
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(photoCards, id: \.photoCardId) { photo in
+                    ForEach(photoCards, id: \.id) { photo in
                         AsyncImage(url: URL(string: photo.imageUrl)) { phase in
                             switch phase {
                             case .empty:
@@ -263,7 +233,6 @@ struct ConcertDetailView: View {
         }
     }
 }
-
 private struct SessionStatSection: View {
     @EnvironmentObject private var vm: ConcertDetailViewModel
     

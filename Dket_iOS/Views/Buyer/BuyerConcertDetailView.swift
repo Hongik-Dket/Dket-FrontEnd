@@ -14,6 +14,7 @@ struct BuyerConcertDetailView: View {
     @StateObject private var vm: BuyerConcertViewModel
     
     @State private var showApplySuccessAlert = false
+    @State private var showProofProcessingAlert = false
     @State private var showTicketDetail = false
     @State private var selectedTicketId: Int64?
     
@@ -29,7 +30,7 @@ struct BuyerConcertDetailView: View {
             switch vm.state {
             case .idle, .loading:
                 ProgressView()
-                    .task { await vm.fetch() }
+                    .task { await vm.onAppear() }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .failed(let error):
                 VStack(spacing: 8) {
@@ -58,7 +59,6 @@ struct BuyerConcertDetailView: View {
                 }
             }
         }
-        .task { await vm.onAppear() }
     }
     
     // MARK: - Content
@@ -76,7 +76,7 @@ struct BuyerConcertDetailView: View {
                     
                     // 기본 정보 + 세션 정보
                     VStack(alignment: .leading, spacing: 16) {
-                        BasicInfoView(detail: detail)
+                        BasicInfoView(detail: detail, showResaleInfo: true)
                         Divider()
                         
                         if detail.status == .applyNotOpened {
@@ -95,6 +95,7 @@ struct BuyerConcertDetailView: View {
                                     NavigationLink(
                                         destination: ResaleLookUpView(
                                             concertId: concertId,
+                                            concertTitle: detail.title,
                                             sessions: vm.sessions,
                                             basePrice: vm.detail?.priceKrw ?? 0
                                         )
@@ -126,7 +127,9 @@ struct BuyerConcertDetailView: View {
             // Floating Button (응모/결제/입장 등)
             floatingButtonSection
                 .fullScreenCover(item: $selectedTicketId) { ticketId in
-                    BuyerTicketDetailView(ticketId: ticketId)
+                    if let session = vm.selectedSession {
+                        BuyerTicketDetailView(ticketId: ticketId, sessionId: session.id)
+                    }
                 }
         }
         .overlay(overlayModals)
@@ -205,7 +208,11 @@ struct BuyerConcertDetailView: View {
                     priceEth: vm.ticketPriceEthString,
                     onConfirm: {
                         Task {
-                            await vm.confirmPurchase()
+                            await vm.confirmPurchase(showProofProcessing: {
+                                await MainActor.run { showProofProcessingAlert = true }
+                            }, hideProofProcessing: {
+                                await MainActor.run { showProofProcessingAlert = false }
+                            })
                             await MainActor.run {
                                 vm.updateFloatingButton(for: vm.selectedSession)
                             }
@@ -214,6 +221,13 @@ struct BuyerConcertDetailView: View {
                     onCancel: {
                         vm.showBuyConfirmAlert = false
                     }
+                )
+            }
+
+            if showProofProcessingAlert {
+                ProofProgressAlertView(
+                    title: "티켓 결제 인증 절차를 진행 중입니다.",
+                    message: "완료까지 약 1분 정도 소요됩니다."
                 )
             }
         }
@@ -260,3 +274,4 @@ private struct BuyerSessionStatSection: View {
 extension Int64: Identifiable {
     public var id: Int64 { self }
 }
+

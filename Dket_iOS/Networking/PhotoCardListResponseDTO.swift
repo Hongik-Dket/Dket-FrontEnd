@@ -7,7 +7,17 @@
 
 struct PhotoCardListResponseDTO: Decodable {
     let isSuccess: Bool
-    let code: Int
+    let code: String
     let message: String
     let result: [PhotoCardItemDTO]
+}
+
+struct PhotoCardItemDTO: Decodable {
+    let photoCardId: Int64
+    let imageUrl: String
+    let ticketId: Int64
+
+    func toDomain() -> PhotoCardItem {
+        .init(photoCardId: photoCardId, imageUrl: imageUrl, ticketId: ticketId)
+    }
 }

@@ -71,7 +71,7 @@ struct PhotoCardDetailView: View {
         }
         .navigationBarHidden(true)
         .fullScreenCover(isPresented: $showTicket) {
-            BuyerTicketDetailView(ticketId: vm.photoCard?.ticketId ?? 0)
+            BuyerTicketDetailView(ticketId: vm.photoCard?.ticketId ?? 0, sessionId: 0)
         }
         .fullScreenCover(isPresented: $showMypage) {
             MypageView()

@@ -156,42 +156,56 @@ struct ConcertSetupView: View {
             
         case .two:
             let calendar = Calendar(identifier: .gregorian)
-            guard
-                let finalApplyStart = calendar.date(
+            let finalApplyStart = calendar.date(
                     bySettingHour: calendar.component(.hour, from: enrollStartTime),
                     minute: calendar.component(.minute, from: enrollStartTime),
                     second: 0,
                     of: enrollStartDate
-                ),
+                ) ?? enrollStartDate
+                
                 let finalApplyEnd = calendar.date(
                     bySettingHour: calendar.component(.hour, from: enrollEndTime),
                     minute: calendar.component(.minute, from: enrollEndTime),
                     second: 0,
                     of: enrollEndDate
-                )
-            else {
-                alertMessage = "응모 시작/종료 시간이 올바르지 않습니다."
-                showingAlert = true
-                return
-            }
-            
-            if finalApplyEnd <= finalApplyStart {
-                alertMessage = "응모 마감일은 시작일보다 이후여야 합니다."
-                showingAlert = true
-                return
-            }
-            
-            if calendar.date(byAdding: .day, value: 2, to: finalApplyEnd)! > calendar.startOfDay(for: performanceStart) {
-                alertMessage = "응모 마감 후 최소 2일 후에 공연이 시작되어야 합니다."
-                showingAlert = true
-                return
-            }
-            
-            if performanceEnd < performanceStart {
-                alertMessage = "공연 종료일은 공연 시작일보다 이후여야 합니다."
-                showingAlert = true
-                return
-            }
+                ) ?? enrollEndDate
+//            let calendar = Calendar(identifier: .gregorian)
+//            guard
+//                let finalApplyStart = calendar.date(
+//                    bySettingHour: calendar.component(.hour, from: enrollStartTime),
+//                    minute: calendar.component(.minute, from: enrollStartTime),
+//                    second: 0,
+//                    of: enrollStartDate
+//                ),
+//                let finalApplyEnd = calendar.date(
+//                    bySettingHour: calendar.component(.hour, from: enrollEndTime),
+//                    minute: calendar.component(.minute, from: enrollEndTime),
+//                    second: 0,
+//                    of: enrollEndDate
+//                )
+//            else {
+//                alertMessage = "응모 시작/종료 시간이 올바르지 않습니다."
+//                showingAlert = true
+//                return
+//            }
+//            
+//            if finalApplyEnd <= finalApplyStart {
+//                alertMessage = "응모 마감일은 시작일보다 이후여야 합니다."
+//                showingAlert = true
+//                return
+//            }
+//            
+//            if calendar.date(byAdding: .day, value: 2, to: finalApplyEnd)! > calendar.startOfDay(for: performanceStart) {
+//                alertMessage = "응모 마감 후 최소 2일 후에 공연이 시작되어야 합니다."
+//                showingAlert = true
+//                return
+//            }
+//            
+//            if performanceEnd < performanceStart {
+//                alertMessage = "공연 종료일은 공연 시작일보다 이후여야 합니다."
+//                showingAlert = true
+//                return
+//            }
             step = .three
             
         case .three:

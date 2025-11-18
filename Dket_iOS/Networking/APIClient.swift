@@ -8,16 +8,33 @@
 
 import Foundation
 
+struct APIErrorResponse: Decodable, Error {
+    let isSuccess: Bool
+    let code: String
+    let message: String
+    
+    var errorDescription: String? { message }
+    var description: String { message }
+}
+
 final class APIClient {
     static let shared = APIClient()
     private init() {}
-    
+
     private static let baseURL = URL(string: "https://api.dket.kr")!
-    private let session = URLSession.shared
-    
+
+    // 4분 타임아웃 설정
+    private let session: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 240
+        config.timeoutIntervalForResource = 300
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
+        return URLSession(configuration: config)
+    }()
+
     var lastResponseData: Data? = nil
-    
-    // MARK: - JSON Decoder 설정
+
+    // MARK: - JSON Encoder / Decoder
     private static let decoder: JSONDecoder = {
         let d = JSONDecoder()
         d.keyDecodingStrategy = .convertFromSnakeCase
@@ -31,14 +48,24 @@ final class APIClient {
         }
         return d
     }()
-    
+
     private static let encoder: JSONEncoder = {
         let e = JSONEncoder()
         e.keyEncodingStrategy = .useDefaultKeys
         e.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddTHHmmss)
         return e
     }()
-    
+}
+
+// MARK: - 공통 에러 처리 헬퍼
+private extension APIClient {
+    func handleErrorResponse(data: Data, http: HTTPURLResponse) throws -> Never {
+        if let apiError = try? Self.decoder.decode(APIErrorResponse.self, from: data) {
+            print("🚨 서버 에러 감지: \(apiError.code) - \(apiError.message)")
+            throw apiError
+        }
+        throw NetworkError.status(http.statusCode)
+    }
 }
 
 // MARK: - GET 요청
@@ -50,45 +77,46 @@ extension APIClient {
         components.port = Self.baseURL.port
         components.path = endpoint.path
         components.queryItems = endpoint.queryItems
-        
+
         guard let url = components.url else {
             throw URLError(.badURL)
         }
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         authorizedRequest(&request, for: endpoint)
-        
+
         let (data, response) = try await session.data(for: request)
         lastResponseData = data
-        
+
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
             print("🔵 [GET \(endpoint.path)] Raw-Response ↓↓↓\n\(raw)\n")
         }
 #endif
-        
+
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.unknown
         }
+
         guard (200..<300).contains(http.statusCode) else {
-            throw NetworkError.status(http.statusCode)
+            try handleErrorResponse(data: data, http: http)
         }
-        
+
         return try Self.decoder.decode(T.self, from: data)
     }
-    
+
     func getDecoded<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         let wrapper = try await get(endpoint, as: APIResponse<T>.self)
         return wrapper.result
     }
-    
+
     static func request<T: Decodable>(endpoint: Endpoint) async throws -> T {
         try await shared.getDecoded(endpoint)
     }
 }
 
 // MARK: - POST 요청
-
 extension APIClient {
     func post<Body: Encodable, Resp: Decodable>(
         _ endpoint: Endpoint,
@@ -100,34 +128,34 @@ extension APIClient {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         authorizedRequest(&request, for: endpoint)
-        
+
         let encoder = JSONEncoder()
-        //encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddHHmm)
         let jsonData = try encoder.encode(body)
-        
+
         if let jsonString = String(data: jsonData, encoding: .utf8) {
             print("📦 실제 전송 JSON:\n\(jsonString)")
         }
-        
+
         request.httpBody = jsonData
-        
+
         let (data, response) = try await session.data(for: request)
         lastResponseData = data
-        
+
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
             print("🔵 [POST \(endpoint.path)] Raw-Response ↓↓↓\n\(raw)\n")
         }
 #endif
-        
+
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.unknown
         }
+
         guard (200..<300).contains(http.statusCode) else {
-            throw NetworkError.status(http.statusCode)
+            try handleErrorResponse(data: data, http: http)
         }
-        
+
         return try Self.decoder.decode(Resp.self, from: data)
     }
 }
@@ -144,31 +172,33 @@ extension APIClient {
         request.httpMethod = "PATCH"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         authorizedRequest(&request, for: endpoint)
-        
-        // ✅ body가 있으면 JSON 인코딩
+
         if let body = body {
             request.httpBody = try Self.encoder.encode(body)
-        } else {
-            request.httpBody = nil
         }
-        
+
         let (data, response) = try await session.data(for: request)
         lastResponseData = data
-        
+
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
             print("🟣 [PATCH \(endpoint.path)] Raw-Response ↓↓↓\n\(raw)\n")
         }
 #endif
-        
+
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.unknown
         }
+
         guard (200..<300).contains(http.statusCode) else {
-            throw NetworkError.status(http.statusCode)
+            try handleErrorResponse(data: data, http: http)
         }
-        
+
         return try Self.decoder.decode(Resp.self, from: data)
+    }
+
+    func patch<Resp: Decodable>(_ endpoint: Endpoint, as type: Resp.Type = Resp.self) async throws -> Resp {
+        try await patch(endpoint, body: Optional<EmptyBody>.none, as: type)
     }
 }
 
@@ -180,30 +210,27 @@ extension APIClient {
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         authorizedRequest(&request, for: endpoint)
-        
+
         let (data, response) = try await session.data(for: request)
         lastResponseData = data
-        
+
 #if DEBUG
         if let raw = String(data: data, encoding: .utf8) {
             print("🔴 [DELETE \(endpoint.path)] Raw-Response ↓↓↓\n\(raw)\n")
         }
 #endif
-        
+
         guard let http = response as? HTTPURLResponse else {
             throw NetworkError.unknown
         }
+
         guard (200..<300).contains(http.statusCode) else {
-            if let errBody = String(data: data, encoding: .utf8) {
-                print("❌ DELETE 실패 Response Body ↓↓↓\n\(errBody)")
-            }
-            throw NetworkError.status(http.statusCode)
+            try handleErrorResponse(data: data, http: http)
         }
     }
 }
 
 // MARK: - Multipart 업로드
-
 extension APIClient {
     func upload<U: Decodable>(
         _ endpoint: Endpoint,
@@ -215,70 +242,40 @@ extension APIClient {
         let url = Self.baseURL.appendingPathComponent(endpoint.path)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        
+
         let boundary = "Boundary-\(UUID().uuidString)"
-        request.setValue("multipart/form-data; boundary=\(boundary)",
-                         forHTTPHeaderField: "Content-Type")
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         authorizedRequest(&request, for: endpoint)
-        
+
         let encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .useDefaultKeys
         encoder.dateEncodingStrategy = .formatted(DateFormatter.yyyyMMddTHHmmss)
         let jsonData = try encoder.encode(json)
-        
-        
+
         var body = Data()
         body.appendMultiPart(field: "request", filename: "concert.json", mime: "application/json", value: jsonData, boundary: boundary)
         body.appendMultiPart(field: "banner", filename: "banner.jpg", mime: "image/jpeg", value: banner, boundary: boundary)
         body.appendMultiPart(field: "poster", filename: "poster.jpg", mime: "image/jpeg", value: poster, boundary: boundary)
+
         for (index, photoData) in photocardList.enumerated() {
-                body.appendMultiPart(
-                    field: "photocardList", 
-                    filename: "photocard_\(index).jpg",
-                    mime: "image/jpeg",
-                    value: photoData,
-                    boundary: boundary
-                )
-            }
+            body.appendMultiPart(field: "photocardList", filename: "photocard_\(index).jpg", mime: "image/jpeg", value: photoData, boundary: boundary)
+        }
+
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
-        
-#if DEBUG
-        if let txt = String(data: body, encoding: .utf8) {
-            print("▶︎ Multipart Body ↓↓↓\n\(txt)")
-        }
-#endif
-        
+
         let (data, response) = try await session.upload(for: request, from: body)
-        
-        guard let http = response as? HTTPURLResponse else {
-            throw NetworkError.unknown
-        }
+        guard let http = response as? HTTPURLResponse else { throw NetworkError.unknown }
+
         guard (200..<300).contains(http.statusCode) else {
-            if let err = String(data: data, encoding: .utf8) {
-                print("🔴 SERVER ERROR BODY:\n\(err)")
-            }
-            throw NetworkError.status(http.statusCode)
+            try handleErrorResponse(data: data, http: http)
         }
-        
-#if DEBUG
-        if let pretty = try? JSONSerialization.jsonObject(with: data),
-           let prettyData = try? JSONSerialization.data(withJSONObject: pretty, options: .prettyPrinted),
-           let prettyString = String(data: prettyData, encoding: .utf8) {
-            print("✅ 서버 응답:\n\(prettyString)")
-        }
-#endif
-        
+
         return try Self.decoder.decode(U.self, from: data)
     }
 }
 
-// MARK: - multipart helper
+// MARK: - Multipart Helper
 private extension Data {
-    mutating func appendMultiPart(field: String,
-                                  filename: String?,
-                                  mime: String,
-                                  value: Data,
-                                  boundary: String) {
+    mutating func appendMultiPart(field: String, filename: String?, mime: String, value: Data, boundary: String) {
         append("--\(boundary)\r\n".data(using: .utf8)!)
         var disposition = "Content-Disposition: form-data; name=\"\(field)\""
         if let fn = filename {
@@ -292,34 +289,22 @@ private extension Data {
     }
 }
 
+// MARK: - Authorization
 extension APIClient {
     private func authorizedRequest(_ request: inout URLRequest, for endpoint: Endpoint) {
         print("요청 path: \(endpoint.path)")
-        
-        // 인증 불필요 API
+
         guard endpoint.requiresAuth else {
             print("[비인증 API] Authorization 헤더 제외")
             return
         }
-        
-        // 토큰 확인
+
         guard let token = TokenManager.loadToken(), !token.isEmpty else {
             print("[인증필요] 토큰 없음 — Authorization 미삽입")
             return
         }
-        
-        // 헤더 삽입
+
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         print("Authorization 헤더 삽입 완료: Bearer \(token.prefix(15))...")
-    }
-}
-
-extension APIClient {
-    // body 없는 PATCH용 오버로드
-    func patch<Resp: Decodable>(
-        _ endpoint: Endpoint,
-        as type: Resp.Type = Resp.self
-    ) async throws -> Resp {
-        try await patch(endpoint, body: Optional<EmptyBody>.none, as: type)
     }
 }

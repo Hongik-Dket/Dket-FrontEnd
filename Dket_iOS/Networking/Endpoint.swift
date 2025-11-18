@@ -18,8 +18,15 @@ enum Endpoint {
     case organizerSession(concertId: Int64, sessionId: Int64)
     case organizerCreateConcert
     case organizerTicket(concertId: Int64, ticketId: String)
+    case organizerTicketVerify
+    case organizerEnterTicket(ticketId: Int64)
     
     case organizerSessionEnter(concertId: Int64, sessionId: Int64)
+    
+    // 개최자 티켓
+    case ticketDetailById(id: Int64)
+    case ticketDetailByNumber(number: String)
+    case ticketEnter(ticketId: Int64)
     
     // MARK: - Buyer (구매자)
     case buyerHomeMain
@@ -28,30 +35,33 @@ enum Endpoint {
     case buyerHomePurchased
     case buyerHomeEntire
     
+    // 공연 검색
+    case buyerHomeSearch(keyword: String)
+    
     case buyerApply(concertId: Int64, sessionId: Int64)
     case buyerTicketPrice(sessionId: Int64)
     case buyerConcertDetail(concertId: Int64)
-    
-    // 개최자 티켓
-    case ticketDetailById(id: Int64)
-    case ticketDetailByNumber(number: String)
-    case ticketEnter(ticketId: Int64)
     
     // 구매자 티켓
     case buyerTicketList
     case buyerEnter(ticketId: String)
     case buyerTicketDetail(ticketId: Int64)
     
-    // 임시
-    case buyerEnterPrepare(ticketId: Int64, entryCode: String)
+    case userPassportInfo
     
     case buyerPhotocardList
     case buyerPhotocardDetail(ticketId: Int64)
     
     case resaleTickets(sessionId: Int64)
-    case resaleRegister(ticketId: Int64, price: Int)
+    case resaleRegister(ticketId: Int64)
+    case resaleSign(ticketId: Int64)
     case resalePurchase(resaleId: Int64)
     case resaleReserve(resaleId: Int64) // 리세일 티켓 예약
+    
+    // MARK: - Proof (증명 관련)
+    case proofsWin
+    case proofsOwnChallenge(ticketId: Int64)
+    case proofsOwn
     
     // MARK: - Auth / Wallet
     case userWalletInfo
@@ -77,6 +87,11 @@ enum Endpoint {
             return "/api/organizer/concerts"
         case .organizerTicket(let cid, let tid):
             return "/api/organizer/concerts/\(cid)/\(tid)"
+        case .organizerTicketVerify:
+            return "/api/organizer/tickets/verify"
+        case .organizerEnterTicket(let ticketId):
+            return "/api/organizer/tickets/\(ticketId)/enter"
+            
             
         case .organizerSessionEnter(let concertId, let sessionId):
             return "/api/organizer/concerts/\(concertId)/\(sessionId)/enter"
@@ -88,6 +103,9 @@ enum Endpoint {
         case .buyerHomePurchased: return "/api/buyer/home/purchased"
         case .buyerHomeEntire: return "/api/buyer/home/entire"
             
+        case .buyerHomeSearch:
+            return "/api/buyer/home/search"
+            
         case .buyerApply(let cid, let sid):
             return "/api/buyer/concerts/\(cid)/sessions/\(sid)/apply"
         case .buyerTicketPrice(let sid):
@@ -95,17 +113,13 @@ enum Endpoint {
         case .buyerConcertDetail(let cid):
             return "/api/buyer/concerts/\(cid)"
             
-        // 임시
-        case .buyerEnterPrepare(let ticketId, _):
-                    return "/api/buyer/tickets/\(ticketId)/enter/prepare"
-            
-            
             
         // Organizer Ticket
         case .ticketDetailById(let id):
             return "/api/tickets"
         case .ticketDetailByNumber(let number):
-            return "/api/tickets"
+            // ✅ 변경됨: 기존 "/api/tickets" → "/api/organizer/tickets"
+            return "/api/organizer/tickets"
         case .ticketEnter(let ticketId):
             return "/api/tickets/organizer/\(ticketId)/enter"
             
@@ -118,6 +132,9 @@ enum Endpoint {
         case .buyerTicketDetail(let ticketId):
             return "/api/buyer/tickets/\(ticketId)"
             
+        case .userPassportInfo:
+            return "/api/user/passport"
+            
         // Buyer PhotoCard
         case .buyerPhotocardList:
             return "/api/user/photocards"
@@ -127,12 +144,21 @@ enum Endpoint {
         // Resale
         case .resaleTickets:
             return "/api/resales"
-        case .resaleRegister(let ticketId, _):
+        case .resaleRegister(let ticketId):
             return "/api/resales/\(ticketId)"
+        case .resaleSign(let ticketId):
+            return "/api/resales/\(ticketId)/sign"
         case .resalePurchase(let resaleId):
             return "/api/resales/\(resaleId)/purchase"
         case .resaleReserve(let resaleId):
             return "/api/resales/\(resaleId)/reserve" // 리세일 티켓 예약
+            
+        case .proofsWin:
+            return "/api/proofs/win"
+        case .proofsOwnChallenge(let ticketId):
+            return "/api/proofs/own/challenge"
+        case .proofsOwn:
+            return "/api/proofs/own"
             
         // Wallet
         case .userWalletInfo:
@@ -151,19 +177,24 @@ enum Endpoint {
         case .ticketDetailById(let id):
             return [URLQueryItem(name: "id", value: "\(id)")]
         case .ticketDetailByNumber(let number):
-            return [URLQueryItem(name: "number", value: number)]
+            // ✅ 변경됨: "number" → "ticketNumber"
+            return [URLQueryItem(name: "ticketNumber", value: number)]
         case .resaleTickets(let sessionId):
             return [URLQueryItem(name: "sessionId", value: "\(sessionId)")]
+            
+        // 공연 검색
+        case .buyerHomeSearch(let keyword):
+            return [URLQueryItem(name: "keyword", value: keyword)]
+            
+        case .proofsOwnChallenge(let ticketId):
+            return [URLQueryItem(name: "ticketId", value: "\(ticketId)")]
         
-        // 임시
-        case .buyerEnterPrepare(_, let entryCode):
-            return [URLQueryItem(name: "entryCode", value: entryCode)]
         default:
             return nil
         }
     }
     
-    // MARK: - Method 설정 
+    // MARK: - Method 설정
     var method: String {
         switch self {
         case .organizerCreateConcert,
@@ -174,11 +205,16 @@ enum Endpoint {
                 .foreignSignUp,
                 .koreanSignUp,
                 .loginMetaMask,
-                .completeMetaMaskSignUp:
+                .completeMetaMaskSignUp,
+                .proofsWin,
+                .proofsOwn,
+                .organizerTicketVerify:
             return "POST"
         case .buyerEnter,
                 .ticketEnter,
-                .resaleReserve:
+                .resaleSign,
+                .resaleReserve,
+                .organizerEnterTicket:
             return "PATCH"
         default:
             return "GET"
@@ -193,7 +229,7 @@ extension Endpoint {
         case .foreignSignUp,
                 .koreanSignUp:
             return false
-        default: 
+        default:
             return true
         }
     }

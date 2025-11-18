@@ -20,9 +20,13 @@ final class ConcertDetailViewModel: ObservableObject {
     }
     @Published private(set) var verificationState: VerificationState = .idle
     
+    @Published private(set) var isVerifying = false
+    
     @Published var verifiedTicket: TicketDetail?
     
     @Published var verificationFailed = false
+    
+    @Published var identityType: String? = nil
     
     enum VerificationState: Equatable {
         case idle
@@ -96,16 +100,46 @@ final class ConcertDetailViewModel: ObservableObject {
     
     func verifyTicket(with code: String) {
         Task {
+            guard !isVerifying else {
+                print("⚠️ 이미 검증 중 — 중복 호출 방지됨")
+                return
+            }
+            isVerifying = true
+            defer { isVerifying = false }
+            
             verificationState = .verifying
             do {
-                let ticket = try await service.verifyTicket(ticketId: Int64(code) ?? 0)
-                self.verifiedTicket = ticket
+                guard let proofId = extractUUID(from: code) else {
+                    throw NSError(domain: "InvalidQR", code: -1,
+                                  userInfo: [NSLocalizedDescriptionKey: "잘못된 QR코드 형식입니다."])
+                }
+                
+                let result = try await service.verifyProof(proofId: proofId)
+                print("✅ 입장 확인 완료 — ticketId: \(result.ticketId), type: \(result.identityType)")
+                
+                // ✅ identityType 저장
+                self.identityType = result.identityType
+                
+                // ✅ TicketDetail 생성 (birth는 Date 타입)
+                self.verifiedTicket = TicketDetail(
+                    ticketId: result.ticketId,
+                    concertTitle: "",
+                    concertDateTime: Date(),
+                    buyerName: "",
+                    birth: Date(), // ✅ Date 타입으로 수정
+                    ticketNumber: "",
+                    seatNumber: "",
+                    nftUrl: "",
+                    isEntered: false,
+                    photoCardUrl: "",
+                    price: 0,
+                    isResaleListed: false
+                )
+                
                 verificationState = .success(message: "입장 처리되었습니다.")
             } catch {
-                self.verificationFailed = true
-                
-                let errorMessage = mapErrorMessage(error)
-                verificationState = .failure(error: errorMessage)
+                verificationState = .failure(error: mapErrorMessage(error))
+                print("❌ 입장 검증 실패:", error.localizedDescription)
             }
         }
     }
@@ -131,3 +165,11 @@ private func mapErrorMessage(_ error: Error) -> String {
 
 
 
+private func extractUUID(from code: String) -> String? {
+    // UUID 정규식 (8-4-4-4-12)
+    let pattern = #"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"#
+    if let range = code.range(of: pattern, options: .regularExpression) {
+        return String(code[range])
+    }
+    return nil
+}

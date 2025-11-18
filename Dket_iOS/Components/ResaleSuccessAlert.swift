@@ -13,12 +13,11 @@ struct ResaleSuccessAlert: View {
 
     var body: some View {
         ZStack {
-            // 반투명 배경
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
-                // 상단 x 버튼
+                // 상단 닫기 버튼
                 HStack {
                     Spacer()
                     Button(action: onClose) {
@@ -26,46 +25,56 @@ struct ResaleSuccessAlert: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.gray)
                             .padding(6)
-                            .background(Color.white)
-                            .clipShape(Circle())
+                            .background(Color.white.opacity(0.001)) // 터치 영역 확장
                     }
                 }
+                .padding(.trailing, 4)
 
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(spacing: 12) {
                     Group {
-                        Text("최종 판매 요청 후에는 ")
-                        + Text("취소가 불가능합니다.").foregroundColor(.dketBlue).fontWeight(.bold)
+                        (Text("지금 판매를 진행하면 즉시 거래가 체결되며,\n이후 ")
+                        + Text("취소는 불가능합니다.")
+                            .foregroundColor(.dketBlue)
+                            .fontWeight(.bold))
 
-                        Text("구매자가 있을 경우 입력하신 금액으로 ")
-                        + Text("즉시 자동 거래").foregroundColor(.dketBlue).fontWeight(.bold)
-                        + Text("되며,\n별도의 승인 절차는 없습니다.")
-
-                        Text("거래된 티켓은 ")
-                        + Text("더 이상 조회할 수 없습니다.").foregroundColor(.dketBlue).fontWeight(.bold)
+                        (Text("구매자가 있을 경우 ")
+                        + Text("바로 정산이 진행")
+                            .foregroundColor(.dketBlue)
+                            .fontWeight(.bold)
+                        + Text("되니\n판매가를 다시 한 번 확인해주세요."))
                     }
-                    .font(.system(size: 14))
+                    .font(.system(size: 15))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(5)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 24)
 
                 Button(action: onConfirm) {
                     Text("판매하기")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, maxHeight: 48)
+                        .frame(maxWidth: .infinity, minHeight: 48)
                         .background(Color.dketBlue)
-                        .cornerRadius(12)
+                        .cornerRadius(5)
                 }
-                .padding(.horizontal, 16)
-
-                Spacer().frame(height: 10)
+                .padding(.horizontal, 24)
+                .padding(.top, 4)
             }
-            .padding(.top, 20)
-            .padding(.bottom, 15)
+            .padding(.vertical, 40)
+            .frame(maxWidth: 310)
             .background(Color.white)
-            .cornerRadius(20)
-            .frame(maxWidth: 300)
+            .cornerRadius(15)
             .shadow(radius: 8)
         }
+    }
+}
+
+struct ResaleSuccessAlert_Previews: PreviewProvider {
+    static var previews: some View {
+        ResaleSuccessAlert(
+            onConfirm: { print("판매하기 버튼 클릭") },
+            onClose: { print("닫기 버튼 클릭") }
+        )
+        .preferredColorScheme(.light)
     }
 }

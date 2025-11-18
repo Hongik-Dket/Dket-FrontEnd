@@ -54,18 +54,27 @@ final class ResalePurchaseViewModel: ObservableObject {
                     } else {
                         // fallback
                         self.errorMessage = (code == 403)
-                            ? "티켓을 구매할 수 없는 사용자입니다."
-                            : "이미 거래 중인 티켓입니다."
+                        ? "티켓을 구매할 수 없는 사용자입니다."
+                        : "이미 거래 중인 티켓입니다."
                     }
                 default:
                     self.errorMessage = "오류가 발생했습니다. (\(code))"
                 }
             } else {
+                // NetworkError가 아닌 일반 Error (APIErrorResponse 포함) 처리
+                if let apiError = error as? APIErrorResponse {
+                    self.errorMessage = apiError.message
+                } else {
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+            
+        } catch {
+            if let apiError = error as? APIErrorResponse {
+                self.errorMessage = apiError.message
+            } else {
                 self.errorMessage = error.localizedDescription
             }
-
-        } catch {
-            self.errorMessage = error.localizedDescription
         }
     }
 
@@ -117,8 +126,3 @@ private func parseApiError(from error: NetworkError) async -> APIErrorResponse? 
     return try? JSONDecoder().decode(APIErrorResponse.self, from: response)
 }
 
-struct APIErrorResponse: Decodable {
-    let isSuccess: Bool
-    let code: String
-    let message: String?
-}

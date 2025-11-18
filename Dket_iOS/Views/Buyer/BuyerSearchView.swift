@@ -9,97 +9,112 @@ import SwiftUI
 
 struct BuyerSearchView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var query: String = ""
-    @State private var results: [SearchResultItem] = [] // 검색 결과
-
+    @StateObject private var vm = BuyerSearchViewModel()
+    
     var body: some View {
         VStack(spacing: 12) {
+            // MARK: - 상단 검색창
             HStack(spacing: 8) {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
                         .font(.title3)
                         .foregroundColor(.black)
                 }
-
-                TextField("검색어를 입력하세요", text: $query)
+                
+                TextField("검색어를 입력하세요", text: $vm.query)
                     .padding(.horizontal)
                     .frame(height: 36)
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
+                    .submitLabel(.search)
                     .onSubmit {
-                        Task { await searchConcerts() }
+                        Task { await vm.search() }
                     }
-
+                
                 Spacer()
             }
             .padding(.horizontal)
-
+            .padding(.top, 4)
+            
+            // MARK: - 검색 결과
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 16) {
-                    ForEach(results) { result in
-                        SearchResultRow(item: result)
+                if vm.isLoading {
+                    ProgressView("검색 중...")
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 60)
+                } else if vm.results.isEmpty && !vm.query.isEmpty {
+                    Text("검색 결과가 없습니다.")
+                        .foregroundColor(.gray)
+                        .padding(.top, 60)
+                } else {
+                    LazyVStack(alignment: .leading, spacing: 16) {
+                        ForEach(vm.results) { concert in
+                            NavigationLink(destination: BuyerConcertDetailView(concertId: concert.concertId)) {
+                                SearchResultRow(concert: concert)
+                            }
+                            .buttonStyle(.plain) 
+                        }
                     }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
                 }
-                .padding()
             }
-
+            
             Spacer()
         }
         .navigationBarBackButtonHidden()
-        .onChange(of: query) { newValue in
-            Task { await searchConcerts() }
-        }
-    }
-
-    func searchConcerts() async {
-        guard !query.trimmingCharacters(in: .whitespaces).isEmpty else {
-            results = []
-            return
-        }
-
-        // 이 예시에서는 임시로 더미 데이터 생성
-        results = (0..<5).map { i in
-            .init(id: Int64(i), title: "공연 이름 길이 최대 여기까지 ~~~", location: "공연 장소", period: "2025.03.20 ~ 2025.03.21", statusText: "응모 중 (D-10)")
+        .onChange(of: vm.query) { _ in
+            Task { await vm.search() }
         }
     }
 }
 
-struct SearchResultItem: Identifiable {
-    let id: Int64
-    let title: String
-    let location: String
-    let period: String
-    let statusText: String
-}
-
+// MARK: - 검색 결과 셀
 struct SearchResultRow: View {
-    let item: SearchResultItem
-
+    let concert: ConcertSearchCardDTO
+    
+    private var formattedPeriod: String {
+        let start = DateFormatter.yyyyMMdd.date(from: concert.startDate)
+        let end = DateFormatter.yyyyMMdd.date(from: concert.endDate)
+        let startStr = start.map { DateFormatter.yyyyDMMDdd.string(from: $0) } ?? concert.startDate
+        let endStr = end.map { DateFormatter.yyyyDMMDdd.string(from: $0) } ?? concert.endDate
+        return "\(startStr) ~ \(endStr)"
+    }
+    
     var body: some View {
         HStack(spacing: 12) {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 72, height: 96)
-
+            // 포스터 이미지
+            AsyncImage(url: URL(string: concert.imageUrl)) { img in
+                img.resizable()
+            } placeholder: {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+            }
+            .frame(width: 105, height: 140)
+            .cornerRadius(8)
+            .grayscale(concert.concertStatus == .ended ? 1 : 0) // 공연 종료면 회색 처리
+            
             VStack(alignment: .leading, spacing: 6) {
-                Text(item.title)
-                    .font(.headline)
+                Text(concert.title)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.black)
                     .lineLimit(1)
-
-                Text(item.location)
-                    .font(.subheadline)
+                
+                Text(concert.location)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.black)
+                
+                Text(formattedPeriod)
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.secondary)
-
-                Text(item.period)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-
-                Text(item.statusText)
-                    .font(.subheadline)
+                
+                Text(concert.concertStatus.label)
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.dketBlue)
             }
-
+            
             Spacer()
         }
+        .padding(.vertical, 4)
     }
 }

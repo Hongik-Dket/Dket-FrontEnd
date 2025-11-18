@@ -7,6 +7,7 @@
 
 struct MetaMaskCompleteRequestDTO: Encodable {
     let walletAddress: String
+    let publicKey: String
 }
 
 struct MetaMaskCompleteResponseDTO: Decodable {
