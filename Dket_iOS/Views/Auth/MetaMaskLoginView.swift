@@ -9,8 +9,6 @@ import SwiftUI
 import ReownWalletKit
 import ReownAppKit
 
-import SwiftUI
-
 struct MetaMaskLoginView: View {
     @EnvironmentObject var appState: AppState
     @State private var isConnecting = false

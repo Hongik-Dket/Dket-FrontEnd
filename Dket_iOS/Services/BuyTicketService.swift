@@ -100,7 +100,7 @@ final class BuyTicketService: BuyTicketServicing {
         }
 
         let abi = try String(contentsOf: url)
-        let contractAddressString = "0x5ae53b6a02a5630373994eaa5665a9669251204c"
+        let contractAddressString = "0xF0A34dd5e4713C582e196B3eadc8D38DeeE07d4E"
 
         guard let contractAddress = EthereumAddress(contractAddressString) else {
             throw NSError(domain: "BuyTicket", code: -2,
@@ -222,7 +222,7 @@ final class BuyTicketService: BuyTicketServicing {
         // ✅ 4️⃣ 트랜잭션 데이터 구성
         let tx = buildTransactionDict(
             from: from,
-            to: "0x5ae53b6a02a5630373994eaa5665a9669251204c", // DketNFT 주소
+            to: "0xF0A34dd5e4713C582e196B3eadc8D38DeeE07d4E", // DketNFT 주소
             value: value,
             data: encoded
         )
