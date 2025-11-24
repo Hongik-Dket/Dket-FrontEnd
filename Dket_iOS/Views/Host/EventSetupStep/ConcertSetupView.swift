@@ -188,19 +188,19 @@ struct ConcertSetupView: View {
 //                showingAlert = true
 //                return
 //            }
-//            
+//
 //            if finalApplyEnd <= finalApplyStart {
 //                alertMessage = "응모 마감일은 시작일보다 이후여야 합니다."
 //                showingAlert = true
 //                return
 //            }
-//            
+//
 //            if calendar.date(byAdding: .day, value: 2, to: finalApplyEnd)! > calendar.startOfDay(for: performanceStart) {
 //                alertMessage = "응모 마감 후 최소 2일 후에 공연이 시작되어야 합니다."
 //                showingAlert = true
 //                return
 //            }
-//            
+//
 //            if performanceEnd < performanceStart {
 //                alertMessage = "공연 종료일은 공연 시작일보다 이후여야 합니다."
 //                showingAlert = true
@@ -236,7 +236,7 @@ struct ConcertSetupView: View {
             viewModel.endDate = performanceEnd
             viewModel.startTimeText = DateFormatter.HHmm.string(from: startTime)
             viewModel.endTimeText = DateFormatter.HHmm.string(from: endTime)
-            viewModel.price = Int(price) ?? 0 
+            viewModel.price = Int(price) ?? 0
             viewModel.capacity = Int(capacity) ?? 0
             viewModel.applyStart = finalApplyStart
             viewModel.applyEnd = finalApplyEnd
@@ -278,4 +278,3 @@ struct ConcertSetupView: View {
         }
     }
 }
-
