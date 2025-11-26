@@ -57,7 +57,7 @@ struct ConcertSetupView: View {
             )
             
             StepIndicatorView(current: step)
-                .padding(.vertical, 8)
+                
             Divider()
             
             Group {
@@ -92,7 +92,7 @@ struct ConcertSetupView: View {
                 }
             }
             .padding()
-            .animation(.easeInOut, value: step)
+//            .animation(.easeInOut, value: step)
             
             Spacer()
             
@@ -152,7 +152,9 @@ struct ConcertSetupView: View {
     private func next() {
         switch step {
         case .one:
-            step = .two
+            withAnimation {
+                        step = .two
+                    }
             
         case .two:
             let calendar = Calendar(identifier: .gregorian)
@@ -206,7 +208,9 @@ struct ConcertSetupView: View {
 //                showingAlert = true
 //                return
 //            }
-            step = .three
+            withAnimation {
+                        step = .three
+                    }
             
         case .three:
             let calendar = Calendar(identifier: .gregorian)
@@ -254,10 +258,12 @@ struct ConcertSetupView: View {
     }
     
     private func back() {
-        switch step {
-        case .one: break
-        case .two: step = .one
-        case .three: step = .two
+        withAnimation {
+            switch step {
+            case .one: break
+            case .two: step = .one
+            case .three: step = .two
+            }
         }
     }
     

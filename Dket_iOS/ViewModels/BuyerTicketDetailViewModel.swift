@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 final class BuyerTicketDetailViewModel: ObservableObject {
-    @Published var ticket: TicketDetail?
+    @Published var ticket: BuyerTicketDetail?
     private let ticketService: TicketServicing
     private let ticketId: Int64
     

@@ -14,7 +14,7 @@ struct ResaleRegisterView: View {
     @State private var showAlertModal = false
     @State private var showMenu = false 
     
-    init(ticket: TicketDetail) {
+    init(ticket: BuyerTicketDetail) {
         _vm = StateObject(wrappedValue: ResaleRegisterViewModel(ticket: ticket))
     }
     
@@ -252,25 +252,25 @@ extension Int {
     }
 }
 
-struct ResaleView_Previews: PreviewProvider {
-    static var previews: some View {
-        ResaleRegisterView(
-            ticket: TicketDetail(
-                ticketId: 123,
-                concertTitle: "공연이름~~~",
-                concertDateTime: ISO8601DateFormatter().date(from: "2025-03-10T18:00:00") ?? Date(),
-                buyerName: "여희주",
-                birth: ISO8601DateFormatter().date(from: "2003-02-25T00:00:00") ?? Date(),
-                ticketNumber: "T152670849345203",
-                seatNumber: "39",
-                nftUrl: "",
-                isEntered: false,
-                photoCardUrl: "https://via.placeholder.com/100", // 이미지 URL 대체
-                price: 189000, isResaleListed: true
-            )
-        )
-    }
-}
+//struct ResaleView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ResaleRegisterView(
+//            ticket: TicketDetail(
+//                ticketId: 123,
+//                concertTitle: "공연이름~~~",
+//                concertDateTime: ISO8601DateFormatter().date(from: "2025-03-10T18:00:00") ?? Date(),
+//                buyerName: "여희주",
+//                birth: ISO8601DateFormatter().date(from: "2003-02-25T00:00:00") ?? Date(),
+//                ticketNumber: "T152670849345203",
+//                seatNumber: "39",
+//                nftUrl: "",
+//                isEntered: false,
+//                photoCardUrl: "https://via.placeholder.com/100", // 이미지 URL 대체
+//                price: 189000, isResaleListed: true
+//            )
+//        )
+//    }
+//}
 
 struct CustomBox<Content: View>: View {
     let title: String
