@@ -259,6 +259,11 @@ final class BuyerConcertViewModel: ObservableObject {
                 }
                 isFloatingButtonEnabled = true
             }
+            else if session.ticketId != nil {
+                floatingButtonTitle = "티켓 조회하기"
+                isFloatingButtonEnabled = true
+                floatingAction = .view
+            }
             // ✅ 선착순 구매 (응모 상태 무관)
             else if session.buyable {
                 floatingButtonTitle = "티켓 구매하기"
