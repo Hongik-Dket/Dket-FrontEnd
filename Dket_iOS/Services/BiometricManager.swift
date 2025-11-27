@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import LocalAuthentication
 import Security
+import LocalAuthentication
 
 final class BiometricKeyManager {
     static let shared = BiometricKeyManager()
@@ -15,9 +15,19 @@ final class BiometricKeyManager {
 
     private let keyTag = "com.dket.faceid.keypair".data(using: .utf8)!
 
-    // 1. 기존 키 불러오거나, 없으면 생성
+    // MARK: - 1. 키 삭제 (새로 추가된 함수)
+    func deleteKeyPair() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrApplicationTag as String: keyTag
+        ]
+        SecItemDelete(query as CFDictionary)
+        print("🗑️ 기존 KeyPair 삭제 완료")
+    }
+
+    // MARK: - 2. 기존 키 불러오기 or 생성
     func loadOrCreateKeyPair() throws -> SecKey {
-        // 기존 키가 있는지 확인
+        // 1. 기존 키 쿼리
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: keyTag,
@@ -27,18 +37,26 @@ final class BiometricKeyManager {
 
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
+        
         if status == errSecSuccess {
-            let existingKey = item as! SecKey
             print("🔑 기존 Secure Enclave 키 불러옴")
-            return existingKey
+            return item as! SecKey
         }
 
-        // 없으면 새로 생성
-        print("Secure Enclave 키 새로 생성")
+        // 2. 없으면 새로 생성
+        return try createNewKeyPair()
+    }
+    
+    // 키 생성 로직 분리
+    private func createNewKeyPair() throws -> SecKey {
+        print("✨ Secure Enclave 키 새로 생성 시작")
+        
+        // ⚠️ .biometryAny로 변경 권장 (개발 중 FaceID 설정 바뀌어도 유지되도록)
+        // 보안 강도를 높이려면 .biometryCurrentSet 사용 (설정 바뀌면 키 삭제됨)
         let access = SecAccessControlCreateWithFlags(
             nil,
             kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-            [.privateKeyUsage, .biometryCurrentSet], // Face ID 보호
+            [.privateKeyUsage, .biometryCurrentSet],
             nil
         )!
 
@@ -57,11 +75,11 @@ final class BiometricKeyManager {
         guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
             throw error!.takeRetainedValue() as Error
         }
-
+        
         return privateKey
     }
 
-    // 2.Public Key 추출
+    // MARK: - 3. Public Key 추출
     func getPublicKeyData(from privateKey: SecKey) throws -> Data {
         guard let publicKey = SecKeyCopyPublicKey(privateKey) else {
             throw NSError(domain: "KeyError", code: -1)
@@ -73,7 +91,7 @@ final class BiometricKeyManager {
         return data
     }
 
-    // 3.압축 Public Key (33 bytes)
+    // MARK: - 4. 압축 Public Key
     func compressPublicKey(_ uncompressedKey: Data) -> Data? {
         guard uncompressedKey.count == 65 else { return nil }
         let x = uncompressedKey[1...32]
@@ -84,39 +102,43 @@ final class BiometricKeyManager {
         return compressed
     }
 
-    // 4.Secure Enclave 서명 (Face ID 인증 포함)
+    // MARK: - 5. 서명 (재시도 로직 포함)
     func sign(challenge: String) async throws -> Data {
-        // ① Face ID context 생성
-        let context = LAContext()
-        context.localizedReason = "티켓 결제를 위해 Face ID 인증이 필요합니다."
-
-        // ② 키 로드 (없으면 자동 생성)
-        let privateKey = try loadOrCreateKeyPair()
-
-        // ③ Face ID 가능 여부 확인
-        var authError: NSError?
-        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &authError) else {
-            throw authError ?? NSError(domain: "FaceID", code: -2, userInfo: [NSLocalizedDescriptionKey: "Face ID not available"])
-        }
-
-        // ④ Challenge를 Data로 변환
+        // ① 키 로드
+        var privateKey = try loadOrCreateKeyPair()
+        
+        // ② Challenge 변환
         guard let challengeData = challenge.data(using: .utf8) else {
             throw NSError(domain: "FaceID", code: -3, userInfo: [NSLocalizedDescriptionKey: "Invalid challenge string"])
         }
 
-        // ⑤ Secure Enclave로 서명
+        // ③ 서명 시도 (실패 시 키 재생성 후 재시도)
+        do {
+            return try createSignature(key: privateKey, data: challengeData)
+        } catch {
+            print("⚠️ 서명 실패 (키 무효화 가능성): \(error)")
+            print("🔄 키 삭제 후 재생성 및 재시도 진행...")
+            
+            // 키 삭제 및 재생성
+            deleteKeyPair()
+            privateKey = try createNewKeyPair()
+            
+            // 재시도
+            return try createSignature(key: privateKey, data: challengeData)
+        }
+    }
+    
+    // 실제 서명 수행 헬퍼 함수
+    private func createSignature(key: SecKey, data: Data) throws -> Data {
         var error: Unmanaged<CFError>?
         guard let signature = SecKeyCreateSignature(
-            privateKey,
+            key,
             .ecdsaSignatureMessageX962SHA256,
-            challengeData as CFData,
+            data as CFData,
             &error
         ) as Data? else {
             throw error!.takeRetainedValue() as Error
         }
-
-        print("Face ID 서명 완료 (\(signature.count) bytes)")
-        print("서명(hex): \(signature.toHexString())")
         return signature
     }
 }
