@@ -12,7 +12,7 @@ struct BuyerTicketDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showPhotoCard = false
     @State private var showResaleView = false
-    @State private var selectedTicket: TicketDetail? = nil
+    @State private var selectedTicket: BuyerTicketDetail? = nil
     @State private var showPhotoFullScreen = false
     @State private var showQRView = false
     @State private var qrCodeUrl: String? = nil
@@ -22,7 +22,7 @@ struct BuyerTicketDetailView: View {
     @State private var isOwnershipProofProcessing = false
     @State private var showOwnershipProofFailedAlert = false
     
-    let sessionId: Int64?    // ✅ optional로 변경
+    let sessionId: Int64?
     
     // MARK: - 일반 조회용 (sessionId 없음)
     init(ticketId: Int64) {
@@ -158,7 +158,6 @@ struct BuyerTicketDetailView: View {
                 BuyerProofQRView(ticket: ticket, qrCodeUrl: qr, identityType: idType)
             }
         }
-        
         .overlay {
             ZStack {
                 if isOwnershipProofProcessing {
@@ -182,7 +181,7 @@ struct BuyerTicketDetailView: View {
     }
 
     // MARK: - 입장 로직
-    private func handleEnterProof(for ticket: TicketDetail) async {
+    private func handleEnterProof(for ticket: BuyerTicketDetail) async {
         await MainActor.run { isOwnershipProofProcessing = true }
 
         do {
@@ -204,7 +203,7 @@ struct BuyerTicketDetailView: View {
 
             // ③ 서버로 증명 전송
             let proofResponse = try await ProofService.shared.submitOwnProof(
-                sessionId: sessionId,
+                sessionId: ticket.sessionId,
                 challengeId: challenge.challengeId,
                 signature: signatureHex,
                 publicKey: compressedKey.toHexString()

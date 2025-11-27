@@ -12,7 +12,7 @@ import ReownAppKit
 @MainActor
 final class ResaleRegisterViewModel: ObservableObject {
     // MARK: - Published Properties
-    @Published var ticket: TicketDetail
+    @Published var ticket: BuyerTicketDetail
     @Published var priceText: String = ""
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -29,7 +29,7 @@ final class ResaleRegisterViewModel: ObservableObject {
     private let approveService: ApproveNFTServicing
     
     // MARK: - Init
-    init(ticket: TicketDetail,
+    init(ticket: BuyerTicketDetail,
              service: ResaleTradeServicing = ResaleTradeService(),
              approveService: ApproveNFTServicing = ApproveNFTService()) {
             self.ticket = ticket

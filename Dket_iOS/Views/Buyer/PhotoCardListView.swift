@@ -7,12 +7,16 @@
 
 import SwiftUI
 
+struct TicketSelection: Identifiable {
+    let id: Int64
+}
+
 struct PhotoCardListView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm = PhotoCardListViewModel()
     
     let onMenu: () -> Void
-    
+    @State private var selectedTicket: TicketSelection? = nil
     @State private var selectedTicketId: Int64? = nil
     @State private var showDetail = false
     
@@ -65,7 +69,6 @@ struct PhotoCardListView: View {
                     Spacer()
                     
                 } else {
-                    // ✅ 포토카드 그리드
                     ScrollView {
                         LazyVGrid(
                             columns: [GridItem(.flexible()), GridItem(.flexible())],
@@ -73,11 +76,7 @@ struct PhotoCardListView: View {
                         ) {
                             ForEach(vm.cards) { card in
                                 Button {
-                                    // ✅ 1프레임 지연을 줘서 값 설정 후 시트 표시
-                                    DispatchQueue.main.async {
-                                        selectedTicketId = card.ticketId
-                                        showDetail = true
-                                    }
+                                    selectedTicket = TicketSelection(id: card.ticketId)
                                 } label: {
                                     AsyncImage(url: URL(string: card.imageUrl)) { image in
                                         image
@@ -107,9 +106,8 @@ struct PhotoCardListView: View {
         .onAppear {
             Task { await vm.fetchCards() }
         }
-        // ✅ 시트 대신 전체 화면으로 BuyerTicketDetailView 표시
-        .fullScreenCover(isPresented: $showDetail) {
-            BuyerTicketDetailWrapper(ticketId: selectedTicketId)
+        .fullScreenCover(item: $selectedTicket) { selection in
+            BuyerTicketDetailView(ticketId: selection.id)
                 .ignoresSafeArea()
         }
     }

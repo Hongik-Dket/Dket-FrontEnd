@@ -8,9 +8,9 @@
 import Foundation
 
 protocol TicketServicing {
-    func fetchBuyerTicketDetail(_ ticketId: Int64) async throws -> TicketDetail
+    func fetchBuyerTicketDetail(_ ticketId: Int64) async throws -> BuyerTicketDetail
     
-    func fetchTicketById(_ id: Int64) async throws -> TicketDetail
+    func fetchTicketById(_ id: Int64) async throws -> BuyerTicketDetail
     func fetchTicketByNumber(_ number: String) async throws -> TicketVerifyResponseDTO
     func fetchMyTickets() async throws -> [MyTicket]
     func enterTicket(ticketId: Int64) async throws -> APIResponseWithoutResult
@@ -18,15 +18,15 @@ protocol TicketServicing {
 
 struct TicketService: TicketServicing {
     
-    func fetchBuyerTicketDetail(_ ticketId: Int64) async throws -> TicketDetail {
+    func fetchBuyerTicketDetail(_ ticketId: Int64) async throws -> BuyerTicketDetail {
         try await APIClient.shared.get(
             .buyerTicketDetail(ticketId: ticketId),
-            as: APIResponse<TicketDetailDTO>.self
+            as: APIResponse<BuyerTicketDetailDTO>.self
         ).result.domain
     }
     
-    func fetchTicketById(_ id: Int64) async throws -> TicketDetail {
-        try await APIClient.shared.get(.ticketDetailById(id: id), as: APIResponse<TicketDetailDTO>.self)
+    func fetchTicketById(_ id: Int64) async throws -> BuyerTicketDetail {
+        try await APIClient.shared.get(.ticketDetailById(id: id), as: APIResponse<BuyerTicketDetailDTO>.self)
             .result
             .domain
     }
